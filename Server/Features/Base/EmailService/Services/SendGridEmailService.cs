@@ -1,3 +1,4 @@
+using msih.p4g.Server.Common.Utilities;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using SendGrid;
 using SendGrid.Helpers.Mail;
@@ -21,6 +22,18 @@ namespace msih.p4g.Server.Features.Base.EmailService.Services
 
         public async Task SendEmailAsync(string to, string from, string subject, string htmlContent)
         {
+            if (!IsValidEmail(to))
+            {
+                _logger.LogError($"Invalid recipient email address: {to}");
+                throw new ArgumentException("Invalid recipient email address", nameof(to));
+            }
+
+            if (!string.IsNullOrWhiteSpace(from) && !IsValidEmail(from))
+            {
+                _logger.LogError($"Invalid sender email address: {from}");
+                throw new ArgumentException("Invalid sender email address", nameof(from));
+            }
+
             var client = new SendGridClient(_apiKey);
 
             // Use the from parameter if provided, otherwise fall back to configuration
@@ -36,6 +49,16 @@ namespace msih.p4g.Server.Features.Base.EmailService.Services
                 var body = await response.Body.ReadAsStringAsync();
                 _logger.LogError($"Failed to send email: {response.StatusCode} - {body}");
             }
+        }
+
+        /// <summary>
+        /// Validates if the provided email address is in a valid format.
+        /// </summary>
+        /// <param name="email">The email address to validate.</param>
+        /// <returns>True if the email is valid, false otherwise.</returns>
+        public bool IsValidEmail(string email)
+        {
+            return ValidationUtilities.IsValidEmail(email);
         }
     }
 }

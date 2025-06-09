@@ -1,0 +1,140 @@
+@page "/phone-validation"
+@using msih.p4g.Server.Features.Base.SmsService.Interfaces
+@using msih.p4g.Shared.Models
+@inject ISmsService SmsService
+
+<h3>Phone Number Validation</h3>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="phoneNumber">Phone Number (E.164 format, e.g., +12125551234)</label>
+            <div class="input-group">
+                <input @bind="phoneNumber" type="text" class="form-control" id="phoneNumber" placeholder="+12125551234" />
+                <button class="btn btn-primary" @onclick="ValidatePhoneNumber" disabled="@isValidating">
+                    @if (isValidating)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span>Validating...</span>
+                    }
+                    else
+                    {
+                        <span>Validate</span>
+                    }
+                </button>
+            </div>
+            @if (!string.IsNullOrEmpty(validationError))
+            {
+                <div class="text-danger mt-2">@validationError</div>
+            }
+        </div>
+
+        <div class="form-check mt-3">
+            <input @bind="useCache" class="form-check-input" type="checkbox" id="useCache">
+            <label class="form-check-label" for="useCache">
+                Use cached results if available
+            </label>
+        </div>
+
+        <div class="form-check mt-2">
+            <input @bind="usePaidService" class="form-check-input" type="checkbox" id="usePaidService">
+            <label class="form-check-label" for="usePaidService">
+                Use paid carrier lookup service (additional charges may apply)
+            </label>
+        </div>
+    </div>
+</div>
+
+@if (validatedNumber != null)
+{
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    Validation Results
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>Phone Number</th>
+                                <td>@validatedNumber.PhoneNumber</td>
+                            </tr>
+                            <tr>
+                                <th>Valid</th>
+                                <td>
+                                    @if (validatedNumber.IsValid)
+                                    {
+                                        <span class="badge bg-success">Yes</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">No</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Mobile Number</th>
+                                <td>
+                                    @if (validatedNumber.IsMobile)
+                                    {
+                                        <span class="badge bg-success">Yes</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">No/Unknown</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Carrier</th>
+                                <td>@(string.IsNullOrEmpty(validatedNumber.Carrier) ? "Unknown" : validatedNumber.Carrier)</td>
+                            </tr>
+                            <tr>
+                                <th>Country Code</th>
+                                <td>@(string.IsNullOrEmpty(validatedNumber.CountryCode) ? "Unknown" : validatedNumber.CountryCode)</td>
+                            </tr>
+                            <tr>
+                                <th>Validated On</th>
+                                <td>@validatedNumber.ValidatedOn.ToString("g")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private string phoneNumber = "";
+    private bool useCache = true;
+    private bool usePaidService = false;
+    private bool isValidating = false;
+    private string validationError = "";
+    private ValidatedPhoneNumber validatedNumber;
+
+    private async Task ValidatePhoneNumber()
+    {
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+        {
+            validationError = "Please enter a phone number";
+            return;
+        }
+
+        try
+        {
+            validationError = "";
+            isValidating = true;
+            validatedNumber = await SmsService.ValidatePhoneNumberAsync(phoneNumber, useCache, usePaidService);
+        }
+        catch (Exception ex)
+        {
+            validationError = $"Error validating phone number: {ex.Message}";
+        }
+        finally
+        {
+            isValidating = false;
+        }
+    }
+}
