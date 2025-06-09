@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using msih.p4g.Data;
+using msih.p4g.Server.Common.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
