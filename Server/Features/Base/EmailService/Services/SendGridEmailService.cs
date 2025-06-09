@@ -1,9 +1,6 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using SendGrid;
 using SendGrid.Helpers.Mail;
-using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.Base.EmailService.Services
 {
@@ -22,12 +19,16 @@ namespace msih.p4g.Server.Features.Base.EmailService.Services
             _logger = logger;
         }
 
-        public async Task SendEmailAsync(string to, string subject, string htmlContent)
+        public async Task SendEmailAsync(string to, string from, string subject, string htmlContent)
         {
             var client = new SendGridClient(_apiKey);
-            var from = new EmailAddress(_fromEmail, _fromName);
+
+            // Use the from parameter if provided, otherwise fall back to configuration
+            var senderEmail = !string.IsNullOrWhiteSpace(from) ? from : _fromEmail;
+            var fromAddress = new EmailAddress(senderEmail, _fromName);
+
             var toEmail = new EmailAddress(to);
-            var msg = MailHelper.CreateSingleEmail(from, toEmail, subject, null, htmlContent);
+            var msg = MailHelper.CreateSingleEmail(fromAddress, toEmail, subject, null, htmlContent);
             var response = await client.SendEmailAsync(msg);
 
             if (!response.IsSuccessStatusCode)

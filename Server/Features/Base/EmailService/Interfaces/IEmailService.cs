@@ -4,6 +4,6 @@ namespace msih.p4g.Server.Features.Base.EmailService.Interfaces
 {
     public interface IEmailService
     {
-        Task SendEmailAsync(string to, string subject, string htmlContent);
+        Task SendEmailAsync(string to, string from, string subject, string htmlContent);
     }
 }
