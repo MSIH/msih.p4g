@@ -1,11 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using msih.p4g.Data;
+using msih.p4g.Server.Features.Base.SMSService.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddControllers();
 
 // Add Entity Framework with MySQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -13,6 +15,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         new MySqlServerVersion(new Version(8, 0, 26))
     ));
+
+// Add SMS service based on environment
+builder.Services.AddSMSService(builder.Environment);
 
 var app = builder.Build();
 
@@ -30,6 +35,7 @@ app.UseRouting();
 
 app.MapRazorPages();
 app.MapBlazorHub();
+app.MapControllers();
 app.MapFallbackToPage("/_Host");
 
 app.Run();

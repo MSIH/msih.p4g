@@ -1,0 +1,95 @@
+@page "/sms"
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject ILogger<SendSMS> Logger
+
+<h3>Send SMS Message</h3>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group mb-3">
+            <label for="to">To Phone Number (E.164 format, e.g., +12345678900):</label>
+            <input id="to" type="text" class="form-control" @bind="request.To" />
+        </div>
+        <div class="form-group mb-3">
+            <label for="from">From Phone Number (optional):</label>
+            <input id="from" type="text" class="form-control" @bind="request.From" />
+        </div>
+        <div class="form-group mb-3">
+            <label for="message">Message:</label>
+            <textarea id="message" class="form-control" rows="4" @bind="request.Message"></textarea>
+        </div>
+        <button class="btn btn-primary" @onclick="SendMessage" disabled="@isSending">
+            @if (isSending)
+            {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span> Sending...</span>
+            }
+            else
+            {
+                <span>Send SMS</span>
+            }
+        </button>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="mt-3 alert @alertClass">
+        @message
+    </div>
+}
+
+@code {
+    private SendSMSRequest request = new();
+    private bool isSending;
+    private string message = "";
+    private string alertClass = "";
+
+    private class SendSMSRequest
+    {
+        public string To { get; set; } = "";
+        public string? From { get; set; }
+        public string Message { get; set; } = "";
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(request.To) || string.IsNullOrWhiteSpace(request.Message))
+        {
+            message = "Phone number and message are required.";
+            alertClass = "alert-danger";
+            return;
+        }
+
+        try
+        {
+            isSending = true;
+            var response = await Http.PostAsJsonAsync("api/sms/send", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                message = "SMS sent successfully!";
+                alertClass = "alert-success";
+                request = new SendSMSRequest();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                message = $"Failed to send SMS: {error}";
+                alertClass = "alert-danger";
+                Logger.LogError("SMS sending failed: {Error}", error);
+            }
+        }
+        catch (Exception ex)
+        {
+            message = "An error occurred while sending the SMS.";
+            alertClass = "alert-danger";
+            Logger.LogError(ex, "Error sending SMS");
+        }
+        finally
+        {
+            isSending = false;
+        }
+    }
+}
