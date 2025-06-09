@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace msih.p4g.Data;
+namespace msih.p4g.Server.Common.Data;
 
 public class ApplicationDbContext : DbContext
 {
