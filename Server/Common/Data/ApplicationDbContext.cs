@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Common.Data;
 
