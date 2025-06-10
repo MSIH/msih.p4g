@@ -1,14 +1,11 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using msih.p4g.Server.Common.Utilities;
 using msih.p4g.Server.Features.Base.SmsService.Interfaces;
 using msih.p4g.Shared.Models;
-using System;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Twilio;
 using Twilio.Exceptions;
 using Twilio.Rest.Api.V2010.Account;
-using Twilio.Rest.Lookups.V1;
+using Twilio.Rest.Lookups.V2;
 using Twilio.Types;
 
 namespace msih.p4g.Server.Features.Base.SmsService.Services
@@ -22,7 +19,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
         private readonly IValidatedPhoneNumberRepository _phoneNumberRepository;
 
         public TwilioSmsService(
-            IConfiguration configuration, 
+            IConfiguration configuration,
             ILogger<TwilioSmsService> logger,
             IValidatedPhoneNumberRepository phoneNumberRepository)
         {
@@ -99,7 +96,8 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
             if (string.IsNullOrWhiteSpace(phoneNumber))
             {
                 throw new ArgumentException("Phone number cannot be null or empty", nameof(phoneNumber));
-            }            if (!IsValidPhoneNumber(phoneNumber))
+            }
+            if (!IsValidPhoneNumber(phoneNumber))
             {
                 _logger.LogWarning($"Invalid phone number format: {phoneNumber}");
                 return new ValidatedPhoneNumber
@@ -126,44 +124,48 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
                             return cachedResult;
                         } */
                     }
-                }                // Setup the Lookup parameters
-                var options = new Twilio.Rest.Lookups.V1.PhoneNumberOptions(phoneNumber);
-                
-                // Add carrier type to the lookup if using the paid service
-                if (usePaidService)
-                {
-                    options.Type = new[] { "carrier" };
                 }
 
-                // Perform the lookup
-                var lookupResult = await PhoneNumberResource.FetchAsync(options);
-                  // Create the validated phone number record
+                // Use the actual phoneNumber parameter and request line_type_intelligence
+                var phoneNumberLookup = await PhoneNumberResource.FetchAsync(
+                    pathPhoneNumber: phoneNumber,
+                    fields: "line_type_intelligence"
+                );
+
                 var validatedNumber = new ValidatedPhoneNumber
                 {
                     PhoneNumber = phoneNumber,
-                    IsValid = true,
+                    IsValid = phoneNumberLookup?.Valid ?? false,
                     ValidatedOn = DateTime.UtcNow,
-                    CountryCode = lookupResult.CountryCode,
+                    CountryCode = phoneNumberLookup?.CountryCode,
                     CreatedBy = "System"
                 };
 
-                // If carrier information is available (from paid service)
-                if (lookupResult.Carrier != null)
+                // Check for line_type_intelligence and set IsMobile/Carrier accordingly
+                if (phoneNumberLookup?.LineTypeIntelligence != null)
                 {
-                    validatedNumber.Carrier = lookupResult.Carrier["name"]?.ToString();
-                    validatedNumber.IsMobile = lookupResult.Carrier["type"]?.ToString()?.Equals("mobile", StringComparison.OrdinalIgnoreCase) ?? false;
+                    var LineTypeIntelligence = JsonConvert.DeserializeObject<Dictionary<string, string>>(phoneNumberLookup.LineTypeIntelligence.ToString());
+                    var type = LineTypeIntelligence.TryGetValue("type", out var phoneNumbertype) ? phoneNumbertype : null;
+                    var carrierName = LineTypeIntelligence.TryGetValue("carrier_name", out var phoneNumberCarrier) ? phoneNumberCarrier : null;
+                    validatedNumber.IsMobile = type == "mobile";
+                    validatedNumber.Carrier = carrierName;
                 }
-                
+                else
+                {
+                    validatedNumber.IsMobile = false;
+                    validatedNumber.Carrier = null;
+                }
+
                 // Save the validated number to the database
                 await _phoneNumberRepository.AddOrUpdateAsync(validatedNumber);
-                
+
                 _logger.LogInformation($"Phone number {phoneNumber} validated. IsMobile: {validatedNumber.IsMobile}");
                 return validatedNumber;
             }
             catch (ApiException ex)
             {
                 _logger.LogError(ex, $"Error validating phone number {phoneNumber} with Twilio Lookup service");
-                  // Create an invalid record for this phone number
+                // Create an invalid record for this phone number
                 var invalidNumber = new ValidatedPhoneNumber
                 {
                     PhoneNumber = phoneNumber,
@@ -171,10 +173,10 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
                     ValidatedOn = DateTime.UtcNow,
                     CreatedBy = "System"
                 };
-                
+
                 // Save the invalid number to the database
                 await _phoneNumberRepository.AddOrUpdateAsync(invalidNumber);
-                
+
                 return invalidNumber;
             }
             catch (Exception ex)

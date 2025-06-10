@@ -89,7 +89,7 @@
     {
         using var scope = ServiceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<SmsDbContext>();
-        PendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+        var PendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
     }
 
     private async Task AddSmsDbMigration()
