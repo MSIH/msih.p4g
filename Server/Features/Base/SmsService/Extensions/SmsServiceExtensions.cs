@@ -22,15 +22,19 @@ namespace msih.p4g.Server.Features.Base.SmsService.Extensions
         /// <param name="configuration">The configuration</param>
         /// <returns>The service collection for chaining</returns>
         public static IServiceCollection AddSmsServices(this IServiceCollection services, IConfiguration configuration)
-        {            // Add SMS DbContext
+        {            
+            // Add SMS DbContext
             services.AddDbContext<SmsDbContext>(options =>
                 options.UseMySql(
                     configuration.GetConnectionString("DefaultConnection"),
                     new MySqlServerVersion(new Version(8, 0, 26)),
                     mySqlOptions => mySqlOptions.MigrationsAssembly("msih.p4g")
-                ));// Register services
+                ));
+            
+            // Register services
             services.AddScoped<ISmsService, TwilioSmsService>();
             services.AddScoped<IValidatedPhoneNumberRepository, ValidatedPhoneNumberRepository>();
+            services.AddScoped<PhoneValidationService>();
             
             // Register generic repositories
             services.AddGenericRepository<ValidatedPhoneNumber, SmsDbContext>();
