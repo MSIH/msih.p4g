@@ -6,6 +6,29 @@
 
 @namespace msih.p4g.Client.Layout.Components
 
+<style>
+    .navbar, .top-row {
+        background-color: #343a40 !important;
+        color: #fff;
+    }
+    .nav-link {
+        color: #e0e0e0 !important;
+    }
+    .nav-link.active {
+        background-color: #007bff !important;
+        color: #fff !important;
+    }
+    .nav-item {
+        margin-bottom: 0.25rem;
+    }
+    .sidebar {
+        background: #23272b !important;
+    }
+    .navbar-brand {
+        color: #fff !important;
+    }
+</style>
+
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">msih.p4g</a>
@@ -50,6 +73,11 @@
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="admin/campaignmanager">
                 <span class="oi oi-briefcase" aria-hidden="true"></span> Campaigns
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="admin/donors">
+                <span class="oi oi-dollar" aria-hidden="true"></span> Donors
             </NavLink>
         </div>
     </nav>

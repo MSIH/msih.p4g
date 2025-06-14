@@ -1,0 +1,246 @@
+@page "/admin/donors"
+@using msih.p4g.Shared.Models
+@using msih.p4g.Server.Features.Base.DonorService.Interfaces
+@inject IDonorService DonorService
+@inject IJSRuntime JSRuntime
+
+<h3>Donor Management</h3>
+
+<div class="mb-3">
+    <input class="form-control" placeholder="Search donors..." @bind="searchTerm" @bind:event="oninput" />
+</div>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <button class="btn btn-primary mb-2" @onclick="ShowAddModal">Add Donor</button>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                    <th>IsActive</th>
+                    <th>Consent (Text/Phone/Email/Mail)</th>
+                    <th>Unsubscribe (Text/Phone/Email/Mail)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var donor in filteredDonors)
+                {
+                    <tr>
+                        <td>@donor.FullName</td>
+                        <td>@donor.EmailAddress</td>
+                        <td>@donor.MobileNumber</td>
+                        <td>
+                            <input type="checkbox" @bind="donor.IsActive" />
+                        </td>
+                        <td>
+                            <input type="checkbox" @bind="donor.ConsentReceiveText" title="Text" />
+                            <input type="checkbox" @bind="donor.ConsentReceivePhone" title="Phone" />
+                            <input type="checkbox" @bind="donor.ConsentReceiveEmail" title="Email" />
+                            <input type="checkbox" @bind="donor.ConsentReceiveMail" title="Mail" />
+                        </td>
+                        <td>
+                            <input type="checkbox" @bind="donor.UnsubscribeMobile" title="Text" />
+                            <input type="checkbox" @bind="donor.UnsubscribePhone" title="Phone" />
+                            <input type="checkbox" @bind="donor.UnsubscribeEmail" title="Email" />
+                            <input type="checkbox" @bind="donor.UnsubscribeMail" title="Mail" />
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-success me-1" @onclick="() => SaveDonor(donor)">Save</button>
+                            <button class="btn btn-sm btn-primary me-1" @onclick="() => EditDonor(donor)">Edit</button>
+                            <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDeleteDonor(donor)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@* Add/Edit Modal *@
+@if (showModal)
+{
+    <div class="modal fade show" style="display:block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@((editingDonor?.Id ?? 0) == 0 ? "Add Donor" : "Edit Donor")</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@editingDonor" OnValidSubmit="SaveDonor">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="mb-2">
+                            <label>First Name</label>
+                            <InputText class="form-control" @bind-Value="editingDonor.FirstName" />
+                        </div>
+                        <div class="mb-2">
+                            <label>Last Name</label>
+                            <InputText class="form-control" @bind-Value="editingDonor.LastName" />
+                        </div>
+                        <div class="mb-2">
+                            <label>Email</label>
+                            <InputText class="form-control" @bind-Value="editingDonor.EmailAddress" />
+                        </div>
+                        <div class="mb-2">
+                            <label>Mobile</label>
+                            <InputText class="form-control" @bind-Value="editingDonor.MobileNumber" />
+                        </div>
+                        <div class="mb-2">
+                            <label>IsActive</label>
+                            <InputCheckbox class="form-check-input" @bind-Value="editingDonor.IsActive" />
+                        </div>
+                        <button type="submit" class="btn btn-success">Save</button>
+                        <button type="button" class="btn btn-secondary ms-2" @onclick="CloseModal">Cancel</button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@* Delete Modal *@
+@if (showDeleteModal)
+{
+    <div class="modal fade show" style="display:block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Donor</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong>@deletingDonor?.FullName</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseDeleteModal">Cancel</button>
+                    <button class="btn btn-danger" @onclick="DeleteDonor">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    private List<Donor> donors = new();
+    private string searchTerm = string.Empty;
+    private bool isLoading = true;
+    private bool showModal = false;
+    private bool showDeleteModal = false;
+    private Donor editingDonor;
+    private Donor deletingDonor;
+
+    private IEnumerable<Donor> filteredDonors => string.IsNullOrWhiteSpace(searchTerm)
+        ? donors
+        : donors.Where(d => d.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            || (d.EmailAddress?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (d.MobileNumber?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDonors();
+    }
+
+    private async Task LoadDonors()
+    {
+        isLoading = true;
+        donors = await DonorService.GetAllAsync();
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private void ShowAddModal()
+    {
+        editingDonor = new Donor();
+        showModal = true;
+    }
+
+    private void EditDonor(Donor donor)
+    {
+        editingDonor = new Donor
+        {
+            Id = donor.Id,
+            DonorId = donor.DonorId,
+            UserId = donor.UserId,
+            PaymentProcessorDonorId = donor.PaymentProcessorDonorId,
+            MobileNumber = donor.MobileNumber,
+            ConsentReceiveText = donor.ConsentReceiveText,
+            UnsubscribeMobile = donor.UnsubscribeMobile,
+            PhoneNumber = donor.PhoneNumber,
+            ConsentReceivePhone = donor.ConsentReceivePhone,
+            UnsubscribePhone = donor.UnsubscribePhone,
+            EmailAddress = donor.EmailAddress,
+            ConsentReceiveEmail = donor.ConsentReceiveEmail,
+            UnsubscribeEmail = donor.UnsubscribeEmail,
+            ConsentReceiveMail = donor.ConsentReceiveMail,
+            UnsubscribeMail = donor.UnsubscribeMail,
+            FirstName = donor.FirstName,
+            LastName = donor.LastName,
+            IsActive = donor.IsActive,
+            Address = donor.Address
+        };
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        editingDonor = null;
+    }
+
+    private async Task SaveDonor()
+    {
+        if (editingDonor.Id == 0)
+        {
+            await DonorService.AddAsync(editingDonor);
+        }
+        else
+        {
+            await DonorService.UpdateAsync(editingDonor);
+        }
+        showModal = false;
+        await LoadDonors();
+    }
+
+    private async Task SaveDonor(Donor donor)
+    {
+        await DonorService.UpdateAsync(donor);
+        await LoadDonors();
+    }
+
+    private void ConfirmDeleteDonor(Donor donor)
+    {
+        deletingDonor = donor;
+        showDeleteModal = true;
+    }
+
+    private void CloseDeleteModal()
+    {
+        showDeleteModal = false;
+        deletingDonor = null;
+    }
+
+    private async Task DeleteDonor()
+    {
+        if (deletingDonor != null)
+        {
+            await DonorService.DeleteAsync(deletingDonor.Id);
+            showDeleteModal = false;
+            await LoadDonors();
+        }
+    }
+}

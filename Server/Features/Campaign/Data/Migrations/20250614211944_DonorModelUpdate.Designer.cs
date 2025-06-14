@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using msih.p4g.Server.Features.Campaign.Data;
 
@@ -10,9 +11,11 @@ using msih.p4g.Server.Features.Campaign.Data;
 namespace msih.p4g.Server.Features.Campaign.Data.Migrations
 {
     [DbContext(typeof(CampaignDbContext))]
-    partial class CampaignDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250614211944_DonorModelUpdate")]
+    partial class DonorModelUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
@@ -87,6 +90,7 @@ namespace msih.p4g.Server.Features.Campaign.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DonorId")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
@@ -94,6 +98,7 @@ namespace msih.p4g.Server.Features.Campaign.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
@@ -103,6 +108,7 @@ namespace msih.p4g.Server.Features.Campaign.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("MobileNumber")
@@ -153,22 +159,27 @@ namespace msih.p4g.Server.Features.Campaign.Data.Migrations
                                 .HasColumnType("INTEGER");
 
                             b1.Property<string>("City")
+                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("Country")
+                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("PostalCode")
+                                .IsRequired()
                                 .HasMaxLength(20)
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("State")
+                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("Street")
+                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 

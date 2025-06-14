@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using msih.p4g.Server.Features.Campaign.Data;
 
@@ -10,9 +11,11 @@ using msih.p4g.Server.Features.Campaign.Data;
 namespace msih.p4g.Server.Features.Campaign.Data.Migrations
 {
     [DbContext(typeof(CampaignDbContext))]
-    partial class CampaignDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250614205025_RenameCustomerToDonorInDonorModel")]
+    partial class RenameCustomerToDonorInDonorModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
@@ -87,13 +90,15 @@ namespace msih.p4g.Server.Features.Campaign.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DonorId")
-                        .ValueGeneratedOnAdd()
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("EmailAddress")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
@@ -103,9 +108,11 @@ namespace msih.p4g.Server.Features.Campaign.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("MobileNumber")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ModifiedBy")
@@ -117,9 +124,11 @@ namespace msih.p4g.Server.Features.Campaign.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PaymentProcessorDonorId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PhoneNumber")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("UnsubscribeEmail")
@@ -135,12 +144,10 @@ namespace msih.p4g.Server.Features.Campaign.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DonorId")
-                        .IsUnique();
 
                     b.ToTable("Donors");
                 });
@@ -153,22 +160,27 @@ namespace msih.p4g.Server.Features.Campaign.Data.Migrations
                                 .HasColumnType("INTEGER");
 
                             b1.Property<string>("City")
+                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("Country")
+                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("PostalCode")
+                                .IsRequired()
                                 .HasMaxLength(20)
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("State")
+                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("Street")
+                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 
@@ -180,7 +192,8 @@ namespace msih.p4g.Server.Features.Campaign.Data.Migrations
                                 .HasForeignKey("DonorId");
                         });
 
-                    b.Navigation("Address");
+                    b.Navigation("Address")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

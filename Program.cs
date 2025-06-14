@@ -15,6 +15,8 @@ using msih.p4g.Server.Features.Base.Settings.Services;
 using msih.p4g.Server.Features.Base.SmsService.Extensions;
 using msih.p4g.Shared.Models;
 using msih.p4g.Server.Features.Campaign.Data;
+using msih.p4g.Server.Features.Base.DonorService.Interfaces;
+using msih.p4g.Server.Features.Base.DonorService.Services;
 using Microsoft.EntityFrameworkCore; // Add this using for EF Core migrations
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,6 +58,8 @@ builder.Services.AddPaymentServices(builder.Configuration, builder.Environment);
 // Register SettingsService for DI
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 
+// Register DonorService for DI
+builder.Services.AddScoped<IDonorService, DonorService>();
 
 var app = builder.Build();
 
