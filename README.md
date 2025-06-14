@@ -78,3 +78,11 @@ Configuration is handled through a combination of:
 - `appsettings.json` (fallback)
 
 The application uses the Options pattern for strongly-typed configuration.
+
+# remove remote branches that have been deleted
+
+git remote prune origin
+
+# remove local branches that have been deleted from remote
+
+git branch -vv | Where-Object { $_ -match '\[origin/.*: gone\]' } | ForEach-Object { git branch -D $_.trim().split(" ")[0] }
