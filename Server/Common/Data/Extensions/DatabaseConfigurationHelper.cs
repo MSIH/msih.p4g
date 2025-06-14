@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
+using MySql.EntityFrameworkCore.Extensions;
 
 namespace msih.p4g.Server.Common.Data.Extensions
 {
@@ -13,20 +17,16 @@ namespace msih.p4g.Server.Common.Data.Extensions
         /// </summary>
         /// <param name="services">The service collection</param>
         /// <param name="configuration">The configuration</param>
-
         /// <param name="hostEnvironment">The hosting environment</param>
-
         /// <typeparam name="TContext">The DbContext type</typeparam>
         public static void AddConfiguredDbContext<TContext>(
             IServiceCollection services,
             IConfiguration configuration,
-
             IHostEnvironment hostEnvironment)
             where TContext : DbContext
         {
             // Determine if we should use SQLite based on configuration
             var useLocalDb = hostEnvironment.IsDevelopment() && configuration.GetValue<bool>("UseLocalSqlite", false);
-
 
             if (useLocalDb)
             {
@@ -40,18 +40,17 @@ namespace msih.p4g.Server.Common.Data.Extensions
             }
             else
             {
-                // Use MySQL for production or when explicitly configured
-                var connectionString = configuration.GetConnectionString("DefaultConnection");
+                // Use Oracle's MySQL provider
+                var connectionString = configuration.GetConnectionString("DefaultConnection") 
+                    ?? throw new InvalidOperationException("MySQL connection string 'DefaultConnection' is not configured.");
+                
                 services.AddDbContext<TContext>(options =>
-                    options.UseMySql(
+                    options.UseMySQL(
                         connectionString,
-                        new MySqlServerVersion(new Version(8, 0, 26)),
                         mySqlOptions => mySqlOptions.MigrationsAssembly("msih.p4g")
                     ));
             }
         }
-
-
 
         /// <summary>
         /// Configures DbContextOptions for a specific context type based on environment and configuration
@@ -59,7 +58,6 @@ namespace msih.p4g.Server.Common.Data.Extensions
         /// <typeparam name="TContext">The DbContext type</typeparam>
         /// <param name="optionsBuilder">The DbContextOptionsBuilder</param>
         /// <param name="configuration">The configuration</param>
-
         /// <param name="hostEnvironment">The hosting environment</param>
         public static void ConfigureDbContextOptions<TContext>(
             DbContextOptionsBuilder<TContext> optionsBuilder,
@@ -81,11 +79,12 @@ namespace msih.p4g.Server.Common.Data.Extensions
             }
             else
             {
-                // Use MySQL for production or when explicitly configured
-                var connectionString = configuration.GetConnectionString("DefaultConnection");
-                optionsBuilder.UseMySql(
+                // Use Oracle's MySQL provider
+                var connectionString = configuration.GetConnectionString("DefaultConnection")
+                    ?? throw new InvalidOperationException("MySQL connection string 'DefaultConnection' is not configured.");
+                
+                optionsBuilder.UseMySQL(
                     connectionString,
-                    new MySqlServerVersion(new Version(8, 0, 26)),
                     mySqlOptions => mySqlOptions.MigrationsAssembly("msih.p4g")
                 );
             }
@@ -96,7 +95,6 @@ namespace msih.p4g.Server.Common.Data.Extensions
             DbContextOptionsBuilder<TContext> optionsBuilder,
             IConfiguration configuration,
             bool isDevelopment)
-
             where TContext : DbContext
         {
             // Determine if we should use SQLite based on configuration
@@ -113,11 +111,12 @@ namespace msih.p4g.Server.Common.Data.Extensions
             }
             else
             {
-                // Use MySQL for production or when explicitly configured
-                var connectionString = configuration.GetConnectionString("DefaultConnection");
-                optionsBuilder.UseMySql(
+                // Use Oracle's MySQL provider
+                var connectionString = configuration.GetConnectionString("DefaultConnection")
+                    ?? throw new InvalidOperationException("MySQL connection string 'DefaultConnection' is not configured.");
+                
+                optionsBuilder.UseMySQL(
                     connectionString,
-                    new MySqlServerVersion(new Version(8, 0, 26)),
                     mySqlOptions => mySqlOptions.MigrationsAssembly("msih.p4g")
                 );
             }
