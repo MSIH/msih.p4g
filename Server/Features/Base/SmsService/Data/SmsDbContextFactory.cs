@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.IO;
+using msih.p4g.Server.Common.Data.Extensions;
 
 namespace msih.p4g.Server.Features.Base.SmsService.Data
 {
@@ -17,14 +18,14 @@ namespace msih.p4g.Server.Features.Base.SmsService.Data
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile("appsettings.Development.json", optional: true)
-                .Build();            var connectionString = configuration.GetConnectionString("DefaultConnection");
-
+                .Build();
+            
+            // Use the centralized database configuration logic
             var optionsBuilder = new DbContextOptionsBuilder<SmsDbContext>();
-            optionsBuilder.UseMySql(
-                connectionString, 
-                new MySqlServerVersion(new Version(8, 0, 26)),
-                mySqlOptions => mySqlOptions.MigrationsAssembly("msih.p4g")
-            );
+            DatabaseConfigurationHelper.ConfigureDbContextOptions(
+                optionsBuilder, 
+                configuration, 
+                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development");
 
             return new SmsDbContext(optionsBuilder.Options);
         }
