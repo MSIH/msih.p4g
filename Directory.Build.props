@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <Company>MSIH LLC</Company>
+    <Authors>Make Sure It Happens Inc.</Authors>
+    <Copyright>Copyright (c) 2025 MSIH LLC. All rights reserved.</Copyright>
+    <Product>msih.p4g</Product>
+    <NeutralLanguage>en-US</NeutralLanguage>
+  </PropertyGroup>
+</Project>
