@@ -14,6 +14,7 @@ using msih.p4g.Server.Features.Base.Settings.Interfaces;
 using msih.p4g.Server.Features.Base.Settings.Services;
 using msih.p4g.Server.Features.Base.SmsService.Extensions;
 using msih.p4g.Shared.Models;
+using msih.p4g.Server.Features.Campaign.Data;
 using Microsoft.EntityFrameworkCore; // Add this using for EF Core migrations
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,13 +28,13 @@ builder.Services.AddRazorPages(options =>
 builder.Services.AddServerSideBlazor();
 
 // Add Entity Framework with conditional provider selection based on environment
-DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
+DatabaseConfigurationHelper.AddConfiguredDbContext<CampaignDbContext>(
     builder.Services,
     builder.Configuration,
     builder.Environment);
 
-// Register generic repository for Setting using ApplicationDbContext
-builder.Services.AddScoped<IGenericRepository<Setting>, GenericRepository<Setting, ApplicationDbContext>>();
+// Register generic repository for Setting using CampaignDbContext
+builder.Services.AddScoped<IGenericRepository<Setting>, GenericRepository<Setting, CampaignDbContext>>();
 
 // Register Email Service - choose one implementation based on configuration or use a factory
 string emailProvider = builder.Configuration["EmailProvider"] ?? "SendGrid";
@@ -61,7 +62,7 @@ var app = builder.Build();
 // Apply pending migrations and create database/tables if needed
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var dbContext = scope.ServiceProvider.GetRequiredService<CampaignDbContext>();
     dbContext.Database.Migrate();
 }
 
