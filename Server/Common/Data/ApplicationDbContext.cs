@@ -12,11 +12,19 @@ public class ApplicationDbContext : DbContext
 
     // Add your DbSets here
     // public DbSet<User> Users { get; set; }
+    public DbSet<Setting> Settings { get; set; } // Add this line for settings
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         
         // Configure your entities here
+        modelBuilder.Entity<Setting>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Key).IsUnique();
+            entity.Property(e => e.Key).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Value).HasMaxLength(1000);
+        });
     }
 }

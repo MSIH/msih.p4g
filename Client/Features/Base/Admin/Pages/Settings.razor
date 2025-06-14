@@ -1,0 +1,412 @@
+@page "/admin/settings"
+@namespace msih.p4g.Client.Features.Base.Admin.Pages
+@using msih.p4g.Server.Features.Base.Settings.Interfaces
+@using msih.p4g.Shared.Models
+@inject ISettingsService SettingsService
+@inject IJSRuntime JSRuntime
+
+<h3>Application Settings</h3>
+
+<div class="mb-4">
+    <p>Manage application settings used across the system. Settings are stored in the database and fallback to appsettings.json and environment variables if not found.</p>
+</div>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Settings</span>
+            <div>
+                <button class="btn btn-primary btn-sm" @onclick="AddNewSetting">Add New Setting</button>
+                <button class="btn btn-success btn-sm ms-2" @onclick="SaveAllChanges" disabled="@(!hasChanges)">Save All Changes</button>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (filteredSettings.Count == 0)
+            {
+                <div class="alert alert-info">
+                    No settings found. Click "Add New Setting" to create one.
+                </div>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <span class="oi oi-magnifying-glass"></span>
+                        </span>
+                        <input type="text" class="form-control" placeholder="Search settings..." @bind="searchTerm" @bind:event="oninput" />
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Value</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var setting in filteredSettings)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (editingSettingId == setting.Id)
+                                        {
+                                            <input type="text" class="form-control" @bind="@editSettingKey" />
+                                        }
+                                        else
+                                        {
+                                            <span>@setting.Key</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (editingSettingId == setting.Id)
+                                        {
+                                            <input type="text" class="form-control" @bind="@editSettingValue" />
+                                        }
+                                        else
+                                        {
+                                            <span>@(IsSensitive(setting.Key) ? "********" : setting.Value)</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (editingSettingId == setting.Id)
+                                        {
+                                            <button class="btn btn-success btn-sm me-1" @onclick="SaveSetting">Save</button>
+                                            <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Cancel</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-primary btn-sm me-1" @onclick="() => EditSetting(setting)">Edit</button>
+                                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteSetting(setting)">Delete</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (showAddModal)
+    {
+        <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New Setting</h5>
+                        <button type="button" class="btn-close" @onclick="CloseAddModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Key</label>
+                            <input type="text" class="form-control" @bind="newSettingKey" />
+                            @if (!string.IsNullOrEmpty(keyError))
+                            {
+                                <div class="text-danger">@keyError</div>
+                            }
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Value</label>
+                            <input type="text" class="form-control" @bind="newSettingValue" />
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="sensitiveCheck" @bind="isSensitive" />
+                            <label class="form-check-label" for="sensitiveCheck">
+                                This is a sensitive value (e.g., API key, password)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseAddModal">Cancel</button>
+                        <button type="button" class="btn btn-primary" @onclick="CreateSetting">Add Setting</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+
+    @if (showDeleteModal)
+    {
+        <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirm Delete</h5>
+                        <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete the setting "<strong>@settingToDelete?.Key</strong>"?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseDeleteModal">Cancel</button>
+                        <button type="button" class="btn btn-danger" @onclick="ConfirmDeleteSetting">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+}
+
+@code {
+    private List<Setting> settings = new();
+    private List<Setting> filteredSettings => FilterSettings();
+    private List<Setting> changedSettings = new();
+    private string searchTerm = "";
+    private bool isLoading = true;
+    private bool hasChanges => changedSettings.Count > 0;
+
+    // For adding new settings
+    private bool showAddModal = false;
+    private string newSettingKey = "";
+    private string newSettingValue = "";
+    private bool isSensitive = false;
+    private string keyError = "";
+
+    // For editing settings
+    private int editingSettingId = 0;
+    private string editSettingKey = "";
+    private string editSettingValue = "";
+
+    // For deleting settings
+    private bool showDeleteModal = false;
+    private Setting? settingToDelete;
+
+    // List of sensitive settings (keys that contain these terms will mask their values)
+    private readonly string[] sensitiveTerms = new[] { "key", "token", "secret", "password", "pwd", "auth" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettingsAsync();
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        isLoading = true;
+        try
+        {
+            var allSettings = await SettingsService.GetAllAsync();
+            settings = allSettings
+                .Select(s => new Setting { 
+                    Id = 0, // We don't have the actual ID from dictionary
+                    Key = s.Key, 
+                    Value = s.Value,
+                    IsActive = true,
+                    CreatedBy = "System"
+                })
+                .OrderBy(s => s.Key)
+                .ToList();
+
+            // Assign unique IDs for client-side tracking
+            for (int i = 0; i < settings.Count; i++)
+            {
+                settings[i].Id = i + 1;
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error loading settings: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private List<Setting> FilterSettings()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return settings;
+
+        return settings
+            .Where(s => s.Key.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || 
+                        (s.Value?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false))
+            .ToList();
+    }
+
+    private void AddNewSetting()
+    {
+        showAddModal = true;
+        newSettingKey = "";
+        newSettingValue = "";
+        isSensitive = false;
+        keyError = "";
+    }
+
+    private void CloseAddModal()
+    {
+        showAddModal = false;
+    }
+
+    private async Task CreateSetting()
+    {
+        if (string.IsNullOrWhiteSpace(newSettingKey))
+        {
+            keyError = "Key is required";
+            return;
+        }
+
+        if (settings.Any(s => s.Key.Equals(newSettingKey, StringComparison.OrdinalIgnoreCase)))
+        {
+            keyError = "This key already exists";
+            return;
+        }
+
+        try
+        {
+            await SettingsService.SetValueAsync(newSettingKey, newSettingValue);
+            
+            // Add to local collection
+            var newSetting = new Setting 
+            { 
+                Id = settings.Count > 0 ? settings.Max(s => s.Id) + 1 : 1,
+                Key = newSettingKey, 
+                Value = newSettingValue,
+                IsActive = true,
+                CreatedBy = "System"
+            };
+            
+            settings.Add(newSetting);
+            settings = settings.OrderBy(s => s.Key).ToList();
+            
+            CloseAddModal();
+            
+            // Update IDs after sorting
+            for (int i = 0; i < settings.Count; i++)
+            {
+                settings[i].Id = i + 1;
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error creating setting: {ex.Message}");
+        }
+    }
+
+    private void EditSetting(Setting setting)
+    {
+        editingSettingId = setting.Id;
+        editSettingKey = setting.Key;
+        editSettingValue = setting.Value ?? "";
+    }
+
+    private void CancelEdit()
+    {
+        editingSettingId = 0;
+    }
+
+    private async Task SaveSetting()
+    {
+        var setting = settings.FirstOrDefault(s => s.Id == editingSettingId);
+        if (setting == null) return;
+
+        var originalKey = setting.Key;
+        
+        try
+        {
+            // If key changed, we need to delete the old key and create a new one
+            if (originalKey != editSettingKey)
+            {
+                // Check if new key already exists
+                if (settings.Any(s => s.Key.Equals(editSettingKey, StringComparison.OrdinalIgnoreCase) && s.Id != editingSettingId))
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "This key already exists");
+                    return;
+                }
+
+                // Set the new key with the value
+                await SettingsService.SetValueAsync(editSettingKey, editSettingValue);
+                
+                // Set the old key to null (effectively removing it)
+                await SettingsService.SetValueAsync(originalKey, null);
+                
+                setting.Key = editSettingKey;
+            }
+            
+            // Otherwise just update the value
+            else
+            {
+                await SettingsService.SetValueAsync(setting.Key, editSettingValue);
+            }
+            
+            setting.Value = editSettingValue;
+            editingSettingId = 0;
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error saving setting: {ex.Message}");
+        }
+    }
+
+    private void DeleteSetting(Setting setting)
+    {
+        settingToDelete = setting;
+        showDeleteModal = true;
+    }
+
+    private void CloseDeleteModal()
+    {
+        showDeleteModal = false;
+        settingToDelete = null;
+    }
+
+    private async Task ConfirmDeleteSetting()
+    {
+        if (settingToDelete == null) return;
+
+        try
+        {
+            // Set to null to effectively remove it
+            await SettingsService.SetValueAsync(settingToDelete.Key, null);
+            
+            // Remove from local collection
+            settings.Remove(settingToDelete);
+            
+            CloseDeleteModal();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error deleting setting: {ex.Message}");
+        }
+    }
+
+    private async Task SaveAllChanges()
+    {
+        try
+        {
+            foreach (var setting in changedSettings)
+            {
+                await SettingsService.SetValueAsync(setting.Key, setting.Value);
+            }
+            
+            changedSettings.Clear();
+            await JSRuntime.InvokeVoidAsync("alert", "All changes saved successfully");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error saving changes: {ex.Message}");
+        }
+    }
+
+    private bool IsSensitive(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return false;
+        return sensitiveTerms.Any(term => key.ToLower().Contains(term.ToLower()));
+    }
+}
