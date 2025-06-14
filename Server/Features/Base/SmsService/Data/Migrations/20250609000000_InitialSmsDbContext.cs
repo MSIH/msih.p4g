@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using System;
 
@@ -16,7 +15,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySQL:AutoIncrement", true),
                     PhoneNumber = table.Column<string>(maxLength: 20, nullable: false),
                     IsMobile = table.Column<bool>(nullable: false),
                     Carrier = table.Column<string>(maxLength: 100, nullable: true),
