@@ -1,0 +1,27 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{cs,vb}]
+file_header_template = /**\n * Copyright (c) 2025 MSIH LLC. All rights reserved.\n * This file is developed for Make Sure It Happens Inc.\n * Unauthorized copying, modification, distribution, or use is prohibited.\n */
+
+# IDE0073: File header
+dotnet_diagnostic.IDE0073.severity = warning
+
+[*.razor]
+file_header_template = @*\n * Copyright (c) 2025 MSIH LLC. All rights reserved.\n * This file is developed for Make Sure It Happens Inc.\n * Unauthorized copying, modification, distribution, or use is prohibited.\n *@
+
+[*.{xml,config,*proj,props,targets,nuspec,resx,ruleset,vsixmanifest,vsct}]
+indent_size = 2
+
+[*.{json,js,ts,css,scss,html}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false

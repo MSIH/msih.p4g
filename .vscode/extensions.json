@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "editorconfig.editorconfig",
+    "ms-dotnettools.csharp",
+    "streetsidesoftware.code-spell-checker",
+    "jmrog.vscode-nuget-package-manager",
+    "fernandoescolar.vscode-solution-explorer"
+  ]
+}
