@@ -1,0 +1,526 @@
+@* 
+ * Copyright (c) 2025 MSIH LLC. All rights reserved.
+ * This file is developed for Make Sure It Happens Inc.
+ * Unauthorized copying, modification, distribution, or use is prohibited.
+ *@
+@page "/payment/braintree"
+@using msih.p4g.Server.Features.Base.PaymentService.Interfaces
+@using msih.p4g.Server.Features.Base.PaymentService.Models
+@using msih.p4g.Shared.Models
+@inject IPaymentServiceFactory PaymentServiceFactory
+@inject IJSRuntime JSRuntime
+
+<div class="container">
+    <h2>Payment Integration Demo</h2>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Payment Information</h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@paymentInfo" OnValidSubmit="HandleValidSubmit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <InputNumber id="amount" class="form-control" @bind-Value="paymentInfo.Amount" />
+                            </div>
+                            <ValidationMessage For="@(() => paymentInfo.Amount)" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <InputText id="description" class="form-control" @bind-Value="paymentInfo.Description" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <InputText id="email" class="form-control" @bind-Value="paymentInfo.CustomerEmail" />
+                            <ValidationMessage For="@(() => paymentInfo.CustomerEmail)" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Payment Method</label>
+                            <div id="dropin-container"></div>
+                            <div class="text-danger">@paymentError</div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary" disabled="@(!isPaymentFormReady || isProcessing)">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span class="ms-1">Processing...</span>
+                                }
+                                else
+                                {
+                                    <span>Pay Now</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Transaction History</h5>
+                </div>
+                <div class="card-body">
+                    @if (transactions == null)
+                    {
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (!transactions.Any())
+                    {
+                        <div class="alert alert-info">
+                            No transactions found.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var transaction in transactions)
+                                    {
+                                        <tr>
+                                            <td>@transaction.ProcessedOn.ToString("g")</td>
+                                            <td>@transaction.Currency @transaction.Amount.ToString("0.00")</td>
+                                            <td>
+                                                <span class="badge @GetStatusBadgeClass(transaction.Status)">
+                                                    @transaction.Status
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary" 
+                                                            @onclick="() => ShowTransactionDetails(transaction)"
+                                                            title="View Details">
+                                                        <i class="oi oi-eye"></i>
+                                                    </button>
+                                                    
+                                                    @if (transaction.Status == PaymentStatus.Authorized || 
+                                                         transaction.Status == PaymentStatus.Settling)
+                                                    {
+                                                        <button class="btn btn-outline-danger" 
+                                                                @onclick="() => VoidTransaction(transaction)"
+                                                                title="Void Transaction">
+                                                            <i class="oi oi-circle-x"></i>
+                                                        </button>
+                                                    }
+                                                    
+                                                    @if (transaction.Status == PaymentStatus.Settled || 
+                                                         transaction.Status == PaymentStatus.Completed)
+                                                    {
+                                                        <button class="btn btn-outline-warning" 
+                                                                @onclick="() => ShowRefundDialog(transaction)"
+                                                                title="Refund Transaction">
+                                                            <i class="oi oi-action-undo"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    @if (showTransactionDetails)
+    {
+        <div class="modal fade show" style="display: block;" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Transaction Details</h5>
+                        <button type="button" class="btn-close" @onclick="CloseTransactionDetails"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (selectedTransaction != null)
+                        {
+                            <dl class="row">
+                                <dt class="col-sm-4">Transaction ID</dt>
+                                <dd class="col-sm-8">@selectedTransaction.TransactionId</dd>
+                                
+                                <dt class="col-sm-4">Amount</dt>
+                                <dd class="col-sm-8">@selectedTransaction.Currency @selectedTransaction.Amount.ToString("0.00")</dd>
+                                
+                                <dt class="col-sm-4">Status</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge @GetStatusBadgeClass(selectedTransaction.Status)">
+                                        @selectedTransaction.Status
+                                    </span>
+                                </dd>
+                                
+                                <dt class="col-sm-4">Date</dt>
+                                <dd class="col-sm-8">@selectedTransaction.ProcessedOn.ToString("g")</dd>
+                                
+                                <dt class="col-sm-4">Description</dt>
+                                <dd class="col-sm-8">@selectedTransaction.Description</dd>
+                                
+                                <dt class="col-sm-4">Customer</dt>
+                                <dd class="col-sm-8">@selectedTransaction.CustomerEmail</dd>
+                                
+                                @if (!string.IsNullOrEmpty(selectedTransaction.ErrorMessage))
+                                {
+                                    <dt class="col-sm-4">Error</dt>
+                                    <dd class="col-sm-8 text-danger">@selectedTransaction.ErrorMessage</dd>
+                                }
+                            </dl>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseTransactionDetails">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+    
+    @if (showRefundDialog)
+    {
+        <div class="modal fade show" style="display: block;" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Refund Transaction</h5>
+                        <button type="button" class="btn-close" @onclick="CloseRefundDialog"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (selectedTransaction != null)
+                        {
+                            <p>Transaction ID: @selectedTransaction.TransactionId</p>
+                            <p>Original Amount: @selectedTransaction.Currency @selectedTransaction.Amount.ToString("0.00")</p>
+                            
+                            <div class="mb-3">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" @bind="isPartialRefund" />
+                                    Partial Refund
+                                </label>
+                            </div>
+                            
+                            @if (isPartialRefund)
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label">Refund Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">@selectedTransaction.Currency</span>
+                                        <input type="number" class="form-control" 
+                                               min="0.01" step="0.01" 
+                                               max="@selectedTransaction.Amount" 
+                                               @bind="refundAmount" />
+                                    </div>
+                                </div>
+                            }
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Reason for Refund</label>
+                                <textarea class="form-control" @bind="refundReason" rows="2"></textarea>
+                            </div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseRefundDialog">Cancel</button>
+                        <button type="button" class="btn btn-warning" @onclick="ProcessRefund" disabled="@isProcessing">
+                            @if (isProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span class="ms-1">Processing...</span>
+                            }
+                            else
+                            {
+                                <span>Process Refund</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+</div>
+
+@code {
+    private PaymentRequest paymentInfo = new PaymentRequest 
+    { 
+        Amount = 10.00m, 
+        Currency = "USD",
+        Description = "Demo Payment" 
+    };
+    private string paymentError = "";
+    private bool isProcessing = false;
+    private bool isPaymentFormReady = false;
+    
+    private List<PaymentTransaction> transactions;
+    private PaymentTransaction selectedTransaction;
+    private bool showTransactionDetails = false;
+    private bool showRefundDialog = false;
+    private bool isPartialRefund = false;
+    private decimal refundAmount = 0;
+    private string refundReason = "";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTransactionsAsync();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await InitializeBraintreeAsync();
+        }
+    }
+    
+    private async Task InitializeBraintreeAsync()
+    {
+        try
+        {
+            var braintreeService = PaymentServiceFactory.GetPaymentService("Braintree");
+            var tokenResponse = await braintreeService.GenerateClientTokenAsync(new ClientTokenRequest());
+            
+            if (tokenResponse.Success)
+            {
+                await JSRuntime.InvokeVoidAsync("initializeBraintree", tokenResponse.ClientToken, DotNetObjectReference.Create(this));
+            }
+            else
+            {
+                paymentError = tokenResponse.ErrorMessage;
+            }
+        }
+        catch (Exception ex)
+        {
+            paymentError = $"Failed to initialize payment form: {ex.Message}";
+        }
+    }
+    
+    [JSInvokable]
+    public void SetPaymentFormReady(bool isReady)
+    {
+        isPaymentFormReady = isReady;
+        StateHasChanged();
+    }
+    
+    [JSInvokable]
+    public void SetPaymentNonce(string nonce, string deviceData)
+    {
+        paymentInfo.PaymentMethodNonce = nonce;
+        paymentInfo.DeviceData = deviceData;
+    }
+    
+    private async Task HandleValidSubmit()
+    {
+        if (string.IsNullOrEmpty(paymentInfo.PaymentMethodNonce))
+        {
+            paymentError = "Please complete the payment form";
+            return;
+        }
+        
+        isProcessing = true;
+        paymentError = "";
+        
+        try
+        {
+            var braintreeService = PaymentServiceFactory.GetPaymentService("Braintree");
+            var response = await braintreeService.ProcessPaymentAsync(paymentInfo);
+            
+            if (response.Success)
+            {
+                await JSRuntime.InvokeVoidAsync("showAlert", "Payment Successful", $"Transaction ID: {response.TransactionId}");
+                
+                // Reset form
+                paymentInfo = new PaymentRequest 
+                { 
+                    Amount = 10.00m, 
+                    Currency = "USD",
+                    Description = "Demo Payment" 
+                };
+                
+                // Reload transactions
+                await LoadTransactionsAsync();
+                
+                // Reset Braintree form
+                await JSRuntime.InvokeVoidAsync("resetBraintree");
+            }
+            else
+            {
+                paymentError = response.ErrorMessage;
+            }
+        }
+        catch (Exception ex)
+        {
+            paymentError = $"Payment processing error: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+    
+    private async Task LoadTransactionsAsync()
+    {
+        try
+        {
+            var repository = (IPaymentTransactionRepository)PaymentServiceFactory
+                .GetPaymentService("Braintree")
+                .GetType()
+                .GetProperty("_transactionRepository")
+                .GetValue(PaymentServiceFactory.GetPaymentService("Braintree"));
+                
+            transactions = (await repository.GetAllAsync(includeInactive: true)).ToList();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error loading transactions: {ex.Message}");
+            transactions = new List<PaymentTransaction>();
+        }
+    }
+    
+    private void ShowTransactionDetails(PaymentTransaction transaction)
+    {
+        selectedTransaction = transaction;
+        showTransactionDetails = true;
+    }
+    
+    private void CloseTransactionDetails()
+    {
+        showTransactionDetails = false;
+        selectedTransaction = null;
+    }
+    
+    private void ShowRefundDialog(PaymentTransaction transaction)
+    {
+        selectedTransaction = transaction;
+        refundAmount = transaction.Amount;
+        refundReason = "";
+        isPartialRefund = false;
+        showRefundDialog = true;
+    }
+    
+    private void CloseRefundDialog()
+    {
+        showRefundDialog = false;
+        selectedTransaction = null;
+    }
+    
+    private async Task VoidTransaction(PaymentTransaction transaction)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to void transaction {transaction.TransactionId}?"))
+        {
+            isProcessing = true;
+            
+            try
+            {
+                var braintreeService = PaymentServiceFactory.GetPaymentService("Braintree");
+                var success = await braintreeService.VoidTransactionAsync(transaction.TransactionId);
+                
+                if (success)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Transaction Voided", "The transaction has been voided successfully.");
+                    await LoadTransactionsAsync();
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Error", "Failed to void the transaction. Please try again later.");
+                }
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Error", $"An error occurred: {ex.Message}");
+            }
+            finally
+            {
+                isProcessing = false;
+                StateHasChanged();
+            }
+        }
+    }
+    
+    private async Task ProcessRefund()
+    {
+        if (selectedTransaction == null) return;
+        
+        isProcessing = true;
+        
+        try
+        {
+            var request = new RefundRequest
+            {
+                TransactionId = selectedTransaction.TransactionId,
+                Reason = refundReason
+            };
+            
+            if (isPartialRefund)
+            {
+                request.Amount = refundAmount;
+            }
+            
+            var braintreeService = PaymentServiceFactory.GetPaymentService("Braintree");
+            var response = await braintreeService.ProcessRefundAsync(request);
+            
+            if (response.Success)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Refund Processed", $"The refund has been processed successfully. Refund ID: {response.RefundTransactionId}");
+                await LoadTransactionsAsync();
+                CloseRefundDialog();
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Error", $"Failed to process refund: {response.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Error", $"An error occurred: {ex.Message}");
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+    
+    private string GetStatusBadgeClass(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Pending => "bg-info",
+            PaymentStatus.Authorized => "bg-primary",
+            PaymentStatus.Completed => "bg-success",
+            PaymentStatus.Settled => "bg-success",
+            PaymentStatus.Failed => "bg-danger",
+            PaymentStatus.Refunded => "bg-warning text-dark",
+            PaymentStatus.PartiallyRefunded => "bg-warning text-dark",
+            PaymentStatus.Voided => "bg-secondary",
+            PaymentStatus.Settling => "bg-info",
+            _ => "bg-light text-dark"
+        };
+    }
+}
