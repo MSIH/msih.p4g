@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -14,11 +14,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Client\Pages\Shared\_Layout.cshtml" />
+    <Content Remove="Client\Pages\_Host.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Tests\Server.Tests\Features\Base\PaymentService\BraintreePaymentServiceTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include=".vscode\extensions.json" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.SimpleEmail" Version="4.0.0.5" />
+    <PackageReference Include="Braintree" Version="5.33.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5" />
     <PackageReference Include="MySql.EntityFrameworkCore" Version="9.0.3" />
