@@ -3,6 +3,8 @@ using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.EmailService.Services;
 using msih.p4g.Server.Features.Base.SmsService.Extensions;
+using msih.p4g.Server.Features.Base.Settings.Interfaces;
+using msih.p4g.Server.Features.Base.Settings.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +32,9 @@ else
 
 // Register SMS Service and related dependencies
 builder.Services.AddSmsServices(builder.Configuration);
+
+// Register SettingsService for DI
+builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 var app = builder.Build();
 

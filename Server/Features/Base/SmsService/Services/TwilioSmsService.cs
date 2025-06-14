@@ -1,4 +1,5 @@
 using msih.p4g.Server.Common.Utilities;
+using msih.p4g.Server.Features.Base.Settings.Interfaces;
 using msih.p4g.Server.Features.Base.SmsService.Interfaces;
 using msih.p4g.Shared.Models;
 using Newtonsoft.Json;
@@ -12,25 +13,48 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
 {
     public class TwilioSmsService : ISmsService
     {
-        private readonly string _accountSid;
-        private readonly string _authToken;
-        private readonly string _fromNumber;
+        private readonly IConfiguration _configuration;
+        private readonly ISettingsService _settingsService;
         private readonly ILogger<TwilioSmsService> _logger;
         private readonly IValidatedPhoneNumberRepository _phoneNumberRepository;
 
+        // Cache for settings to avoid DB lookups on every SMS
+        private string _accountSid;
+        private string _authToken;
+        private string _fromNumber;
+        private bool _settingsInitialized = false;
+
         public TwilioSmsService(
             IConfiguration configuration,
+            ISettingsService settingsService,
             ILogger<TwilioSmsService> logger,
             IValidatedPhoneNumberRepository phoneNumberRepository)
         {
-            _accountSid = configuration["Twilio:AccountSid"] ?? throw new Exception("Twilio AccountSid not configured");
-            _authToken = configuration["Twilio:AuthToken"] ?? throw new Exception("Twilio AuthToken not configured");
-            _fromNumber = configuration["Twilio:FromNumber"] ?? throw new Exception("Twilio FromNumber not configured");
+            _configuration = configuration;
+            _settingsService = settingsService;
             _logger = logger;
             _phoneNumberRepository = phoneNumberRepository ?? throw new ArgumentNullException(nameof(phoneNumberRepository));
+        }
+
+        private async Task InitializeSettingsAsync()
+        {
+            if (_settingsInitialized)
+                return;
+
+            // Try to get settings from the settings service (DB first, then appsettings, then environment)
+            _accountSid = await _settingsService.GetValueAsync("Twilio:AccountSid") 
+                ?? throw new Exception("Twilio AccountSid not configured");
+            
+            _authToken = await _settingsService.GetValueAsync("Twilio:AuthToken") 
+                ?? throw new Exception("Twilio AuthToken not configured");
+            
+            _fromNumber = await _settingsService.GetValueAsync("Twilio:FromNumber") 
+                ?? throw new Exception("Twilio FromNumber not configured");
 
             // Initialize Twilio client
             TwilioClient.Init(_accountSid, _authToken);
+            
+            _settingsInitialized = true;
         }
 
         /// <summary>
@@ -43,6 +67,8 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
         {
             try
             {
+                await InitializeSettingsAsync();
+                
                 if (!IsValidPhoneNumber(to))
                 {
                     _logger.LogError($"Invalid phone number format: {to}");
@@ -93,6 +119,8 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
         /// <returns>A validated phone number object with validation results.</returns>
         public async Task<ValidatedPhoneNumber> ValidatePhoneNumberAsync(string phoneNumber, bool useCache = true, bool usePaidService = false)
         {
+            await InitializeSettingsAsync();
+            
             if (string.IsNullOrWhiteSpace(phoneNumber))
             {
                 throw new ArgumentException("Phone number cannot be null or empty", nameof(phoneNumber));

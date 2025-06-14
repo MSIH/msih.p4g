@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Shared\" />
     <Folder Include="Server\Common\Interfaces\" />
     <Folder Include="Server\Common\Services\" />
   </ItemGroup>
