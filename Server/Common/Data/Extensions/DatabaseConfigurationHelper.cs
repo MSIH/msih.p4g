@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
+
 namespace msih.p4g.Server.Common.Data.Extensions
 {
     /// <summary>
@@ -12,16 +13,20 @@ namespace msih.p4g.Server.Common.Data.Extensions
         /// </summary>
         /// <param name="services">The service collection</param>
         /// <param name="configuration">The configuration</param>
+
         /// <param name="hostEnvironment">The hosting environment</param>
+
         /// <typeparam name="TContext">The DbContext type</typeparam>
         public static void AddConfiguredDbContext<TContext>(
             IServiceCollection services,
             IConfiguration configuration,
+
             IHostEnvironment hostEnvironment)
             where TContext : DbContext
         {
             // Determine if we should use SQLite based on configuration
             var useLocalDb = hostEnvironment.IsDevelopment() && configuration.GetValue<bool>("UseLocalSqlite", false);
+
 
             if (useLocalDb)
             {
@@ -46,12 +51,15 @@ namespace msih.p4g.Server.Common.Data.Extensions
             }
         }
 
+
+
         /// <summary>
         /// Configures DbContextOptions for a specific context type based on environment and configuration
         /// </summary>
         /// <typeparam name="TContext">The DbContext type</typeparam>
         /// <param name="optionsBuilder">The DbContextOptionsBuilder</param>
         /// <param name="configuration">The configuration</param>
+
         /// <param name="hostEnvironment">The hosting environment</param>
         public static void ConfigureDbContextOptions<TContext>(
             DbContextOptionsBuilder<TContext> optionsBuilder,
@@ -88,6 +96,7 @@ namespace msih.p4g.Server.Common.Data.Extensions
             DbContextOptionsBuilder<TContext> optionsBuilder,
             IConfiguration configuration,
             bool isDevelopment)
+
             where TContext : DbContext
         {
             // Determine if we should use SQLite based on configuration

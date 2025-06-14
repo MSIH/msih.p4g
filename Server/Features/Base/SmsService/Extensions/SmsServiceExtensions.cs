@@ -18,6 +18,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Extensions
         /// <param name="configuration">The configuration</param>
         /// <param name="hostEnvironment">The hosting environment</param>
         /// <returns>The service collection for chaining</returns>
+
         public static IServiceCollection AddSmsServices(
             this IServiceCollection services,
             IConfiguration configuration,
@@ -28,6 +29,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Extensions
                 services,
                 configuration,
                 hostEnvironment);
+
 
             // Register services
             services.AddScoped<ISmsService, TwilioSmsService>();

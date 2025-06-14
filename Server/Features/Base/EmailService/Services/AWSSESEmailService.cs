@@ -3,33 +3,65 @@ using Amazon.SimpleEmail;
 using Amazon.SimpleEmail.Model;
 using msih.p4g.Server.Common.Utilities;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
+using msih.p4g.Server.Features.Base.Settings.Interfaces;
 using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.Base.EmailService.Services
 {
     public class AWSSESEmailService : IEmailService
     {
-        private readonly string _accessKey;
-        private readonly string _secretKey;
-        private readonly string _region;
-        private readonly string _fromEmail;
-        private readonly string _fromName;
+        private readonly IConfiguration _configuration;
+        private readonly ISettingsService _settingsService;
         private readonly ILogger<AWSSESEmailService> _logger;
 
-        public AWSSESEmailService(IConfiguration configuration, ILogger<AWSSESEmailService> logger)
+        // Cache for settings to avoid DB lookups on every email
+        private string _accessKey;
+        private string _secretKey;
+        private string _region;
+        private string _fromEmail;
+        private string _fromName;
+        private bool _settingsInitialized = false;
+
+        public AWSSESEmailService(
+            IConfiguration configuration, 
+            ISettingsService settingsService,
+            ILogger<AWSSESEmailService> logger)
         {
-            _accessKey = configuration["AWS:SES:AccessKey"] ?? throw new Exception("AWS SES AccessKey not configured");
-            _secretKey = configuration["AWS:SES:SecretKey"] ?? throw new Exception("AWS SES SecretKey not configured");
-            _region = configuration["AWS:SES:Region"] ?? "us-east-1";
-            _fromEmail = configuration["AWS:SES:FromEmail"] ?? throw new Exception("AWS SES FromEmail not configured");
-            _fromName = configuration["AWS:SES:FromName"] ?? "NoReply";
+            _configuration = configuration;
+            _settingsService = settingsService;
             _logger = logger;
+        }
+
+        private async Task InitializeSettingsAsync()
+        {
+            if (_settingsInitialized)
+                return;
+
+            // Try to get settings from the settings service (DB first, then appsettings, then environment)
+            _accessKey = await _settingsService.GetValueAsync("AWS:SES:AccessKey") 
+                ?? throw new Exception("AWS SES AccessKey not configured");
+            
+            _secretKey = await _settingsService.GetValueAsync("AWS:SES:SecretKey") 
+                ?? throw new Exception("AWS SES SecretKey not configured");
+            
+            _region = await _settingsService.GetValueAsync("AWS:SES:Region") 
+                ?? "us-east-1";
+            
+            _fromEmail = await _settingsService.GetValueAsync("AWS:SES:FromEmail") 
+                ?? throw new Exception("AWS SES FromEmail not configured");
+            
+            _fromName = await _settingsService.GetValueAsync("AWS:SES:FromName") 
+                ?? "NoReply";
+
+            _settingsInitialized = true;
         }
 
         public async Task SendEmailAsync(string to, string from, string subject, string htmlContent)
         {
             try
             {
+                await InitializeSettingsAsync();
+
                 if (!IsValidEmail(to))
                 {
                     _logger.LogError($"Invalid recipient email address: {to}");
