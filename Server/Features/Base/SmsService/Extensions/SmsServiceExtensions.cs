@@ -23,13 +23,12 @@ namespace msih.p4g.Server.Features.Base.SmsService.Extensions
         /// <returns>The service collection for chaining</returns>
         public static IServiceCollection AddSmsServices(this IServiceCollection services, IConfiguration configuration)
         {            
-            // Add SMS DbContext
-            services.AddDbContext<SmsDbContext>(options =>
-                options.UseMySql(
-                    configuration.GetConnectionString("DefaultConnection"),
-                    new MySqlServerVersion(new Version(8, 0, 26)),
-                    mySqlOptions => mySqlOptions.MigrationsAssembly("msih.p4g")
-                ));
+            // Add SMS DbContext with the appropriate provider
+            var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+            DatabaseConfigurationHelper.AddConfiguredDbContext<SmsDbContext>(
+                services, 
+                configuration, 
+                isDevelopment);
             
             // Register services
             services.AddScoped<ISmsService, TwilioSmsService>();
