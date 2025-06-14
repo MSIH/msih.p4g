@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -20,6 +14,7 @@ using msih.p4g.Server.Features.Base.Settings.Interfaces;
 using msih.p4g.Server.Features.Base.Settings.Services;
 using msih.p4g.Server.Features.Base.SmsService.Extensions;
 using msih.p4g.Shared.Models;
+using Microsoft.EntityFrameworkCore; // Add this using for EF Core migrations
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,8 +56,14 @@ builder.Services.AddPaymentServices(builder.Configuration, builder.Environment);
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 
-
 var app = builder.Build();
+
+// Apply pending migrations and create database/tables if needed
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -76,12 +77,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-
-
 app.MapRazorPages();
 app.MapBlazorHub();
 // Update the fallback route to point to your new location
 app.MapFallbackToPage("/_Host");
-
 
 app.Run();
