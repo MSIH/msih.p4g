@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
-using System.IO;
 using msih.p4g.Server.Common.Data.Extensions;
 
 namespace msih.p4g.Server.Features.Base.SmsService.Data
@@ -19,13 +17,17 @@ namespace msih.p4g.Server.Features.Base.SmsService.Data
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile("appsettings.Development.json", optional: true)
                 .Build();
-            
+
+            // For design-time we need to use the environment variable approach
+            // since we don't have access to IHostEnvironment through DI
+            bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+
             // Use the centralized database configuration logic
             var optionsBuilder = new DbContextOptionsBuilder<SmsDbContext>();
             DatabaseConfigurationHelper.ConfigureDbContextOptions(
-                optionsBuilder, 
-                configuration, 
-                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development");
+                optionsBuilder,
+                configuration,
+                isDevelopment);
 
             return new SmsDbContext(optionsBuilder.Options);
         }

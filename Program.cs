@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using msih.p4g.Server.Common.Data;
+﻿using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.EmailService.Services;
@@ -12,11 +11,10 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 // Add Entity Framework with conditional provider selection based on environment
-var isDevelopment = builder.Environment.IsDevelopment();
 DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
-    builder.Services, 
-    builder.Configuration, 
-    isDevelopment);
+    builder.Services,
+    builder.Configuration,
+    builder.Environment);
 
 // Register Email Service - choose one implementation based on configuration or use a factory
 string emailProvider = builder.Configuration["EmailProvider"] ?? "SendGrid";
@@ -30,7 +28,7 @@ else
 }
 
 // Register SMS Service and related dependencies
-builder.Services.AddSmsServices(builder.Configuration);
+builder.Services.AddSmsServices(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 
