@@ -44,6 +44,7 @@
     <Folder Include="Server\Common\Interfaces\" />
     <Folder Include="Server\Common\Services\" />
     <Folder Include="Server\Features\Base\ProfileService\Data\Migrations\" />
+    <Folder Include="Server\Features\Base\UserService\Data\Migrations\" />
     <Folder Include="Shared\Dto\" />
   </ItemGroup>
 
