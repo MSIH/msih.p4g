@@ -1,6 +1,14 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
+using msih.p4g.Server.Common.Models;
+using msih.p4g.Server.Features.Base.ProfileService.Model;
+using msih.p4g.Server.Features.DonorService.Model;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Features.Base.UserService.Models
 {
@@ -13,14 +21,14 @@ namespace msih.p4g.Server.Features.Base.UserService.Models
 
     public class User : BaseEntity
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public new int Id { get; set; } // Ensure auto-generated key
-
         [Required, EmailAddress]
         public string Email { get; set; }
         [Required]
         public UserRole Role { get; set; }
+        [NotMapped]
+        public virtual Profile Profile { get; set; }
+        [NotMapped]
+        public virtual Donor Donor { get; set; }
 
         public void ChangeRole(UserRole newRole)
         {

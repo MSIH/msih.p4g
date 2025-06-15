@@ -11,9 +11,9 @@ using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.PaymentService.Data;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
+using msih.p4g.Server.Features.Base.PaymentService.Models;
 using msih.p4g.Server.Features.Base.PaymentService.Repositories;
 using msih.p4g.Server.Features.Base.PaymentService.Services;
-using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Features.Base.PaymentService.Extensions
 {

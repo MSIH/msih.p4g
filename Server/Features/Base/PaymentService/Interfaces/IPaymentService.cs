@@ -4,7 +4,6 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Features.Base.PaymentService.Models;
-using msih.p4g.Shared.Models;
 using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.Base.PaymentService.Interfaces

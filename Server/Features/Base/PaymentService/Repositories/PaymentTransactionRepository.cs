@@ -6,12 +6,12 @@
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.PaymentService.Data;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
-using msih.p4g.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using msih.p4g.Server.Features.Base.PaymentService.Models;
 
 namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
 {

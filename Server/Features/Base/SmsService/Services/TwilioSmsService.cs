@@ -1,12 +1,18 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Common.Utilities;
-using msih.p4g.Server.Features.Base.Settings.Interfaces;
+using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.SmsService.Interfaces;
-using msih.p4g.Shared.Models;
+using msih.p4g.Server.Features.Base.SmsService.Model;
 using Newtonsoft.Json;
 using Twilio;
 using Twilio.Exceptions;
@@ -47,18 +53,18 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
                 return;
 
             // Try to get settings from the settings service (DB first, then appsettings, then environment)
-            _accountSid = await _settingsService.GetValueAsync("Twilio:AccountSid") 
+            _accountSid = await _settingsService.GetValueAsync("Twilio:AccountSid")
                 ?? throw new Exception("Twilio AccountSid not configured");
-            
-            _authToken = await _settingsService.GetValueAsync("Twilio:AuthToken") 
+
+            _authToken = await _settingsService.GetValueAsync("Twilio:AuthToken")
                 ?? throw new Exception("Twilio AuthToken not configured");
-            
-            _fromNumber = await _settingsService.GetValueAsync("Twilio:FromNumber") 
+
+            _fromNumber = await _settingsService.GetValueAsync("Twilio:FromNumber")
                 ?? throw new Exception("Twilio FromNumber not configured");
 
             // Initialize Twilio client
             TwilioClient.Init(_accountSid, _authToken);
-            
+
             _settingsInitialized = true;
         }
 
@@ -73,7 +79,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
             try
             {
                 await InitializeSettingsAsync();
-                
+
                 if (!IsValidPhoneNumber(to))
                 {
                     _logger.LogError($"Invalid phone number format: {to}");
@@ -125,7 +131,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
         public async Task<ValidatedPhoneNumber> ValidatePhoneNumberAsync(string phoneNumber, bool useCache = true, bool usePaidService = false)
         {
             await InitializeSettingsAsync();
-            
+
             if (string.IsNullOrWhiteSpace(phoneNumber))
             {
                 throw new ArgumentException("Phone number cannot be null or empty", nameof(phoneNumber));

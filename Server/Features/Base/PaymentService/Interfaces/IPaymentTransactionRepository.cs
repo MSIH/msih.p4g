@@ -4,7 +4,7 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Common.Data.Repositories;
-using msih.p4g.Shared.Models;
+using msih.p4g.Server.Features.Base.PaymentService.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

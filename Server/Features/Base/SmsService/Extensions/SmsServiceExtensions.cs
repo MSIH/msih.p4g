@@ -6,8 +6,8 @@
 using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Features.Base.SmsService.Data;
 using msih.p4g.Server.Features.Base.SmsService.Interfaces;
+using msih.p4g.Server.Features.Base.SmsService.Model;
 using msih.p4g.Server.Features.Base.SmsService.Services;
-using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Features.Base.SmsService.Extensions
 {

@@ -1,6 +1,6 @@
 @page "/admin/donors"
-@using msih.p4g.Shared.Models
 @using msih.p4g.Server.Features.Base.DonorService.Interfaces
+@using msih.p4g.Server.Features.DonorService.Model
 @inject IDonorService DonorService
 @inject IJSRuntime JSRuntime
 
@@ -25,12 +25,10 @@ else
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Mobile</th>
+                    <th>DonorId</th>
+                    <th>UserId</th>
+                    <th>PaymentProcessorDonorId</th>
                     <th>IsActive</th>
-                    <th>Consent (Text/Phone/Email/Mail)</th>
-                    <th>Unsubscribe (Text/Phone/Email/Mail)</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -38,23 +36,11 @@ else
                 @foreach (var donor in filteredDonors)
                 {
                     <tr>
-                        <td>@donor.FullName</td>
-                        <td>@donor.EmailAddress</td>
-                        <td>@donor.MobileNumber</td>
+                        <td>@donor.DonorId</td>
+                        <td>@donor.UserId</td>
+                        <td>@donor.PaymentProcessorDonorId</td>
                         <td>
                             <input type="checkbox" @bind="donor.IsActive" />
-                        </td>
-                        <td>
-                            <input type="checkbox" @bind="donor.ConsentReceiveText" title="Text" />
-                            <input type="checkbox" @bind="donor.ConsentReceivePhone" title="Phone" />
-                            <input type="checkbox" @bind="donor.ConsentReceiveEmail" title="Email" />
-                            <input type="checkbox" @bind="donor.ConsentReceiveMail" title="Mail" />
-                        </td>
-                        <td>
-                            <input type="checkbox" @bind="donor.UnsubscribeMobile" title="Text" />
-                            <input type="checkbox" @bind="donor.UnsubscribePhone" title="Phone" />
-                            <input type="checkbox" @bind="donor.UnsubscribeEmail" title="Email" />
-                            <input type="checkbox" @bind="donor.UnsubscribeMail" title="Mail" />
                         </td>
                         <td>
                             <button class="btn btn-sm btn-success me-1" @onclick="() => SaveDonor(donor)">Save</button>
@@ -68,7 +54,6 @@ else
     </div>
 }
 
-@* Add/Edit Modal *@
 @if (showModal)
 {
     <div class="modal fade show" style="display:block;" tabindex="-1">
@@ -83,20 +68,12 @@ else
                         <DataAnnotationsValidator />
                         <ValidationSummary />
                         <div class="mb-2">
-                            <label>First Name</label>
-                            <InputText class="form-control" @bind-Value="editingDonor.FirstName" />
+                            <label>UserId</label>
+                            <InputNumber class="form-control" @bind-Value="editingDonor.UserId" />
                         </div>
                         <div class="mb-2">
-                            <label>Last Name</label>
-                            <InputText class="form-control" @bind-Value="editingDonor.LastName" />
-                        </div>
-                        <div class="mb-2">
-                            <label>Email</label>
-                            <InputText class="form-control" @bind-Value="editingDonor.EmailAddress" />
-                        </div>
-                        <div class="mb-2">
-                            <label>Mobile</label>
-                            <InputText class="form-control" @bind-Value="editingDonor.MobileNumber" />
+                            <label>Payment Processor Donor Id</label>
+                            <InputText class="form-control" @bind-Value="editingDonor.PaymentProcessorDonorId" />
                         </div>
                         <div class="mb-2">
                             <label>IsActive</label>
@@ -112,7 +89,6 @@ else
     <div class="modal-backdrop fade show"></div>
 }
 
-@* Delete Modal *@
 @if (showDeleteModal)
 {
     <div class="modal fade show" style="display:block;" tabindex="-1">
@@ -123,7 +99,7 @@ else
                     <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to delete <strong>@deletingDonor?.FullName</strong>?</p>
+                    <p>Are you sure you want to delete <strong>@deletingDonor?.DonorId</strong>?</p>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CloseDeleteModal">Cancel</button>
@@ -141,14 +117,13 @@ else
     private bool isLoading = true;
     private bool showModal = false;
     private bool showDeleteModal = false;
-    private Donor editingDonor;
-    private Donor deletingDonor;
+    private Donor? editingDonor;
+    private Donor? deletingDonor;
 
     private IEnumerable<Donor> filteredDonors => string.IsNullOrWhiteSpace(searchTerm)
         ? donors
-        : donors.Where(d => d.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-            || (d.EmailAddress?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
-            || (d.MobileNumber?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
+        : donors.Where(d => (d.DonorId?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (d.PaymentProcessorDonorId?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
 
     protected override async Task OnInitializedAsync()
     {
@@ -177,21 +152,7 @@ else
             DonorId = donor.DonorId,
             UserId = donor.UserId,
             PaymentProcessorDonorId = donor.PaymentProcessorDonorId,
-            MobileNumber = donor.MobileNumber,
-            ConsentReceiveText = donor.ConsentReceiveText,
-            UnsubscribeMobile = donor.UnsubscribeMobile,
-            PhoneNumber = donor.PhoneNumber,
-            ConsentReceivePhone = donor.ConsentReceivePhone,
-            UnsubscribePhone = donor.UnsubscribePhone,
-            EmailAddress = donor.EmailAddress,
-            ConsentReceiveEmail = donor.ConsentReceiveEmail,
-            UnsubscribeEmail = donor.UnsubscribeEmail,
-            ConsentReceiveMail = donor.ConsentReceiveMail,
-            UnsubscribeMail = donor.UnsubscribeMail,
-            FirstName = donor.FirstName,
-            LastName = donor.LastName,
-            IsActive = donor.IsActive,
-            Address = donor.Address
+            IsActive = donor.IsActive
         };
         showModal = true;
     }
@@ -204,16 +165,19 @@ else
 
     private async Task SaveDonor()
     {
-        if (editingDonor.Id == 0)
+        if (editingDonor != null)
         {
-            await DonorService.AddAsync(editingDonor);
+            if (editingDonor.Id == 0)
+            {
+                await DonorService.AddAsync(editingDonor);
+            }
+            else
+            {
+                await DonorService.UpdateAsync(editingDonor);
+            }
+            showModal = false;
+            await LoadDonors();
         }
-        else
-        {
-            await DonorService.UpdateAsync(editingDonor);
-        }
-        showModal = false;
-        await LoadDonors();
     }
 
     private async Task SaveDonor(Donor donor)

@@ -1,17 +1,18 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using Braintree;
-using Microsoft.Extensions.Logging;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Models;
-using msih.p4g.Server.Features.Base.Settings.Interfaces;
-using msih.p4g.Shared.Models;
-using System;
-using System.Threading.Tasks;
-using System.Linq;
+using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using Newtonsoft.Json;
 using BraintreeEnvironment = Braintree.Environment;
 
@@ -25,21 +26,21 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
         private readonly ILogger<BraintreePaymentService> _logger;
         private readonly ISettingsService _settingsService;
         private readonly IPaymentTransactionRepository _transactionRepository;
-        
+
         private BraintreeGateway _gateway = null!;
         private bool _isInitialized = false;
-        
+
         // Cached settings
         private string _merchantId = null!;
         private string _publicKey = null!;
         private string _privateKey = null!;
         private string _environment = null!;
-        
+
         /// <summary>
         /// Gets the name of the payment provider
         /// </summary>
         public string ProviderName => "Braintree";
-        
+
         public BraintreePaymentService(
             ILogger<BraintreePaymentService> logger,
             ISettingsService settingsService,
@@ -49,7 +50,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
             _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
             _transactionRepository = transactionRepository ?? throw new ArgumentNullException(nameof(transactionRepository));
         }
-        
+
         /// <summary>
         /// Initializes the Braintree gateway with configuration from settings
         /// </summary>
@@ -57,21 +58,21 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
         {
             if (_isInitialized)
                 return;
-                
+
             try
             {
                 // Get settings from the settings service
-                _merchantId = await _settingsService.GetValueAsync("Braintree:MerchantId") 
+                _merchantId = await _settingsService.GetValueAsync("Braintree:MerchantId")
                     ?? throw new Exception("Braintree MerchantId not configured");
-                    
-                _publicKey = await _settingsService.GetValueAsync("Braintree:PublicKey") 
+
+                _publicKey = await _settingsService.GetValueAsync("Braintree:PublicKey")
                     ?? throw new Exception("Braintree PublicKey not configured");
-                    
-                _privateKey = await _settingsService.GetValueAsync("Braintree:PrivateKey") 
+
+                _privateKey = await _settingsService.GetValueAsync("Braintree:PrivateKey")
                     ?? throw new Exception("Braintree PrivateKey not configured");
-                    
+
                 _environment = await _settingsService.GetValueAsync("Braintree:Environment") ?? "Sandbox";
-                
+
                 // Create the gateway based on environment
                 if (_environment.Equals("Production", StringComparison.OrdinalIgnoreCase))
                 {
@@ -89,7 +90,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                         _publicKey,
                         _privateKey);
                 }
-                
+
                 _isInitialized = true;
                 _logger.LogInformation("Braintree payment service initialized successfully");
             }
@@ -99,7 +100,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Generates a client token for the Braintree client SDK
         /// </summary>
@@ -108,17 +109,17 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
             try
             {
                 await InitializeAsync();
-                
+
                 // Create a Braintree token request
                 var braintreeTokenRequest = new Braintree.ClientTokenRequest();
-                
+
                 if (!string.IsNullOrEmpty(request.CustomerId))
                 {
                     braintreeTokenRequest.CustomerId = request.CustomerId;
                 }
-                
+
                 var clientToken = await _gateway.ClientToken.GenerateAsync(braintreeTokenRequest);
-                
+
                 return new ClientTokenResponse
                 {
                     Success = true,
@@ -135,7 +136,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                 };
             }
         }
-        
+
         /// <summary>
         /// Processes a payment using Braintree
         /// </summary>
@@ -144,7 +145,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
             try
             {
                 await InitializeAsync();
-                
+
                 var transactionRequest = new TransactionRequest
                 {
                     Amount = request.Amount,
@@ -156,12 +157,12 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                         StoreInVaultOnSuccess = false
                     }
                 };
-                
+
                 if (!string.IsNullOrEmpty(request.DeviceData))
                 {
                     transactionRequest.DeviceData = request.DeviceData;
                 }
-                
+
                 if (!string.IsNullOrEmpty(request.CustomerEmail))
                 {
                     transactionRequest.Customer = new CustomerRequest
@@ -169,13 +170,13 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                         Email = request.CustomerEmail
                     };
                 }
-                
+
                 var result = await _gateway.Transaction.SaleAsync(transactionRequest);
-                
+
                 if (result.IsSuccess())
                 {
                     var transaction = result.Target;
-                    
+
                     // Save the transaction to the database
                     var paymentTransaction = new PaymentTransaction
                     {
@@ -188,7 +189,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                         ProcessedOn = DateTime.UtcNow,
                         CustomerEmail = request.CustomerEmail ?? "",
                         OrderReference = request.OrderReference ?? "",
-                        AdditionalData = JsonConvert.SerializeObject(new 
+                        AdditionalData = JsonConvert.SerializeObject(new
                         {
                             CardType = transaction.CreditCard?.CardType.ToString(),
                             LastFour = transaction.CreditCard?.LastFour,
@@ -197,9 +198,9 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                         }),
                         CreatedBy = "System"
                     };
-                    
+
                     await _transactionRepository.AddAsync(paymentTransaction);
-                    
+
                     return new PaymentResponse
                     {
                         Success = true,
@@ -214,12 +215,12 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                 else
                 {
                     var errorMessage = result.Message;
-                    
+
                     if (result.Errors.DeepCount > 0)
                     {
                         errorMessage = string.Join(", ", result.Errors.DeepAll().Select(e => e.Message));
                     }
-                    
+
                     // Save the failed transaction to the database
                     var paymentTransaction = new PaymentTransaction
                     {
@@ -235,9 +236,9 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                         ErrorMessage = errorMessage,
                         CreatedBy = "System"
                     };
-                    
+
                     await _transactionRepository.AddAsync(paymentTransaction);
-                    
+
                     return new PaymentResponse
                     {
                         Success = false,
@@ -252,7 +253,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing payment with Braintree");
-                
+
                 // Save the exception to the database
                 var paymentTransaction = new PaymentTransaction
                 {
@@ -268,9 +269,9 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                     ErrorMessage = ex.Message,
                     CreatedBy = "System"
                 };
-                
+
                 await _transactionRepository.AddAsync(paymentTransaction);
-                
+
                 return new PaymentResponse
                 {
                     Success = false,
@@ -280,7 +281,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                 };
             }
         }
-        
+
         /// <summary>
         /// Processes a refund through Braintree
         /// </summary>
@@ -289,9 +290,9 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
             try
             {
                 await InitializeAsync();
-                
+
                 Result<Transaction> result;
-                
+
                 // If amount is specified, do a partial refund
                 if (request.Amount.HasValue)
                 {
@@ -302,28 +303,28 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                     // Otherwise do a full refund
                     result = await _gateway.Transaction.RefundAsync(request.TransactionId);
                 }
-                
+
                 if (result.IsSuccess())
                 {
                     var refundTransaction = result.Target;
-                    
+
                     // Get the original transaction
                     var originalTransaction = await GetTransactionDetailsAsync(request.TransactionId);
-                    
+
                     if (originalTransaction != null)
                     {
                         // Update the original transaction status
                         var refundedStatus = request.Amount.HasValue && request.Amount.Value < originalTransaction.Amount
                             ? PaymentStatus.PartiallyRefunded
                             : PaymentStatus.Refunded;
-                            
+
                         await _transactionRepository.UpdateStatusAsync(
-                            originalTransaction.Id, 
-                            refundedStatus, 
-                            null, 
+                            originalTransaction.Id,
+                            refundedStatus,
+                            null,
                             "System");
                     }
-                    
+
                     // Save the refund transaction
                     var refundRecord = new PaymentTransaction
                     {
@@ -336,16 +337,16 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                         ProcessedOn = DateTime.UtcNow,
                         CustomerEmail = originalTransaction?.CustomerEmail ?? "",
                         OrderReference = originalTransaction?.OrderReference ?? "",
-                        AdditionalData = JsonConvert.SerializeObject(new 
+                        AdditionalData = JsonConvert.SerializeObject(new
                         {
                             OriginalTransactionId = request.TransactionId,
                             Reason = request.Reason
                         }),
                         CreatedBy = "System"
                     };
-                    
+
                     await _transactionRepository.AddAsync(refundRecord);
-                    
+
                     return new RefundResponse
                     {
                         Success = true,
@@ -359,12 +360,12 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                 else
                 {
                     var errorMessage = result.Message;
-                    
+
                     if (result.Errors.DeepCount > 0)
                     {
                         errorMessage = string.Join(", ", result.Errors.DeepAll().Select(e => e.Message));
                     }
-                    
+
                     return new RefundResponse
                     {
                         Success = false,
@@ -384,7 +385,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                 };
             }
         }
-        
+
         /// <summary>
         /// Voids a transaction through Braintree
         /// </summary>
@@ -393,34 +394,34 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
             try
             {
                 await InitializeAsync();
-                
+
                 var result = await _gateway.Transaction.VoidAsync(transactionId);
-                
+
                 if (result.IsSuccess())
                 {
                     // Update the transaction in our database
                     var transaction = await _transactionRepository.GetByTransactionIdAsync(transactionId);
-                    
+
                     if (transaction != null)
                     {
                         await _transactionRepository.UpdateStatusAsync(
-                            transaction.Id, 
-                            PaymentStatus.Voided, 
-                            null, 
+                            transaction.Id,
+                            PaymentStatus.Voided,
+                            null,
                             "System");
                     }
-                    
+
                     return true;
                 }
                 else
                 {
                     var errorMessage = result.Message;
-                    
+
                     if (result.Errors.DeepCount > 0)
                     {
                         errorMessage = string.Join(", ", result.Errors.DeepAll().Select(e => e.Message));
                     }
-                    
+
                     _logger.LogError($"Failed to void transaction {transactionId}: {errorMessage}");
                     return false;
                 }
@@ -431,7 +432,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Gets transaction details from Braintree and our database
         /// </summary>
@@ -441,17 +442,17 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
             {
                 // First check our database
                 var transaction = await _transactionRepository.GetByTransactionIdAsync(transactionId);
-                
+
                 if (transaction != null)
                 {
                     return transaction;
                 }
-                
+
                 // If not found, try to get it from Braintree
                 await InitializeAsync();
-                
+
                 var braintreeTransaction = await _gateway.Transaction.FindAsync(transactionId);
-                
+
                 if (braintreeTransaction != null)
                 {
                     // Create a record in our database
@@ -463,7 +464,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                         Currency = braintreeTransaction.CurrencyIsoCode ?? "USD",
                         Status = MapBraintreeStatusToPaymentStatus(braintreeTransaction.Status),
                         ProcessedOn = braintreeTransaction.CreatedAt ?? DateTime.UtcNow,
-                        AdditionalData = JsonConvert.SerializeObject(new 
+                        AdditionalData = JsonConvert.SerializeObject(new
                         {
                             CardType = braintreeTransaction.CreditCard?.CardType.ToString(),
                             LastFour = braintreeTransaction.CreditCard?.LastFour,
@@ -476,11 +477,11 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                         ErrorMessage = "",
                         CreatedBy = "System"
                     };
-                    
+
                     await _transactionRepository.AddAsync(paymentTransaction);
                     return paymentTransaction;
                 }
-                
+
                 return null;
             }
             catch (Exception ex)
@@ -489,7 +490,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                 return null;
             }
         }
-        
+
         /// <summary>
         /// Updates a transaction's status from Braintree
         /// </summary>
@@ -498,38 +499,38 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
             try
             {
                 await InitializeAsync();
-                
+
                 // Get the transaction from our database
                 var transaction = await _transactionRepository.GetByTransactionIdAsync(transactionId);
-                
+
                 if (transaction == null)
                 {
                     _logger.LogWarning($"Transaction {transactionId} not found in database");
                     return null;
                 }
-                
+
                 // Get the latest status from Braintree
                 var braintreeTransaction = await _gateway.Transaction.FindAsync(transactionId);
-                
+
                 if (braintreeTransaction != null)
                 {
                     var newStatus = MapBraintreeStatusToPaymentStatus(braintreeTransaction.Status);
-                    
+
                     // Update the status if it has changed
                     if (transaction.Status != newStatus)
                     {
                         await _transactionRepository.UpdateStatusAsync(
-                            transaction.Id, 
-                            newStatus, 
-                            null, 
+                            transaction.Id,
+                            newStatus,
+                            null,
                             "System");
-                            
+
                         transaction.Status = newStatus;
                     }
-                    
+
                     return transaction;
                 }
-                
+
                 return transaction;
             }
             catch (Exception ex)
@@ -538,7 +539,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                 return null;
             }
         }
-        
+
         /// <summary>
         /// Maps Braintree transaction status to our PaymentStatus enum
         /// </summary>
@@ -548,30 +549,30 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
             {
                 case TransactionStatus.AUTHORIZED:
                     return PaymentStatus.Authorized;
-                    
+
                 case TransactionStatus.AUTHORIZING:
                     return PaymentStatus.Pending;
-                    
+
                 case TransactionStatus.SETTLEMENT_PENDING:
                     return PaymentStatus.Settling;
-                    
+
                 case TransactionStatus.SETTLED:
                     return PaymentStatus.Settled;
-                    
+
                 case TransactionStatus.SUBMITTED_FOR_SETTLEMENT:
                     return PaymentStatus.Settling;
-                    
+
                 case TransactionStatus.SETTLING:
                     return PaymentStatus.Settling;
-                    
+
                 case TransactionStatus.VOIDED:
                     return PaymentStatus.Voided;
-                    
+
                 case TransactionStatus.PROCESSOR_DECLINED:
                 case TransactionStatus.GATEWAY_REJECTED:
                 case TransactionStatus.FAILED:
                     return PaymentStatus.Failed;
-                    
+
                 default:
                     return PaymentStatus.Pending;
             }
