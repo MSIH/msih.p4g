@@ -7,8 +7,89 @@
 @page "/users"
 @namespace msih.p4g.Client.Features.UserManagement.Pages
 
-<PageTitle>Users</PageTitle>
+@using msih.p4g.Server.Features.Base.UserService.Models
+@inject msih.p4g.Server.Features.Base.UserService.Services.UserService UserManagementService
+@inject NavigationManager Navigation
+
+<PageTitle>User Management</PageTitle>
 
 <h1>User Management</h1>
 
-<p>This is your user management page.</p>
+@if (users == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var user in users)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>
+                    <select @onchange="e => ChangeRole(user, e.Value.ToString())" value="@user.Role">
+                        @foreach (var role in Enum.GetValues<UserRole>())
+                        {
+                            <option value="@role">@role</option>
+                        }
+                    </select>
+                </td>
+                <td>
+                    <input type="checkbox" checked="@user.IsActive" @onchange="e => ToggleActive(user)" />
+                </td>
+                <td>
+                    <button class="btn btn-primary" @onclick="() => SaveUser(user)">Save</button>
+                    <button class="btn btn-danger ms-2" @onclick="() => DeleteUser(user)">Delete</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<User> users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get all users, including inactive, but not deleted
+        users = (await UserManagementService.GetAllAsync(includeInactive: true)).ToList();
+    }
+
+    private void ChangeRole(User user, string newRole)
+    {
+        if (Enum.TryParse<UserRole>(newRole, out var role))
+        {
+            user.ChangeRole(role);
+        }
+    }
+
+    private async Task ToggleActive(User user)
+    {
+        user.IsActive = !user.IsActive;
+        await UserManagementService.SetActiveAsync(user.Id, user.IsActive);
+        StateHasChanged();
+    }
+
+    private async Task SaveUser(User user)
+    {
+        await UserManagementService.UpdateAsync(user);
+        StateHasChanged();
+    }
+
+    private async Task DeleteUser(User user)
+    {
+        await UserManagementService.DeleteAsync(user.Id);
+        users.Remove(user);
+        StateHasChanged();
+    }
+}
