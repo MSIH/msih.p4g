@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.SmsService.Data;
 using msih.p4g.Server.Features.Base.SmsService.Interfaces;
-using msih.p4g.Shared.Models;
+using msih.p4g.Server.Features.Base.SmsService.Model;
 using System;
 using System.Threading.Tasks;
 

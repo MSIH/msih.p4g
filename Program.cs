@@ -4,24 +4,28 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 
-using msih.p4g.Server.Common.Data;
+using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.EmailService.Services;
 using msih.p4g.Server.Features.Base.PaymentService.Extensions;
-using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
-using msih.p4g.Server.Features.Base.SettingsService.Services;
-using msih.p4g.Server.Features.Base.SmsService.Extensions;
-using msih.p4g.Shared.Models;
-using msih.p4g.Server.Features.CampaignService.Data;
-using msih.p4g.Server.Features.DonorService.Interfaces;
-using msih.p4g.Server.Features.DonorService.Services;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Repositories;
 using msih.p4g.Server.Features.Base.ProfileService.Services;
+using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
+using msih.p4g.Server.Features.Base.SettingsService.Model; // Add this using for EF Core migrations
+using msih.p4g.Server.Features.Base.SettingsService.Services;
+using msih.p4g.Server.Features.Base.SmsService.Extensions;
 using msih.p4g.Server.Features.Base.UserService.Data;
-using Microsoft.EntityFrameworkCore; // Add this using for EF Core migrations
+using msih.p4g.Server.Features.CampaignService.Data;
+using msih.p4g.Server.Features.DonorService.Interfaces;
+using msih.p4g.Server.Features.DonorService.Services;
+using msih.p4g.Server.Features.Base.SmsService.Data;
+using msih.p4g.Server.Features.Base.PaymentService.Data;
+using msih.p4g.Server.Features.Base.SettingsService.Data;
+using msih.p4g.Server.Features.DonorService.Data;
+using msih.p4g.Server.Features.Base.ProfileService.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +45,36 @@ DatabaseConfigurationHelper.AddConfiguredDbContext<CampaignDbContext>(
 
 // Register UserDbContext for DI and migrations
 DatabaseConfigurationHelper.AddConfiguredDbContext<UserDbContext>(
+    builder.Services,
+    builder.Configuration,
+    builder.Environment);
+
+// Register SmsDbContext for DI and migrations
+DatabaseConfigurationHelper.AddConfiguredDbContext<SmsDbContext>(
+    builder.Services,
+    builder.Configuration,
+    builder.Environment);
+
+// Register PaymentDbContext for DI and migrations
+DatabaseConfigurationHelper.AddConfiguredDbContext<PaymentDbContext>(
+    builder.Services,
+    builder.Configuration,
+    builder.Environment);
+
+// Register SettingsDbContext for DI and migrations
+DatabaseConfigurationHelper.AddConfiguredDbContext<SettingsDbContext>(
+    builder.Services,
+    builder.Configuration,
+    builder.Environment);
+
+// Register DonorDbContext for DI and migrations
+DatabaseConfigurationHelper.AddConfiguredDbContext<DonorDbContext>(
+    builder.Services,
+    builder.Configuration,
+    builder.Environment);
+
+// Register ProfileDbContext for DI and migrations
+DatabaseConfigurationHelper.AddConfiguredDbContext<ProfileDbContext>(
     builder.Services,
     builder.Configuration,
     builder.Environment);
@@ -82,6 +116,13 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<CampaignDbContext>();
     dbContext.Database.Migrate();
+    // Migrate all other DbContexts
+    scope.ServiceProvider.GetRequiredService<UserDbContext>().Database.Migrate();
+    scope.ServiceProvider.GetRequiredService<SmsDbContext>().Database.Migrate();
+    scope.ServiceProvider.GetRequiredService<PaymentDbContext>().Database.Migrate();
+    scope.ServiceProvider.GetRequiredService<SettingsDbContext>().Database.Migrate();
+    scope.ServiceProvider.GetRequiredService<DonorDbContext>().Database.Migrate();
+    scope.ServiceProvider.GetRequiredService<ProfileDbContext>().Database.Migrate();
 }
 
 // Configure the HTTP request pipeline.

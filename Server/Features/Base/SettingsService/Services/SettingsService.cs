@@ -5,11 +5,11 @@
  */
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
-using msih.p4g.Shared.Models;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using msih.p4g.Server.Features.Base.SettingsService.Model;
 
 namespace msih.p4g.Server.Features.Base.SettingsService.Services
 {

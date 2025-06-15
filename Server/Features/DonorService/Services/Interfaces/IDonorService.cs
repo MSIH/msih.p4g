@@ -1,4 +1,4 @@
-using msih.p4g.Shared.Models;
+using msih.p4g.Server.Features.DonorService.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

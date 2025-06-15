@@ -3,10 +3,11 @@
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
+using msih.p4g.Server.Common.Models;
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace msih.p4g.Shared.Models
+namespace msih.p4g.Server.Features.Base.PaymentService.Models
 {
     /// <summary>
     /// Represents a payment transaction in the system

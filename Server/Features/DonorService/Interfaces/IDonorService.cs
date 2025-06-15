@@ -1,15 +1,20 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
+using msih.p4g.Server.Features.DonorService.Model;
 
 namespace msih.p4g.Server.Features.DonorService.Interfaces
 {
     public interface IDonorService
     {
-        Task<List<msih.p4g.Shared.Models.Donor>> GetAllAsync();
-        Task<msih.p4g.Shared.Models.Donor?> GetByIdAsync(int id);
-        Task<List<msih.p4g.Shared.Models.Donor>> SearchAsync(string searchTerm);
-        Task<msih.p4g.Shared.Models.Donor> AddAsync(msih.p4g.Shared.Models.Donor donor);
-        Task<bool> UpdateAsync(msih.p4g.Shared.Models.Donor donor);
+        Task<List<Donor>> GetAllAsync();
+        Task<Donor?> GetByIdAsync(int id);
+        Task<List<Donor>> SearchAsync(string searchTerm);
+        Task<Donor> AddAsync(Donor donor);
+        Task<bool> UpdateAsync(Donor donor);
         Task<bool> DeleteAsync(int id);
     }
 }

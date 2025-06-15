@@ -5,7 +5,7 @@
  */
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Data.Repositories;
-using msih.p4g.Shared.Models;
+using msih.p4g.Server.Common.Models;
 
 namespace msih.p4g.Server.Common.Data.Extensions
 {

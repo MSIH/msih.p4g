@@ -1,5 +1,5 @@
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
-using msih.p4g.Shared.Models;
+using msih.p4g.Server.Features.Base.ProfileService.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

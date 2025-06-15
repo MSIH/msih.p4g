@@ -5,7 +5,8 @@
  */
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using msih.p4g.Shared.Models;
+using msih.p4g.Server.Common.Models;
+using msih.p4g.Server.Features.Base.SmsService.Model;
 using System;
 using System.Linq;
 using System.Threading;

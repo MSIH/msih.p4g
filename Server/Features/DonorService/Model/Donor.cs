@@ -3,9 +3,10 @@
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
+using msih.p4g.Server.Common.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace msih.p4g.Shared.Models
+namespace msih.p4g.Server.Features.DonorService.Model
 {
     /// <summary>
     /// Represents a donor entity linked to a user.
@@ -14,8 +15,8 @@ namespace msih.p4g.Shared.Models
     {
         public string? DonorId { get; set; }
         public int UserId { get; set; }
-        [ForeignKey("UserId")]
-        public virtual msih.p4g.Server.Features.Base.UserService.Models.User User { get; set; }
+        [NotMapped] // Prevent EF Core from managing the User table in this context
+        public virtual Base.UserService.Models.User User { get; set; }
         public string? PaymentProcessorDonorId { get; set; }
         // Only donor-specific fields remain. Profile/contact fields are now in Profile.
     }

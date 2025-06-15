@@ -4,10 +4,11 @@
 //  * Unauthorized copying, modification, distribution, or use is prohibited.
 //  */
 
+using msih.p4g.Server.Common.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace msih.p4g.Shared.Models
+namespace msih.p4g.Server.Features.Base.ProfileService.Model
 {
     /// <summary>
     /// Represents a user profile with contact info and consents.
@@ -17,7 +18,8 @@ namespace msih.p4g.Shared.Models
         // Navigation to User
         public int UserId { get; set; }
         [ForeignKey("UserId")]
-        public virtual msih.p4g.Server.Features.Base.UserService.Models.User User { get; set; }
+        [NotMapped]
+        public virtual UserService.Models.User User { get; set; }
 
         // Profile fields
         public int? Age { get; set; }

@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Common.Data.Repositories
 {

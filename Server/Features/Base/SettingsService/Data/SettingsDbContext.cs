@@ -4,7 +4,7 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using Microsoft.EntityFrameworkCore;
-using msih.p4g.Shared.Models;
+using msih.p4g.Server.Features.Base.SettingsService.Model;
 
 namespace msih.p4g.Server.Features.Base.SettingsService.Data
 {

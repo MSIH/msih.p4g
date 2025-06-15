@@ -1,10 +1,16 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using Microsoft.EntityFrameworkCore;
-using msih.p4g.Shared.Models;
+using msih.p4g.Server.Features.CampaignService.Model;
 
 namespace msih.p4g.Server.Features.CampaignService.Data
 {
@@ -14,11 +20,11 @@ namespace msih.p4g.Server.Features.CampaignService.Data
     public class CampaignDbContext : DbContext
     {
         public CampaignDbContext(DbContextOptions<CampaignDbContext> options) : base(options) { }
-        public DbSet<msih.p4g.Shared.Models.Campaign> Campaigns { get; set; }
+        public DbSet<Campaign> Campaigns { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<msih.p4g.Shared.Models.Campaign>(entity =>
+            modelBuilder.Entity<Campaign>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(100);

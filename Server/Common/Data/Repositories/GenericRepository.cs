@@ -9,7 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using msih.p4g.Shared.Models;
+using msih.p4g.Server.Common.Models;
 
 namespace msih.p4g.Server.Common.Data.Repositories
 {
