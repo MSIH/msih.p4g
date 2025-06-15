@@ -8,7 +8,7 @@ using Amazon.SimpleEmail;
 using Amazon.SimpleEmail.Model;
 using msih.p4g.Server.Common.Utilities;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
-using msih.p4g.Server.Features.Base.Settings.Interfaces;
+using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.Base.EmailService.Services
