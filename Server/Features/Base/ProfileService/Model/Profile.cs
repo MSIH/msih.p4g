@@ -4,6 +4,7 @@
 //  * Unauthorized copying, modification, distribution, or use is prohibited.
 //  */
 
+using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -13,6 +14,7 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Model
     /// <summary>
     /// Represents a user profile with contact info and consents.
     /// </summary>
+    [Index(nameof(ReferralCode), IsUnique = true)] // Move the Index attribute to the class level
     public class Profile : BaseEntity
     {
         // Navigation to User
@@ -35,5 +37,12 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Model
         public bool UnsubscribeEmail { get; set; } = false;
         public bool ConsentReceiveMail { get; set; } = false;
         public bool UnsubscribeMail { get; set; } = false;
+
+        /// <summary>
+        /// Unique referral code for the profile.
+        /// </summary>
+        [MaxLength(100)]
+        [Required]
+        public string? ReferralCode { get; set; }
     }
 }

@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -38,6 +32,11 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Data
                 entity.Property(e => e.UnsubscribeEmail);
                 entity.Property(e => e.ConsentReceiveMail);
                 entity.Property(e => e.UnsubscribeMail);
+
+                // ReferralCode: unique and required
+                entity.Property(e => e.ReferralCode).HasMaxLength(100).IsRequired();
+                entity.HasIndex(e => e.ReferralCode).IsUnique();
+
                 entity.OwnsOne(e => e.Address, address =>
                 {
                     address.Property(a => a.Street).HasMaxLength(100).IsRequired(false);
