@@ -10,16 +10,17 @@ using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.EmailService.Services;
 using msih.p4g.Server.Features.Base.PaymentService.Extensions;
-using msih.p4g.Server.Features.Base.Settings.Interfaces;
-using msih.p4g.Server.Features.Base.Settings.Services;
+using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
+using msih.p4g.Server.Features.Base.SettingsService.Services;
 using msih.p4g.Server.Features.Base.SmsService.Extensions;
 using msih.p4g.Shared.Models;
-using msih.p4g.Server.Features.Campaign.Data;
-using msih.p4g.Server.Features.Base.DonorService.Interfaces;
-using msih.p4g.Server.Features.Base.DonorService.Services;
+using msih.p4g.Server.Features.CampaignService.Data;
+using msih.p4g.Server.Features.DonorService.Interfaces;
+using msih.p4g.Server.Features.DonorService.Services;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Repositories;
 using msih.p4g.Server.Features.Base.ProfileService.Services;
+using msih.p4g.Server.Features.Base.UserService.Data;
 using Microsoft.EntityFrameworkCore; // Add this using for EF Core migrations
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +35,12 @@ builder.Services.AddServerSideBlazor();
 
 // Add Entity Framework with conditional provider selection based on environment
 DatabaseConfigurationHelper.AddConfiguredDbContext<CampaignDbContext>(
+    builder.Services,
+    builder.Configuration,
+    builder.Environment);
+
+// Register UserDbContext for DI and migrations
+DatabaseConfigurationHelper.AddConfiguredDbContext<UserDbContext>(
     builder.Services,
     builder.Configuration,
     builder.Environment);

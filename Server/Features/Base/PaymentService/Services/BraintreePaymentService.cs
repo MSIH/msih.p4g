@@ -7,7 +7,7 @@ using Braintree;
 using Microsoft.Extensions.Logging;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Models;
-using msih.p4g.Server.Features.Base.Settings.Interfaces;
+using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Shared.Models;
 using System;
 using System.Threading.Tasks;

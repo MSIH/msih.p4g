@@ -6,13 +6,9 @@ This is a .NET 9 Blazor Server application following clean architecture principl
 ## Licensing & Copyright
 
 All source code in this repository is protected by copyright:
-
-```
 Copyright (c) 2025 MSIH LLC. All rights reserved.
 This file is developed for Make Sure It Happens Inc.
 Unauthorized copying, modification, distribution, or use is prohibited.
-```
-
 ### License Headers
 
 All source code files in this repository must include the appropriate license header. The repository includes two mechanisms to ensure this:
@@ -20,8 +16,6 @@ All source code files in this repository must include the appropriate license he
 1. **For new files**: The `.editorconfig` file configures Visual Studio and VS Code to automatically add license headers to new files.
 
 2. **For existing files**: Use the PowerShell script to add license headers:
-
-```powershell
 # Show help
 .\Add-LicenseHeaders.ps1 -Help
 
@@ -30,8 +24,6 @@ All source code files in this repository must include the appropriate license he
 
 # Add license headers to all files
 .\Add-LicenseHeaders.ps1
-```
-
 ## Project Structure
 
 The application follows a feature-based organization:
@@ -78,6 +70,33 @@ Configuration is handled through a combination of:
 - `appsettings.json` (fallback)
 
 The application uses the Options pattern for strongly-typed configuration.
+
+## Database Migrations
+
+The following migrations have been created for each DbContext:
+
+- **UserDbContext**: `InitialUserDbContextMigration`  
+  Path: `Server/Features/Base/UserService/Data/Migrations`
+- **SmsDbContext**: `InitialSmsDbContextMigration`  
+  Path: `Server/Features/Base/SmsService/Data/Migrations`
+- **CampaignDbContext**: `InitialCampaignDbContextMigration`  
+  Path: `Server/Features/Campaign/Data/Migrations`
+- **PaymentDbContext**: `InitialPaymentDbContextMigration`  
+  Path: `Server/Features/Base/PaymentService/Data/Migrations`
+
+To add a new migration for a specific context, use:
+# Example for UserDbContext
+ dotnet ef migrations add <MigrationName> --context UserDbContext --output-dir Server/Features/Base/UserService/Data/Migrations
+
+# Example for SmsDbContext
+ dotnet ef migrations add <MigrationName> --context SmsDbContext --output-dir Server/Features/Base/SmsService/Data/Migrations
+
+# Example for CampaignDbContext
+ dotnet ef migrations add <MigrationName> --context CampaignDbContext --output-dir Server/Features/Campaign/Data/Migrations
+
+# Example for PaymentDbContext
+ dotnet ef migrations add <MigrationName> --context PaymentDbContext --output-dir Server/Features/Base/PaymentService/Data/Migrations
+To apply migrations at runtime, ensure your application is configured to call `Database.Migrate()` for each context at startup.
 
 # remove remote branches that have been deleted
 

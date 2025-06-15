@@ -4,7 +4,7 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Common.Utilities;
-using msih.p4g.Server.Features.Base.Settings.Interfaces;
+using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.SmsService.Interfaces;
 using msih.p4g.Shared.Models;
 using Newtonsoft.Json;
