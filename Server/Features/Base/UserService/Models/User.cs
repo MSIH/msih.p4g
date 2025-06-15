@@ -22,6 +22,9 @@ namespace msih.p4g.Server.Features.Base.UserService.Models
         [Required]
         public UserRole Role { get; set; }
 
+        public virtual msih.p4g.Shared.Models.Profile Profile { get; set; }
+        public virtual msih.p4g.Shared.Models.Donor Donor { get; set; }
+
         public void ChangeRole(UserRole newRole)
         {
             Role = newRole;

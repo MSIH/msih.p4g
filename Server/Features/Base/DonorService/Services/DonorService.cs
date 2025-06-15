@@ -29,12 +29,11 @@ namespace msih.p4g.Server.Features.Base.DonorService.Services
 
         public async Task<List<Donor>> SearchAsync(string searchTerm)
         {
+            // Only search by DonorId or PaymentProcessorDonorId now
             return await _db.Donors
                 .Where(d => !d.IsDeleted && (
-                    d.FirstName.Contains(searchTerm) ||
-                    d.LastName.Contains(searchTerm) ||
-                    d.EmailAddress.Contains(searchTerm) ||
-                    d.MobileNumber.Contains(searchTerm)
+                    d.DonorId.Contains(searchTerm) ||
+                    (d.PaymentProcessorDonorId != null && d.PaymentProcessorDonorId.Contains(searchTerm))
                 ))
                 .ToListAsync();
         }

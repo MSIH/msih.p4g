@@ -17,6 +17,9 @@ using msih.p4g.Shared.Models;
 using msih.p4g.Server.Features.Campaign.Data;
 using msih.p4g.Server.Features.Base.DonorService.Interfaces;
 using msih.p4g.Server.Features.Base.DonorService.Services;
+using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
+using msih.p4g.Server.Features.Base.ProfileService.Repositories;
+using msih.p4g.Server.Features.Base.ProfileService.Services;
 using Microsoft.EntityFrameworkCore; // Add this using for EF Core migrations
 
 var builder = WebApplication.CreateBuilder(args);
@@ -60,6 +63,10 @@ builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 // Register DonorService for DI
 builder.Services.AddScoped<IDonorService, DonorService>();
+
+// Register ProfileRepository and ProfileService for DI
+builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 
 var app = builder.Build();
 
