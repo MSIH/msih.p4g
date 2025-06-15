@@ -109,6 +109,9 @@ dotnet ef migrations add Initial --context SettingsDbContext --output-dir Server
 # Example for ProfileDbContext
 dotnet ef migrations add Initial --context ProfileDbContext --output-dir Server/Features/Base/ProfileService/Data/Migrations
 
+# Example for ProfileDbContext
+dotnet ef migrations add Initial --context SettingseDbContext --output-dir Server/Features/Base/SettingsService/Data/Migrations
+
 # Example for DonorDbContext
 dotnet ef migrations add Initial --context DonorDbContext --output-dir Server/Features/DonorService/Data/Migrations
 > **Note:**

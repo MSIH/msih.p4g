@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -39,10 +45,11 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Data
 
                 entity.OwnsOne(e => e.Address, address =>
                 {
-                    address.Property(a => a.Street).HasMaxLength(100).IsRequired(false);
-                    address.Property(a => a.City).HasMaxLength(100).IsRequired(false);
-                    address.Property(a => a.State).HasMaxLength(100).IsRequired(false);
-                    address.Property(a => a.PostalCode).HasMaxLength(20).IsRequired(false);
+                    // Update properties to match the required attribute in AddressModel
+                    address.Property(a => a.Street).HasMaxLength(100).IsRequired();
+                    address.Property(a => a.City).HasMaxLength(100).IsRequired();
+                    address.Property(a => a.State).HasMaxLength(100).IsRequired();
+                    address.Property(a => a.PostalCode).HasMaxLength(20).IsRequired();
                     address.Property(a => a.Country).HasMaxLength(100).IsRequired(false);
                 });
             });

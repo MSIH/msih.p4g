@@ -10,9 +10,12 @@ using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.EmailService.Services;
 using msih.p4g.Server.Features.Base.PaymentService.Extensions;
+using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
+using msih.p4g.Server.Features.Base.PaymentService.Services;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Repositories;
 using msih.p4g.Server.Features.Base.ProfileService.Services;
+using msih.p4g.Server.Features.Base.SettingsService.Extensions;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.SettingsService.Model; // Add this using for EF Core migrations
 using msih.p4g.Server.Features.Base.SettingsService.Services;
@@ -26,6 +29,10 @@ using msih.p4g.Server.Features.Base.PaymentService.Data;
 using msih.p4g.Server.Features.Base.SettingsService.Data;
 using msih.p4g.Server.Features.DonorService.Data;
 using msih.p4g.Server.Features.Base.ProfileService.Data;
+using msih.p4g.Server.Features.DonationService.Data;
+using msih.p4g.Server.Features.DonationService.Services;
+using msih.p4g.Server.Features.Base.UserService.Interfaces;
+using msih.p4g.Server.Features.Base.UserService.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,8 +86,14 @@ DatabaseConfigurationHelper.AddConfiguredDbContext<ProfileDbContext>(
     builder.Configuration,
     builder.Environment);
 
-// Register generic repository for Setting using CampaignDbContext
-builder.Services.AddScoped<IGenericRepository<Setting>, GenericRepository<Setting, CampaignDbContext>>();
+// Register DonationDbContext for DI and migrations
+DatabaseConfigurationHelper.AddConfiguredDbContext<DonationDbContext>(
+    builder.Services,
+    builder.Configuration,
+    builder.Environment);
+
+// Register generic repository for Setting using SettingsDbContext (not CampaignDbContext)
+builder.Services.AddScoped<IGenericRepository<Setting>, GenericRepository<Setting, SettingsDbContext>>();
 
 // Register Email Service - choose one implementation based on configuration or use a factory
 string emailProvider = builder.Configuration["EmailProvider"] ?? "SendGrid";
@@ -99,8 +112,14 @@ builder.Services.AddSmsServices(builder.Configuration, builder.Environment);
 // Register Payment Service and related dependencies
 builder.Services.AddPaymentServices(builder.Configuration, builder.Environment);
 
-// Register SettingsService for DI
-builder.Services.AddScoped<ISettingsService, SettingsService>();
+// Register IPaymentService using a factory (resolves dependency injection error)
+builder.Services.AddScoped<IPaymentService>(provider => {
+    var factory = provider.GetRequiredService<IPaymentServiceFactory>();
+    return factory.GetDefaultPaymentService();
+});
+
+// Register Settings Service and related dependencies
+builder.Services.AddSettingsServices();
 
 // Register DonorService for DI
 builder.Services.AddScoped<IDonorService, DonorService>();
@@ -108,6 +127,13 @@ builder.Services.AddScoped<IDonorService, DonorService>();
 // Register ProfileRepository and ProfileService for DI
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+
+// Register DonationRepository and DonationService for DI
+builder.Services.AddScoped<IDonationRepository, DonationRepository>();
+builder.Services.AddScoped<DonationService>();
+
+// Register UserRepository for DI (needed by DonationService)
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var app = builder.Build();
 
@@ -123,6 +149,11 @@ using (var scope = app.Services.CreateScope())
     scope.ServiceProvider.GetRequiredService<SettingsDbContext>().Database.Migrate();
     scope.ServiceProvider.GetRequiredService<DonorDbContext>().Database.Migrate();
     scope.ServiceProvider.GetRequiredService<ProfileDbContext>().Database.Migrate();
+    scope.ServiceProvider.GetRequiredService<DonationDbContext>().Database.Migrate();
+    
+    // Initialize settings from appsettings.json
+    var settingsInitializer = scope.ServiceProvider.GetRequiredService<SettingsInitializer>();
+    await settingsInitializer.InitializeSettingsAsync();
 }
 
 // Configure the HTTP request pipeline.

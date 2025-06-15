@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
-using msih.p4g.Server.Features.Base.DonorService.Interfaces;
+using msih.p4g.Server.Features.DonorService.Interfaces;
 using msih.p4g.Server.Features.DonationService.Data;
 using msih.p4g.Server.Features.DonationService.Models;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;

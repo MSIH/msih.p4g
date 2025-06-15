@@ -56,6 +56,6 @@ namespace msih.p4g.Server.Common.Models
         /// Gets or sets who last modified the entity
         /// </summary>
         [MaxLength(100)]
-        public string ModifiedBy { get; set; }
+        public string? ModifiedBy { get; set; }
     }
 }
