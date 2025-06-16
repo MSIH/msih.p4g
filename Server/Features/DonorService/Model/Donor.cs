@@ -4,6 +4,8 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Common.Models;
+using msih.p4g.Server.Features.DonationService.Models;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace msih.p4g.Server.Features.DonorService.Model
@@ -18,6 +20,10 @@ namespace msih.p4g.Server.Features.DonorService.Model
         [NotMapped] // Prevent EF Core from managing the User table in this context
         public virtual Base.UserService.Models.User User { get; set; }
         public string? PaymentProcessorDonorId { get; set; }
-        // Only donor-specific fields remain. Profile/contact fields are now in Profile.
+        
+        /// <summary>
+        /// Collection of donations made by this donor.
+        /// </summary>
+        public virtual ICollection<Donation> Donations { get; set; } = new List<Donation>();
     }
 }

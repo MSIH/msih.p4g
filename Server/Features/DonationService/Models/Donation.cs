@@ -1,16 +1,14 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Common.Models;
+using msih.p4g.Server.Features.DonorService.Model;
+using msih.p4g.Server.Features.Base.PaymentService.Models;
+using msih.p4g.Server.Features.CampaignService.Model;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace msih.p4g.Server.Features.DonationService.Models
 {
@@ -33,9 +31,21 @@ namespace msih.p4g.Server.Features.DonationService.Models
         public int DonorId { get; set; }
 
         /// <summary>
+        /// Navigation property for the Donor who made the donation.
+        /// </summary>
+        [ForeignKey("DonorId")]
+        public virtual Donor Donor { get; set; }
+
+        /// <summary>
         /// The payment transaction associated with this donation (FK).
         /// </summary>
         public int? PaymentTransactionId { get; set; }
+
+        /// <summary>
+        /// Navigation property for the associated payment transaction.
+        /// </summary>
+        [ForeignKey("PaymentTransactionId")]
+        public virtual PaymentTransaction PaymentTransaction { get; set; }
 
         /// <summary>
         /// If true, donor pays the transaction fee.
@@ -65,9 +75,20 @@ namespace msih.p4g.Server.Features.DonationService.Models
         public string? ReferralCode { get; set; }
 
         /// <summary>
-        /// Optional referral code.
+        /// Optional campaign code.
         /// </summary>
         [MaxLength(100)]
         public string? CampaignCode { get; set; }
+
+        /// <summary>
+        /// Campaign ID if this donation is associated with a specific campaign.
+        /// </summary>
+        public int? CampaignId { get; set; }
+
+        /// <summary>
+        /// Navigation property for the associated campaign.
+        /// </summary>
+        [ForeignKey("CampaignId")]
+        public virtual Campaign Campaign { get; set; }
     }
 }
