@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -9,30 +15,31 @@ using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.EmailService.Services;
+using msih.p4g.Server.Features.Base.PaymentService.Data;
 using msih.p4g.Server.Features.Base.PaymentService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
-using msih.p4g.Server.Features.Base.PaymentService.Services;
+using msih.p4g.Server.Features.Base.ProfileService.Data;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Repositories;
 using msih.p4g.Server.Features.Base.ProfileService.Services;
+using msih.p4g.Server.Features.Base.SettingsService.Data;
 using msih.p4g.Server.Features.Base.SettingsService.Extensions;
-using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.SettingsService.Model; // Add this using for EF Core migrations
 using msih.p4g.Server.Features.Base.SettingsService.Services;
-using msih.p4g.Server.Features.Base.SmsService.Extensions;
-using msih.p4g.Server.Features.Base.UserService.Data;
-using msih.p4g.Server.Features.CampaignService.Data;
-using msih.p4g.Server.Features.DonorService.Interfaces;
-using msih.p4g.Server.Features.DonorService.Services;
 using msih.p4g.Server.Features.Base.SmsService.Data;
-using msih.p4g.Server.Features.Base.PaymentService.Data;
-using msih.p4g.Server.Features.Base.SettingsService.Data;
-using msih.p4g.Server.Features.DonorService.Data;
-using msih.p4g.Server.Features.Base.ProfileService.Data;
-using msih.p4g.Server.Features.DonationService.Data;
-using msih.p4g.Server.Features.DonationService.Services;
+using msih.p4g.Server.Features.Base.SmsService.Extensions;
+using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
+using msih.p4g.Server.Features.Base.UserProfileService.Services;
+using msih.p4g.Server.Features.Base.UserService.Data;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Repositories;
+using msih.p4g.Server.Features.Base.UserService.Services;
+using msih.p4g.Server.Features.CampaignService.Data;
+using msih.p4g.Server.Features.DonationService.Data;
+using msih.p4g.Server.Features.DonationService.Services;
+using msih.p4g.Server.Features.DonorService.Data;
+using msih.p4g.Server.Features.DonorService.Interfaces;
+using msih.p4g.Server.Features.DonorService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -113,7 +120,8 @@ builder.Services.AddSmsServices(builder.Configuration, builder.Environment);
 builder.Services.AddPaymentServices(builder.Configuration, builder.Environment);
 
 // Register IPaymentService using a factory (resolves dependency injection error)
-builder.Services.AddScoped<IPaymentService>(provider => {
+builder.Services.AddScoped<IPaymentService>(provider =>
+{
     var factory = provider.GetRequiredService<IPaymentServiceFactory>();
     return factory.GetDefaultPaymentService();
 });
@@ -132,8 +140,13 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IDonationRepository, DonationRepository>();
 builder.Services.AddScoped<DonationService>();
 
-// Register UserRepository for DI (needed by DonationService)
+// Register UserRepository and UserService for DI
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+
+// Register UserProfileService for coordinating User and Profile operations
+builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
 var app = builder.Build();
 
@@ -150,7 +163,7 @@ using (var scope = app.Services.CreateScope())
     scope.ServiceProvider.GetRequiredService<DonorDbContext>().Database.Migrate();
     scope.ServiceProvider.GetRequiredService<ProfileDbContext>().Database.Migrate();
     scope.ServiceProvider.GetRequiredService<DonationDbContext>().Database.Migrate();
-    
+
     // Initialize settings from appsettings.json
     var settingsInitializer = scope.ServiceProvider.GetRequiredService<SettingsInitializer>();
     await settingsInitializer.InitializeSettingsAsync();

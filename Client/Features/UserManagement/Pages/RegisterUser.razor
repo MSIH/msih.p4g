@@ -1,0 +1,93 @@
+@page "/register"
+@namespace msih.p4g.Client.Features.UserManagement.Pages
+@using msih.p4g.Server.Features.Base.UserService.Models
+
+<PageTitle>Register New User</PageTitle>
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Register New User</h3>
+            </div>
+            <div class="card-body">
+                <EditForm Model="@user" OnValidSubmit="HandleRegistration">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    @if (!string.IsNullOrEmpty(message))
+                    {
+                        <div class="alert @(message.StartsWith("Error") ? "alert-danger" : "alert-success")">
+                            @message
+                        </div>
+                    }
+
+                    <h4>User Information</h4>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <InputText id="email" @bind-Value="user.Email" class="form-control" />
+                        <ValidationMessage For="@(() => user.Email)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role</label>
+                        <InputSelect id="role" @bind-Value="user.Role" class="form-select">
+                            @foreach (var role in Enum.GetValues<UserRole>())
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <h4>Profile Information</h4>
+                    <div class="mb-3">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <InputText id="firstName" @bind-Value="profile.FirstName" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <InputText id="lastName" @bind-Value="profile.LastName" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="age" class="form-label">Age</label>
+                        <InputNumber id="age" @bind-Value="profile.Age" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="mobileNumber" class="form-label">Mobile Number</label>
+                        <InputText id="mobileNumber" @bind-Value="profile.MobileNumber" class="form-control" />
+                        <ValidationMessage For="@(() => profile.MobileNumber)" />
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox id="consentEmail" @bind-Value="profile.ConsentReceiveEmail" class="form-check-input" />
+                        <label class="form-check-label" for="consentEmail">
+                            I consent to receive emails
+                        </label>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <InputCheckbox id="consentText" @bind-Value="profile.ConsentReceiveText" class="form-check-input" />
+                        <label class="form-check-label" for="consentText">
+                            I consent to receive text messages
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span> Processing...</span>
+                        }
+                        else
+                        {
+                            <span>Register</span>
+                        }
+                    </button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>

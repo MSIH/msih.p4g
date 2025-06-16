@@ -25,6 +25,8 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Services
 
         public async Task<Profile> AddAsync(Profile profile, string createdBy = "System")
         {
+            // Generate a unique referral code before adding to the repository
+            profile.GenerateReferralCode();
             return await _profileRepository.AddAsync(profile, createdBy);
         }
 

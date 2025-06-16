@@ -6,6 +6,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Models;
+using Server.Common.Utilities;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -43,6 +44,15 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Model
         /// </summary>
         [MaxLength(100)]
         [Required]
-        public string? ReferralCode { get; set; }
+        public string ReferralCode { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Generates a unique referral code for this profile based on the UserId.
+        /// Call this method once when creating the profile.
+        /// </summary>
+        public void GenerateReferralCode()
+        {
+            ReferralCode = RandomStringGenerator.Generate(UserId);
+        }
     }
 }
