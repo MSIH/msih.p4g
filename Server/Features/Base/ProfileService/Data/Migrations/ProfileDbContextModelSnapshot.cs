@@ -61,11 +61,15 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ModifiedBy")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReferralCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("UnsubscribeEmail")
@@ -82,6 +86,9 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ReferralCode")
+                        .IsUnique();
+
                     b.ToTable("Profiles");
                 });
 
@@ -89,11 +96,11 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Data.Migrations
                 {
                     b.OwnsOne("msih.p4g.Server.Features.Base.ProfileService.Model.AddressModel", "Address", b1 =>
                         {
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
+                            b1.Property<int>("ProfileId")
                                 .HasColumnType("INTEGER");
 
                             b1.Property<string>("City")
+                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 
@@ -101,46 +108,27 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Data.Migrations
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 
-                            b1.Property<string>("CreatedBy")
-                                .IsRequired()
-                                .HasMaxLength(100)
-                                .HasColumnType("TEXT");
-
-                            b1.Property<DateTime>("CreatedOn")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<bool>("IsActive")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<bool>("IsDeleted")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<string>("ModifiedBy")
-                                .IsRequired()
-                                .HasMaxLength(100)
-                                .HasColumnType("TEXT");
-
-                            b1.Property<DateTime?>("ModifiedOn")
-                                .HasColumnType("TEXT");
-
                             b1.Property<string>("PostalCode")
+                                .IsRequired()
                                 .HasMaxLength(20)
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("State")
+                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("Street")
+                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("TEXT");
 
-                            b1.HasKey("Id");
+                            b1.HasKey("ProfileId");
 
                             b1.ToTable("Profiles");
 
                             b1.WithOwner()
-                                .HasForeignKey("Id");
+                                .HasForeignKey("ProfileId");
                         });
 
                     b.Navigation("Address");

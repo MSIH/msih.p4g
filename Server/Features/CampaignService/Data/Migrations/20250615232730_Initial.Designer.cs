@@ -4,15 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using msih.p4g.Server.Features.Base.UserService.Data;
+using msih.p4g.Server.Features.CampaignService.Data;
 
 #nullable disable
 
-namespace msih.p4g.Server.Features.Base.UserService.Data.Migrations
+namespace msih.p4g.Server.Features.CampaignService.Data.Migrations
 {
-    [DbContext(typeof(UserDbContext))]
-    [Migration("20250615201958_InitialUserDbContextMigration")]
-    partial class InitialUserDbContextMigration
+    [DbContext(typeof(CampaignDbContext))]
+    [Migration("20250615232730_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,7 +20,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
 
-            modelBuilder.Entity("msih.p4g.Server.Features.Base.UserService.Models.User", b =>
+            modelBuilder.Entity("msih.p4g.Server.Features.CampaignService.Model.Campaign", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -34,8 +34,9 @@ namespace msih.p4g.Server.Features.Base.UserService.Data.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("Description")
                         .IsRequired()
+                        .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
@@ -45,19 +46,20 @@ namespace msih.p4g.Server.Features.Base.UserService.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ModifiedBy")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ModifiedOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Campaigns");
                 });
 #pragma warning restore 612, 618
         }

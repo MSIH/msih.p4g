@@ -43,7 +43,6 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ModifiedBy")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 

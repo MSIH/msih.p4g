@@ -49,11 +49,6 @@ function createDropInUI(clientToken) {
         dataCollector: true,
         paypal: {
             flow: 'vault'
-        },
-        card: {
-            cardholderName: {
-                required: true
-            }
         }
     }, (err, instance) => {
         if (err) {

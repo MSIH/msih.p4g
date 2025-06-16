@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace msih.p4g.Server.Features.Base.PaymentService.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialPaymentDbContextMigration : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,7 +33,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Data.Migrations
                     CreatedOn = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     ModifiedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    ModifiedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false)
+                    ModifiedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {

@@ -3,40 +3,50 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace msih.p4g.Server.Features.CampaignService.Data.Migrations
+namespace msih.p4g.Server.Features.Base.SmsService.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCampaignDbContextMigration : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Campaigns",
+                name: "ValidatedPhoneNumbers",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Title = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    IsMobile = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Carrier = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    CountryCode = table.Column<string>(type: "TEXT", maxLength: 5, nullable: true),
+                    ValidatedOn = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    IsValid = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     ModifiedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    ModifiedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false)
+                    ModifiedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Campaigns", x => x.Id);
+                    table.PrimaryKey("PK_ValidatedPhoneNumbers", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ValidatedPhoneNumbers_PhoneNumber",
+                table: "ValidatedPhoneNumbers",
+                column: "PhoneNumber",
+                unique: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Campaigns");
+                name: "ValidatedPhoneNumbers");
         }
     }
 }
