@@ -19,9 +19,9 @@ namespace Server.Common.Utilities
     public static class RandomStringGenerator
     {
         // Character sets without confusing characters
-        private const string Uppercase = "ABCDEFGHJKMNPQRSTUVWXYZ"; // Removed I, L, O
-        private const string Lowercase = "abcdefghjkmnpqrstuvwxyz"; // Removed i, l, o
-        private const string Numbers = "23456789"; // Removed 0, 1
+        private const string _uppercase = "ABCDEFGHJKMNPQRSTUVWXYZ"; // Removed I, L, O
+        private const string _lowercase = "abcdefghjkmnpqrstuvwxyz"; // Removed i, l, o
+        private const string _numbers = "23456789"; // Removed 0, 1
 
         [Flags]
         public enum CharSet
@@ -47,11 +47,11 @@ namespace Server.Common.Utilities
 
             var chars = new StringBuilder();
             if (charSet.HasFlag(CharSet.Uppercase))
-                chars.Append(Uppercase);
+                chars.Append(_uppercase);
             if (charSet.HasFlag(CharSet.Lowercase))
-                chars.Append(Lowercase);
+                chars.Append(_lowercase);
             if (charSet.HasFlag(CharSet.Numbers))
-                chars.Append(Numbers);
+                chars.Append(_numbers);
 
             if (chars.Length == 0)
                 throw new ArgumentException("At least one character set must be specified.", nameof(charSet));

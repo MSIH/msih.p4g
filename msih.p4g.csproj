@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -19,11 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="Tests\Server.Tests\Common\Utilities\PseudoRandomGeneratorTests.cs" />
-    <Compile Include="Tests\Server.Tests\Features\Base\PaymentService\BraintreePaymentServiceTests.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include=".vscode\extensions.json" />
   </ItemGroup>
 
@@ -37,6 +32,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.2.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.2.2" />
+    <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="SendGrid" Version="9.29.3" />
     <PackageReference Include="Twilio" Version="7.11.3" />
   </ItemGroup>
