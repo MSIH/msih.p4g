@@ -10,6 +10,7 @@ using msih.p4g.Server.Features.Base.PaymentService.Models;
 using msih.p4g.Server.Features.Base.UserService.Models;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
 using msih.p4g.Server.Features.DonorService.Model;
+using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
 
 namespace msih.p4g.Server.Features.DonationService.Services
 {
@@ -23,19 +24,22 @@ namespace msih.p4g.Server.Features.DonationService.Services
         private readonly IDonorService _donorService;
         private readonly IDonationRepository _donationRepository;
         private readonly IPaymentService _paymentService;
+        private readonly IUserProfileService _userProfileService;
 
         public DonationService(
             IUserRepository userRepository,
             IProfileService profileService,
             IDonorService donorService,
             IDonationRepository donationRepository,
-            IPaymentService paymentService)
+            IPaymentService paymentService,
+            IUserProfileService userProfileService)
         {
             _userRepository = userRepository;
             _profileService = profileService;
             _donorService = donorService;
             _donationRepository = donationRepository;
             _paymentService = paymentService;
+            _userProfileService = userProfileService;
         }
 
         /// <summary>
@@ -46,40 +50,45 @@ namespace msih.p4g.Server.Features.DonationService.Services
             // 1. Find or create user
             var user = await _userRepository.GetByEmailAsync(dto.Email);
             bool isNewUser = false;
+            Profile? profile = null;
+            
             if (user == null)
             {
+                // Create new user and profile in a single coordinated operation
                 user = new User
                 {
                     Email = dto.Email,
-                    Role = UserRole.Donor,
-                    IsActive = true,
-                    CreatedBy = "DonationService",
-                    CreatedOn = DateTime.UtcNow
+                    Role = UserRole.Donor
                 };
-                user = await _userRepository.AddAsync(user, "DonationService");
-                isNewUser = true;
-            }
-
-            // 2. Find or create profile using navigation property if user exists
-            Profile? profile = null;
-            if (!isNewUser && user.Profile != null)
-            {
-                profile = user.Profile;
-            }
-            if (profile == null)
-            {
+                
                 profile = new Profile
                 {
-                    UserId = user.Id,
                     FirstName = dto.FirstName,
                     LastName = dto.LastName,
-                    Address = dto.Address,
-                    ReferralCode = dto.ReferralCode,
-                    IsActive = true,
-                    CreatedBy = "DonationService",
-                    CreatedOn = DateTime.UtcNow
+                    Address = dto.Address
                 };
-                profile = await _profileService.AddAsync(profile, "DonationService");
+                
+                // The UserProfileService handles setting the UserId and generating the referral code
+                profile = await _userProfileService.CreateUserWithProfileAsync(user, profile, "DonationService");
+                isNewUser = true;
+            }
+            else
+            {
+                // User exists, get their profile
+                profile = await _profileService.GetByIdAsync(user.Id);
+                
+                // If profile doesn't exist, create it
+                if (profile == null)
+                {
+                    profile = new Profile
+                    {
+                        UserId = user.Id,
+                        FirstName = dto.FirstName,
+                        LastName = dto.LastName,
+                        Address = dto.Address
+                    };
+                    profile = await _profileService.AddAsync(profile, "DonationService");
+                }
             }
 
             // 3. Find or create donor using navigation property if user exists
@@ -136,7 +145,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 IsMonthly = dto.IsMonthly,
                 IsAnnual = dto.IsAnnual,
                 DonationMessage = dto.DonationMessage,
-                ReferralCode = dto.ReferralCode,
+                ReferralCode = profile.ReferralCode, // Use the profile's referral code
                 CampaignCode = dto.CampaignCode,
                 IsActive = true,
                 CreatedBy = "DonationService",
