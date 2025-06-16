@@ -3,25 +3,33 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using msih.p4g.Server.Features.DonorService.Data;
+using msih.p4g.Server.Features.DonationService.Data;
 
 #nullable disable
 
-namespace msih.p4g.Server.Features.DonorService.Data.Migrations
+namespace msih.p4g.Server.Features.DonationService.Data.Migrations
 {
-    [DbContext(typeof(DonorDbContext))]
-    partial class DonorDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(DonationDbContext))]
+    partial class DonationDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
 
-            modelBuilder.Entity("msih.p4g.Server.Features.DonorService.Model.Donor", b =>
+            modelBuilder.Entity("msih.p4g.Server.Features.DonationService.Models.Donation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CampaignCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -31,36 +39,45 @@ namespace msih.p4g.Server.Features.DonorService.Data.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("DonorId")
-                        .ValueGeneratedOnAdd()
+                    b.Property<string>("DonationMessage")
+                        .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("DonorId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsAnnual")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsMonthly")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("ModifiedBy")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ModifiedOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PaymentProcessorDonorId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("UserId")
+                    b.Property<bool>("PayTransactionFee")
                         .HasColumnType("INTEGER");
+
+                    b.Property<int?>("PaymentTransactionId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ReferralCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DonorId")
-                        .IsUnique();
-
-                    b.ToTable("Donors");
+                    b.ToTable("Donations");
                 });
 #pragma warning restore 612, 618
         }

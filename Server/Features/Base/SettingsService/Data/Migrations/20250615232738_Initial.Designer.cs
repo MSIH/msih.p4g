@@ -2,22 +2,25 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using msih.p4g.Server.Features.Base.UserService.Data;
+using msih.p4g.Server.Features.Base.SettingsService.Data;
 
 #nullable disable
 
-namespace msih.p4g.Server.Features.Base.UserService.Data.Migrations
+namespace msih.p4g.Server.Features.Base.SettingsService.Data.Migrations
 {
-    [DbContext(typeof(UserDbContext))]
-    partial class UserDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(SettingsDbContext))]
+    [Migration("20250615232738_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
 
-            modelBuilder.Entity("msih.p4g.Server.Features.Base.UserService.Models.User", b =>
+            modelBuilder.Entity("msih.p4g.Server.Features.Base.SettingsService.Model.Setting", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -31,30 +34,31 @@ namespace msih.p4g.Server.Features.Base.UserService.Data.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ModifiedBy")
+                    b.Property<string>("Key")
                         .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ModifiedBy")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ModifiedOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Value")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Settings");
                 });
 #pragma warning restore 612, 618
         }

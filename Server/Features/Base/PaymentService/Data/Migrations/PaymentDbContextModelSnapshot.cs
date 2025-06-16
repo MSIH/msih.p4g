@@ -67,7 +67,6 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ModifiedBy")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 

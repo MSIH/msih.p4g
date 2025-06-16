@@ -38,12 +38,18 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Data
                 entity.Property(e => e.UnsubscribeEmail);
                 entity.Property(e => e.ConsentReceiveMail);
                 entity.Property(e => e.UnsubscribeMail);
+
+                // ReferralCode: unique and required
+                entity.Property(e => e.ReferralCode).HasMaxLength(100).IsRequired();
+                entity.HasIndex(e => e.ReferralCode).IsUnique();
+
                 entity.OwnsOne(e => e.Address, address =>
                 {
-                    address.Property(a => a.Street).HasMaxLength(100).IsRequired(false);
-                    address.Property(a => a.City).HasMaxLength(100).IsRequired(false);
-                    address.Property(a => a.State).HasMaxLength(100).IsRequired(false);
-                    address.Property(a => a.PostalCode).HasMaxLength(20).IsRequired(false);
+                    // Update properties to match the required attribute in AddressModel
+                    address.Property(a => a.Street).HasMaxLength(100).IsRequired();
+                    address.Property(a => a.City).HasMaxLength(100).IsRequired();
+                    address.Property(a => a.State).HasMaxLength(100).IsRequired();
+                    address.Property(a => a.PostalCode).HasMaxLength(20).IsRequired();
                     address.Property(a => a.Country).HasMaxLength(100).IsRequired(false);
                 });
             });

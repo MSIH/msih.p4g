@@ -3,32 +3,32 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace msih.p4g.Server.Features.Base.UserService.Data.Migrations
+namespace msih.p4g.Server.Features.CampaignService.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialUserDbContextMigration : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "Campaigns",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Email = table.Column<string>(type: "TEXT", nullable: false),
-                    Role = table.Column<int>(type: "INTEGER", nullable: false),
+                    Title = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: false),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     ModifiedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    ModifiedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false)
+                    ModifiedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_Campaigns", x => x.Id);
                 });
         }
 
@@ -36,7 +36,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Campaigns");
         }
     }
 }

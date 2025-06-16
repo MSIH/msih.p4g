@@ -11,8 +11,8 @@ using msih.p4g.Server.Features.Base.PaymentService.Data;
 namespace msih.p4g.Server.Features.Base.PaymentService.Data.Migrations
 {
     [DbContext(typeof(PaymentDbContext))]
-    [Migration("20250615201654_InitialPaymentDbContextMigration")]
-    partial class InitialPaymentDbContextMigration
+    [Migration("20250615232734_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -70,7 +70,6 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("ModifiedBy")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 

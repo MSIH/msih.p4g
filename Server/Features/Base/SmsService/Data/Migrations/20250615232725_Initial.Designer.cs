@@ -4,15 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using msih.p4g.Server.Features.CampaignService.Data;
+using msih.p4g.Server.Features.Base.SmsService.Data;
 
 #nullable disable
 
-namespace msih.p4g.Server.Features.CampaignService.Data.Migrations
+namespace msih.p4g.Server.Features.Base.SmsService.Data.Migrations
 {
-    [DbContext(typeof(CampaignDbContext))]
-    [Migration("20250615201650_InitialCampaignDbContextMigration")]
-    partial class InitialCampaignDbContextMigration
+    [DbContext(typeof(SmsDbContext))]
+    [Migration("20250615232725_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,11 +20,19 @@ namespace msih.p4g.Server.Features.CampaignService.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
 
-            modelBuilder.Entity("msih.p4g.Server.Features.CampaignService.Model.Campaign", b =>
+            modelBuilder.Entity("msih.p4g.Server.Features.Base.SmsService.Model.ValidatedPhoneNumber", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Carrier")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CountryCode")
+                        .HasMaxLength(5)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -34,33 +42,39 @@ namespace msih.p4g.Server.Features.CampaignService.Data.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsMobile")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("ModifiedBy")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ModifiedOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasMaxLength(100)
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ValidatedOn")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Campaigns");
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique();
+
+                    b.ToTable("ValidatedPhoneNumbers");
                 });
 #pragma warning restore 612, 618
         }
