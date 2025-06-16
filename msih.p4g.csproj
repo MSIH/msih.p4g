@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Tests\Server.Tests\Common\Utilities\PseudoRandomGeneratorTests.cs" />
     <Compile Include="Tests\Server.Tests\Features\Base\PaymentService\BraintreePaymentServiceTests.cs" />
   </ItemGroup>
 
