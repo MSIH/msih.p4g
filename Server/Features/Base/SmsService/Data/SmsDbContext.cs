@@ -12,11 +12,47 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace msih.p4g.Server.Common.Data
+{
+    /// <summary>
+    /// Partial DbContext implementation for SMS service related entities
+    /// </summary>
+    public partial class ApplicationDbContext
+    {
+        /// <summary>
+        /// DbSet for validated phone numbers
+        /// </summary>
+        public DbSet<ValidatedPhoneNumber> ValidatedPhoneNumbers { get; set; }
+        
+        /// <summary>
+        /// Configure the SMS entities
+        /// </summary>
+        partial void ConfigureSmsModel(ModelBuilder modelBuilder)
+        {
+            // Configure the ValidatedPhoneNumber entity
+            modelBuilder.Entity<ValidatedPhoneNumber>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.PhoneNumber).IsUnique();
+                entity.Property(e => e.PhoneNumber).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Carrier).HasMaxLength(100);
+                entity.Property(e => e.CountryCode).HasMaxLength(5);
+                
+                // Common audit properties from BaseEntity
+                entity.Property(e => e.CreatedBy).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.ModifiedBy).HasMaxLength(100);
+            });
+        }
+    }
+}
+
 namespace msih.p4g.Server.Features.Base.SmsService.Data
 {
     /// <summary>
-    /// Database context for SMS service related entities
+    /// DbContext for SMS service related entities - retained for backward compatibility
+    /// Will be removed in future versions
     /// </summary>
+    [Obsolete("Use ApplicationDbContext instead. This class will be removed in a future version.")]
     public class SmsDbContext : DbContext
     {
         public SmsDbContext(DbContextOptions<SmsDbContext> options)

@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -11,6 +5,7 @@
  */
 
 using Microsoft.EntityFrameworkCore;
+using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
@@ -51,56 +46,89 @@ builder.Services.AddRazorPages(options =>
 //builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-// Add Entity Framework with conditional provider selection based on environment
-DatabaseConfigurationHelper.AddConfiguredDbContext<CampaignDbContext>(
+// Add Entity Framework with the unified ApplicationDbContext
+DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
     builder.Services,
     builder.Configuration,
     builder.Environment);
 
-// Register UserDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<UserDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
+// Register the legacy DbContexts for backward compatibility
+// These will be removed in a future version
 
-// Register SmsDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<SmsDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
+// CampaignDbContext backward compatibility
+builder.Services.AddScoped(provider =>
+{
+    var optionsBuilder = new DbContextOptionsBuilder<CampaignDbContext>();
+    DatabaseConfigurationHelper.ConfigureDbContextOptions(
+        optionsBuilder, builder.Configuration, builder.Environment);
+    return new CampaignDbContext(optionsBuilder.Options);
+});
 
-// Register PaymentDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<PaymentDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
+// UserDbContext backward compatibility
+builder.Services.AddScoped(provider =>
+{
+    var optionsBuilder = new DbContextOptionsBuilder<UserDbContext>();
+    DatabaseConfigurationHelper.ConfigureDbContextOptions(
+        optionsBuilder, builder.Configuration, builder.Environment);
+    return new UserDbContext(optionsBuilder.Options);
+});
 
-// Register SettingsDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<SettingsDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
+// SmsDbContext backward compatibility
+builder.Services.AddScoped(provider =>
+{
+    var optionsBuilder = new DbContextOptionsBuilder<SmsDbContext>();
+    DatabaseConfigurationHelper.ConfigureDbContextOptions(
+        optionsBuilder, builder.Configuration, builder.Environment);
+    return new SmsDbContext(optionsBuilder.Options);
+});
 
-// Register DonorDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<DonorDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
+// PaymentDbContext backward compatibility
+builder.Services.AddScoped(provider =>
+{
+    var optionsBuilder = new DbContextOptionsBuilder<PaymentDbContext>();
+    DatabaseConfigurationHelper.ConfigureDbContextOptions(
+        optionsBuilder, builder.Configuration, builder.Environment);
+    return new PaymentDbContext(optionsBuilder.Options);
+});
 
-// Register ProfileDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<ProfileDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
+// SettingsDbContext backward compatibility
+builder.Services.AddScoped(provider =>
+{
+    var optionsBuilder = new DbContextOptionsBuilder<SettingsDbContext>();
+    DatabaseConfigurationHelper.ConfigureDbContextOptions(
+        optionsBuilder, builder.Configuration, builder.Environment);
+    return new SettingsDbContext(optionsBuilder.Options);
+});
 
-// Register DonationDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<DonationDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
+// DonorDbContext backward compatibility
+builder.Services.AddScoped(provider =>
+{
+    var optionsBuilder = new DbContextOptionsBuilder<DonorDbContext>();
+    DatabaseConfigurationHelper.ConfigureDbContextOptions(
+        optionsBuilder, builder.Configuration, builder.Environment);
+    return new DonorDbContext(optionsBuilder.Options);
+});
 
-// Register generic repository for Setting using SettingsDbContext (not CampaignDbContext)
-builder.Services.AddScoped<IGenericRepository<Setting>, GenericRepository<Setting, SettingsDbContext>>();
+// ProfileDbContext backward compatibility
+builder.Services.AddScoped(provider =>
+{
+    var optionsBuilder = new DbContextOptionsBuilder<ProfileDbContext>();
+    DatabaseConfigurationHelper.ConfigureDbContextOptions(
+        optionsBuilder, builder.Configuration, builder.Environment);
+    return new ProfileDbContext(optionsBuilder.Options);
+});
+
+// DonationDbContext backward compatibility
+builder.Services.AddScoped(provider =>
+{
+    var optionsBuilder = new DbContextOptionsBuilder<DonationDbContext>();
+    DatabaseConfigurationHelper.ConfigureDbContextOptions(
+        optionsBuilder, builder.Configuration, builder.Environment);
+    return new DonationDbContext(optionsBuilder.Options);
+});
+
+// Register generic repository for Setting using ApplicationDbContext 
+builder.Services.AddScoped<IGenericRepository<Setting>, GenericRepository<Setting, ApplicationDbContext>>();
 
 // Register Email Service - choose one implementation based on configuration or use a factory
 string emailProvider = builder.Configuration["EmailProvider"] ?? "SendGrid";
@@ -153,17 +181,10 @@ var app = builder.Build();
 // Apply pending migrations and create database/tables if needed
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<CampaignDbContext>();
-    dbContext.Database.Migrate();
-    // Migrate all other DbContexts
-    scope.ServiceProvider.GetRequiredService<UserDbContext>().Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<SmsDbContext>().Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<PaymentDbContext>().Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<SettingsDbContext>().Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<DonorDbContext>().Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<ProfileDbContext>().Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<DonationDbContext>().Database.Migrate();
-
+    // Migrate the unified ApplicationDbContext
+    var appDbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    appDbContext.Database.Migrate();
+    
     // Initialize settings from appsettings.json
     var settingsInitializer = scope.ServiceProvider.GetRequiredService<SettingsInitializer>();
     await settingsInitializer.InitializeSettingsAsync();
