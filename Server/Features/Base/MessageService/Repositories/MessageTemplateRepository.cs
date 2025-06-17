@@ -1,0 +1,141 @@
+/**
+ * Copyright (c) 2025 MSIH LLC. All rights reserved.
+ * This file is developed for Make Sure It Happens Inc.
+ * Unauthorized copying, modification, distribution, or use is prohibited.
+ */
+using Microsoft.EntityFrameworkCore;
+using msih.p4g.Server.Common.Data;
+using msih.p4g.Server.Common.Data.Repositories;
+using msih.p4g.Server.Features.Base.MessageService.Interfaces;
+using msih.p4g.Server.Features.Base.MessageService.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace msih.p4g.Server.Features.Base.MessageService.Repositories
+{
+    /// <summary>
+    /// Repository implementation for MessageTemplate entities
+    /// </summary>
+    public class MessageTemplateRepository : GenericRepository<MessageTemplate, ApplicationDbContext>, IMessageTemplateRepository
+    {
+        public MessageTemplateRepository(ApplicationDbContext context) : base(context)
+        {
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<MessageTemplate>> GetByCategoryAsync(string category, string messageType = null)
+        {
+            if (string.IsNullOrWhiteSpace(category))
+            {
+                throw new ArgumentException("Category cannot be null or empty", nameof(category));
+            }
+
+            var query = _dbSet
+                .Where(t => t.Category == category && !t.IsDeleted && t.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(messageType))
+            {
+                query = query.Where(t => t.MessageType == messageType);
+            }
+
+            return await query.OrderByDescending(t => t.IsDefault).ThenBy(t => t.Name).ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<MessageTemplate> GetDefaultTemplateAsync(string category, string messageType)
+        {
+            if (string.IsNullOrWhiteSpace(category))
+            {
+                throw new ArgumentException("Category cannot be null or empty", nameof(category));
+            }
+
+            if (string.IsNullOrWhiteSpace(messageType))
+            {
+                throw new ArgumentException("MessageType cannot be null or empty", nameof(messageType));
+            }
+
+            // Try to find a template marked as default
+            var defaultTemplate = await _dbSet
+                .Where(t => t.Category == category && 
+                           t.MessageType == messageType && 
+                           t.IsDefault && 
+                           !t.IsDeleted && 
+                           t.IsActive)
+                .FirstOrDefaultAsync();
+
+            // If no default is found, return the first active template in the category
+            if (defaultTemplate == null)
+            {
+                defaultTemplate = await _dbSet
+                    .Where(t => t.Category == category && 
+                               t.MessageType == messageType && 
+                               !t.IsDeleted && 
+                               t.IsActive)
+                    .OrderBy(t => t.CreatedOn)
+                    .FirstOrDefaultAsync();
+            }
+
+            return defaultTemplate;
+        }
+
+        /// <inheritdoc />
+        public async Task<MessageTemplate> GetByNameAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Name cannot be null or empty", nameof(name));
+            }
+
+            return await _dbSet
+                .Where(t => t.Name == name && !t.IsDeleted && t.IsActive)
+                .FirstOrDefaultAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> SetAsDefaultAsync(int templateId)
+        {
+            var template = await _dbSet.FindAsync(templateId);
+            if (template == null || template.IsDeleted || !template.IsActive)
+            {
+                return false;
+            }
+
+            // Begin transaction to ensure consistency
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // Clear default flag from all templates in the same category and message type
+                var templates = await _dbSet
+                    .Where(t => t.Category == template.Category && 
+                               t.MessageType == template.MessageType && 
+                               t.IsDefault && 
+                               !t.IsDeleted)
+                    .ToListAsync();
+
+                foreach (var existingDefault in templates)
+                {
+                    existingDefault.IsDefault = false;
+                    existingDefault.ModifiedOn = DateTime.UtcNow;
+                    existingDefault.ModifiedBy = "System";
+                }
+
+                // Set the new template as default
+                template.IsDefault = true;
+                template.ModifiedOn = DateTime.UtcNow;
+                template.ModifiedBy = "System";
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+    }
+}
