@@ -117,7 +117,7 @@
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
+    private bool collapseNavMenu = false; // Changed from true to false to have the menu expanded by default
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
