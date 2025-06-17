@@ -65,6 +65,16 @@
                 <span class="oi oi-phone" aria-hidden="true"></span> Phone Validation
             </NavLink>
         </div>
+        
+        <hr class="my-2 border-secondary" />
+        
+        <div class="nav-item px-3">
+            <span class="nav-link d-flex align-items-center disabled">
+                <span class="oi oi-cog me-2" aria-hidden="true"></span> 
+                <span class="fw-bold">Admin</span>
+            </span>
+        </div>
+        
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="admin/settings">
                 <span class="oi oi-cog" aria-hidden="true"></span> Settings
@@ -73,6 +83,11 @@
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="admin/migrations">
                 <span class="oi oi-dashboard" aria-hidden="true"></span> Migrations
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="admin/message-templates">
+                <span class="oi oi-envelope-closed" aria-hidden="true"></span> Message Templates
             </NavLink>
         </div>
         <div class="nav-item px-3">
@@ -90,6 +105,9 @@
                 <span class="oi oi-person" aria-hidden="true"></span> Profiles
             </NavLink>
         </div>
+        
+        <hr class="my-2 border-secondary" />
+        
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="payment/braintree">
                 <span class="oi oi-credit-card" aria-hidden="true"></span> Payment Demo
@@ -99,7 +117,7 @@
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
+    private bool collapseNavMenu = false; // Changed from true to false to have the menu expanded by default
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 

@@ -1,0 +1,470 @@
+@* 
+ * Copyright (c) 2025 MSIH LLC. All rights reserved.
+ * This file is developed for Make Sure It Happens Inc.
+ * Unauthorized copying, modification, distribution, or use is prohibited.
+ *@
+
+@page "/admin/message-templates/new"
+@page "/admin/message-templates/edit/{Id:int}"
+@namespace msih.p4g.Client.Features.Base.Admin.Pages
+@using msih.p4g.Server.Features.Base.MessageService.Models
+@using msih.p4g.Server.Features.Base.MessageService.Interfaces
+@using msih.p4g.Server.Features.Base.MessageService.Utilities
+@inject IMessageService MessageService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>@(IsNewTemplate ? "Create Message Template" : "Edit Message Template")</h3>
+    <button class="btn btn-outline-secondary" @onclick="NavigateBack">
+        <i class="bi bi-arrow-left"></i> Back to Templates
+    </button>
+</div>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <EditForm Model="@template" OnValidSubmit="SaveTemplate">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Template Name <span class="text-danger">*</span></label>
+                                    <InputText @bind-Value="template.Name" class="form-control" />
+                                    <ValidationMessage For="@(() => template.Name)" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Category <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <InputSelect @bind-Value="template.Category" class="form-select">
+                                            <option value="">Select a category</option>
+                                            @foreach (var category in templateCategories)
+                                            {
+                                                <option value="@category">@category</option>
+                                            }
+                                        </InputSelect>
+                                        <button type="button" class="btn btn-outline-secondary" @onclick="ShowCustomCategoryInput">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                    <ValidationMessage For="@(() => template.Category)" />
+                                    
+                                    @if (showCustomCategory)
+                                    {
+                                        <div class="mt-2">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" @bind="customCategory" placeholder="New category" />
+                                                <button type="button" class="btn btn-outline-primary" @onclick="AddCustomCategory">Add</button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Message Type <span class="text-danger">*</span></label>
+                                    <InputSelect @bind-Value="template.MessageType" class="form-select" @onchange="MessageTypeChanged">
+                                        <option value="">Select a type</option>
+                                        <option value="Email">Email</option>
+                                        <option value="SMS">SMS</option>
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => template.MessageType)" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Default Sender</label>
+                                    <InputText @bind-Value="template.DefaultSender" class="form-control" placeholder="@senderPlaceholder" />
+                                    <ValidationMessage For="@(() => template.DefaultSender)" />
+                                    <small class="form-text text-muted">
+                                        @(template.MessageType == "Email" 
+                                            ? "Email address that will be used as the sender"
+                                            : "Phone number that will be used as the sender")
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (template.MessageType == "Email")
+                        {
+                            <div class="mb-3">
+                                <div class="form-group">
+                                    <label class="form-label">Default Subject</label>
+                                    <InputText @bind-Value="template.DefaultSubject" class="form-control" />
+                                    <ValidationMessage For="@(() => template.DefaultSubject)" />
+                                </div>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <div class="form-group">
+                                <label class="form-label">Description</label>
+                                <InputTextArea @bind-Value="template.Description" class="form-control" rows="2" />
+                                <ValidationMessage For="@(() => template.Description)" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-group">
+                                <label class="form-label">Template Content <span class="text-danger">*</span></label>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">Use {{PlaceholderName}} syntax for dynamic content</small>
+                                    @if (template.MessageType == "Email")
+                                    {
+                                        <div class="form-check form-switch">
+                                            <InputCheckbox @bind-Value="template.IsHtml" class="form-check-input" id="isHtmlCheck" />
+                                            <label class="form-check-label" for="isHtmlCheck">HTML Content</label>
+                                        </div>
+                                    }
+                                </div>
+                                <InputTextArea @bind-Value="template.TemplateContent" class="form-control" rows="12" @oninput="ExtractPlaceholders" />
+                                <ValidationMessage For="@(() => template.TemplateContent)" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-group">
+                                <label class="form-label">Available Placeholders</label>
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    @foreach (var placeholder in extractedPlaceholders)
+                                    {
+                                        <span class="badge bg-light text-dark">{{@placeholder}}</span>
+                                    }
+                                </div>
+                                <InputText @bind-Value="template.AvailablePlaceholders" class="form-control" placeholder="comma-separated list of placeholders" />
+                                <small class="form-text text-muted">
+                                    Detected placeholders are automatically added above, but you can modify this list if needed.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <InputCheckbox @bind-Value="template.IsDefault" class="form-check-input" id="isDefaultCheck" />
+                                <label class="form-check-label" for="isDefaultCheck">
+                                    Set as default template for this category and message type
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" @onclick="NavigateBack">Cancel</button>
+                            <div>
+                                <button type="button" class="btn btn-outline-primary me-2" @onclick="PreviewTemplate">
+                                    <i class="bi bi-eye"></i> Preview
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> @(IsNewTemplate ? "Create Template" : "Update Template")
+                                </button>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Help & Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Placeholder Syntax</h6>
+                    <p>Use double curly braces to define placeholders: <code>{{PlaceholderName}}</code></p>
+                    
+                    <h6>Common Placeholders</h6>
+                    <ul class="list-unstyled">
+                        <li><code>{{FirstName}}</code> - Recipient's first name</li>
+                        <li><code>{{LastName}}</code> - Recipient's last name</li>
+                        <li><code>{{FullName}}</code> - Recipient's full name</li>
+                        <li><code>{{Email}}</code> - Recipient's email</li>
+                        <li><code>{{PhoneNumber}}</code> - Recipient's phone number</li>
+                        <li><code>{{Date}}</code> - Current date</li>
+                        <li><code>{{Amount}}</code> - Transaction amount</li>
+                    </ul>
+                    
+                    <h6>Template Categories</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>ThankYou</strong> - Thank you messages for donations</li>
+                        <li><strong>DonationSolicitation</strong> - Asking for donations</li>
+                        <li><strong>AnnualStatement</strong> - Yearly donation summaries</li>
+                        <li><strong>Notification</strong> - General notifications</li>
+                        <li><strong>Welcome</strong> - Welcome messages for new users</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (showPreviewModal)
+    {
+        <div class="modal fade show" style="display: block;" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Template Preview</h5>
+                        <button type="button" class="btn-close" @onclick="ClosePreviewModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6>Template with Placeholders</h6>
+                                <div class="border p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
+                                    @if (template.IsHtml)
+                                    {
+                                        <div class="preview-html">@((MarkupString)template.TemplateContent)</div>
+                                    }
+                                    else
+                                    {
+                                        <pre class="mb-0">@template.TemplateContent</pre>
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Processed Preview</h6>
+                                <div class="border p-3 @(template.IsHtml ? "preview-html" : "")" style="max-height: 300px; overflow-y: auto;">
+                                    @if (string.IsNullOrEmpty(previewProcessedContent))
+                                    {
+                                        <div class="text-muted">Add placeholder values to see preview</div>
+                                    }
+                                    else if (template.IsHtml)
+                                    {
+                                        <div class="preview-html">@((MarkupString)previewProcessedContent)</div>
+                                    }
+                                    else
+                                    {
+                                        <pre class="mb-0">@previewProcessedContent</pre>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6>Placeholder Values</h6>
+                        <div class="row">
+                            @foreach (var placeholder in extractedPlaceholders)
+                            {
+                                <div class="col-md-6 mb-2">
+                                    <div class="input-group">
+                                        <span class="input-group-text">{{@placeholder}}</span>
+                                        <input type="text" class="form-control" 
+                                               placeholder="Value" 
+                                               @bind="previewPlaceholderValues[placeholder]" 
+                                               @bind:after="UpdatePreview" />
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="ClosePreviewModal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+}
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+
+    private bool IsNewTemplate => Id == null;
+    private MessageTemplate template = new MessageTemplate();
+    private bool isLoading = true;
+    private string senderPlaceholder = "";
+
+    // For category selection
+    private List<string> templateCategories = new List<string> { 
+        "ThankYou", 
+        "DonationSolicitation", 
+        "AnnualStatement", 
+        "Notification", 
+        "Welcome" 
+    };
+    private bool showCustomCategory = false;
+    private string customCategory = "";
+
+    // For placeholders
+    private List<string> extractedPlaceholders = new List<string>();
+
+    // For preview
+    private bool showPreviewModal = false;
+    private Dictionary<string, string> previewPlaceholderValues = new Dictionary<string, string>();
+    private string previewProcessedContent = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            if (IsNewTemplate)
+            {
+                // Initialize new template
+                template = new MessageTemplate
+                {
+                    IsActive = true,
+                    CreatedBy = "Admin"
+                };
+            }
+            else
+            {
+                // Load existing template
+                template = await MessageService.GetTemplateByIdAsync(Id.Value);
+                if (template == null)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Template not found");
+                    NavigateBack();
+                    return;
+                }
+
+                // Extract placeholders from content
+                ExtractPlaceholders();
+            }
+
+            // Set placeholder for sender field based on message type
+            UpdateSenderPlaceholder();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error loading template: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void MessageTypeChanged()
+    {
+        UpdateSenderPlaceholder();
+        
+        // Reset IsHtml if switched to SMS
+        if (template.MessageType == "SMS")
+        {
+            template.IsHtml = false;
+        }
+    }
+
+    private void UpdateSenderPlaceholder()
+    {
+        senderPlaceholder = template.MessageType == "Email"
+            ? "noreply@example.com"
+            : "+12125551234";
+    }
+
+    private void ExtractPlaceholders()
+    {
+        if (string.IsNullOrEmpty(template.TemplateContent))
+        {
+            extractedPlaceholders = new List<string>();
+            template.AvailablePlaceholders = "";
+            return;
+        }
+
+        // Extract placeholders from content
+        extractedPlaceholders = TemplateProcessor.ExtractPlaceholders(template.TemplateContent);
+        
+        // Update the available placeholders field
+        template.AvailablePlaceholders = string.Join(", ", extractedPlaceholders);
+    }
+
+    private void ShowCustomCategoryInput()
+    {
+        showCustomCategory = true;
+    }
+
+    private void AddCustomCategory()
+    {
+        if (!string.IsNullOrWhiteSpace(customCategory) && 
+            !templateCategories.Contains(customCategory, StringComparer.OrdinalIgnoreCase))
+        {
+            templateCategories.Add(customCategory);
+            template.Category = customCategory;
+            customCategory = "";
+            showCustomCategory = false;
+        }
+    }
+
+    private async Task SaveTemplate()
+    {
+        try
+        {
+            if (IsNewTemplate)
+            {
+                await MessageService.CreateTemplateAsync(template);
+                await JSRuntime.InvokeVoidAsync("alert", "Template created successfully");
+            }
+            else
+            {
+                await MessageService.UpdateTemplateAsync(template);
+                await JSRuntime.InvokeVoidAsync("alert", "Template updated successfully");
+            }
+            
+            NavigateBack();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error saving template: {ex.Message}");
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/admin/message-templates");
+    }
+
+    private void PreviewTemplate()
+    {
+        previewPlaceholderValues = new Dictionary<string, string>();
+        previewProcessedContent = "";
+        showPreviewModal = true;
+    }
+
+    private void ClosePreviewModal()
+    {
+        showPreviewModal = false;
+    }
+
+    private void UpdatePreview()
+    {
+        previewProcessedContent = TemplateProcessor.ProcessTemplate(
+            template.TemplateContent, 
+            previewPlaceholderValues
+        );
+    }
+}
+
+<style>
+    .preview-html {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+</style>
