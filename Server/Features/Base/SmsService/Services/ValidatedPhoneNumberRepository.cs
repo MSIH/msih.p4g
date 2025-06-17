@@ -4,8 +4,8 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using Microsoft.EntityFrameworkCore;
+using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Repositories;
-using msih.p4g.Server.Features.Base.SmsService.Data;
 using msih.p4g.Server.Features.Base.SmsService.Interfaces;
 using msih.p4g.Server.Features.Base.SmsService.Model;
 using System;
@@ -16,11 +16,13 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
     /// <summary>
     /// Repository implementation for managing validated phone numbers in the database
     /// </summary>
-    public class ValidatedPhoneNumberRepository : GenericRepository<ValidatedPhoneNumber, SmsDbContext>, IValidatedPhoneNumberRepository
+    public class ValidatedPhoneNumberRepository : GenericRepository<ValidatedPhoneNumber, ApplicationDbContext>, IValidatedPhoneNumberRepository
     {
-        public ValidatedPhoneNumberRepository(SmsDbContext context) : base(context)
+        public ValidatedPhoneNumberRepository(ApplicationDbContext context) : base(context)
         {
-        }        /// <inheritdoc />
+        }
+        
+        /// <inheritdoc />
         public async Task<ValidatedPhoneNumber> GetByPhoneNumberAsync(string phoneNumber)
         {
             if (string.IsNullOrWhiteSpace(phoneNumber))

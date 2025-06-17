@@ -11,33 +11,27 @@
  */
 
 using Microsoft.EntityFrameworkCore;
+using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.EmailService.Services;
-using msih.p4g.Server.Features.Base.PaymentService.Data;
 using msih.p4g.Server.Features.Base.PaymentService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
-using msih.p4g.Server.Features.Base.ProfileService.Data;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Repositories;
 using msih.p4g.Server.Features.Base.ProfileService.Services;
-using msih.p4g.Server.Features.Base.SettingsService.Data;
 using msih.p4g.Server.Features.Base.SettingsService.Extensions;
 using msih.p4g.Server.Features.Base.SettingsService.Model; // Add this using for EF Core migrations
 using msih.p4g.Server.Features.Base.SettingsService.Services;
-using msih.p4g.Server.Features.Base.SmsService.Data;
 using msih.p4g.Server.Features.Base.SmsService.Extensions;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.UserProfileService.Services;
-using msih.p4g.Server.Features.Base.UserService.Data;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Repositories;
 using msih.p4g.Server.Features.Base.UserService.Services;
-using msih.p4g.Server.Features.CampaignService.Data;
 using msih.p4g.Server.Features.DonationService.Data;
 using msih.p4g.Server.Features.DonationService.Services;
-using msih.p4g.Server.Features.DonorService.Data;
 using msih.p4g.Server.Features.DonorService.Interfaces;
 using msih.p4g.Server.Features.DonorService.Services;
 
@@ -51,56 +45,14 @@ builder.Services.AddRazorPages(options =>
 //builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-// Add Entity Framework with conditional provider selection based on environment
-DatabaseConfigurationHelper.AddConfiguredDbContext<CampaignDbContext>(
+// Add Entity Framework with the unified ApplicationDbContext
+DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
     builder.Services,
     builder.Configuration,
     builder.Environment);
 
-// Register UserDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<UserDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
-
-// Register SmsDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<SmsDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
-
-// Register PaymentDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<PaymentDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
-
-// Register SettingsDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<SettingsDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
-
-// Register DonorDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<DonorDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
-
-// Register ProfileDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<ProfileDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
-
-// Register DonationDbContext for DI and migrations
-DatabaseConfigurationHelper.AddConfiguredDbContext<DonationDbContext>(
-    builder.Services,
-    builder.Configuration,
-    builder.Environment);
-
-// Register generic repository for Setting using SettingsDbContext (not CampaignDbContext)
-builder.Services.AddScoped<IGenericRepository<Setting>, GenericRepository<Setting, SettingsDbContext>>();
+// Register generic repository for Setting using ApplicationDbContext 
+builder.Services.AddScoped<IGenericRepository<Setting>, GenericRepository<Setting, ApplicationDbContext>>();
 
 // Register Email Service - choose one implementation based on configuration or use a factory
 string emailProvider = builder.Configuration["EmailProvider"] ?? "SendGrid";
@@ -144,7 +96,6 @@ builder.Services.AddScoped<DonationService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 
-
 // Register UserProfileService for coordinating User and Profile operations
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
@@ -153,16 +104,9 @@ var app = builder.Build();
 // Apply pending migrations and create database/tables if needed
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<CampaignDbContext>();
-    dbContext.Database.Migrate();
-    // Migrate all other DbContexts
-    scope.ServiceProvider.GetRequiredService<UserDbContext>().Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<SmsDbContext>().Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<PaymentDbContext>().Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<SettingsDbContext>().Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<DonorDbContext>().Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<ProfileDbContext>().Database.Migrate();
-    scope.ServiceProvider.GetRequiredService<DonationDbContext>().Database.Migrate();
+    // Migrate the unified ApplicationDbContext
+    var appDbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    appDbContext.Database.Migrate();
 
     // Initialize settings from appsettings.json
     var settingsInitializer = scope.ServiceProvider.GetRequiredService<SettingsInitializer>();
