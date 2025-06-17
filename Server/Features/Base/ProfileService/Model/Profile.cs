@@ -25,7 +25,8 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Model
         public virtual UserService.Models.User User { get; set; }
 
         // Profile fields
-        public int? Age { get; set; }
+        [DataType(DataType.Date)]
+        public DateTime? DateOfBirth { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string FullName => $"{FirstName} {LastName}";
