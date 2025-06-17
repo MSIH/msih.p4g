@@ -12,6 +12,10 @@ namespace msih.p4g.Server.Common.Data.Extensions
     /// <summary>
     /// Extension methods for registering repositories in the service collection
     /// </summary>
+    /// <remarks>
+    /// This class is currently not being used in the project. It is kept for potential future use.
+    /// Generic repositories are registered directly using services.AddScoped in Program.cs and service extension classes.
+    /// </remarks>
     public static class RepositoryExtensions
     {
         /// <summary>
@@ -21,6 +25,9 @@ namespace msih.p4g.Server.Common.Data.Extensions
         /// <typeparam name="TContext">The DbContext type</typeparam>
         /// <param name="services">The service collection</param>
         /// <returns>The service collection</returns>
+        /// <remarks>
+        /// This method is currently not being used in the project. It is kept for potential future use.
+        /// </remarks>
         public static IServiceCollection AddGenericRepository<TEntity, TContext>(this IServiceCollection services)
             where TEntity : BaseEntity
             where TContext : DbContext

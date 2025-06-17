@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -16,6 +10,7 @@ using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.EmailService.Services;
+using msih.p4g.Server.Features.Base.MessageService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
@@ -67,6 +62,9 @@ else
 
 // Register SMS Service and related dependencies
 builder.Services.AddSmsServices(builder.Configuration, builder.Environment);
+
+// Register Message Service (for both email and SMS) and related dependencies
+builder.Services.AddMessageServices(builder.Configuration, builder.Environment);
 
 // Register Payment Service and related dependencies
 builder.Services.AddPaymentServices(builder.Configuration, builder.Environment);

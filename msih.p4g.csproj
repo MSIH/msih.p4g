@@ -23,8 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SimpleEmail" Version="4.0.0.8" />
+    <PackageReference Include="AWSSDK.SimpleEmail" Version="4.0.0.9" />
     <PackageReference Include="Braintree" Version="5.33.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="9.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />
     <PackageReference Include="MySql.EntityFrameworkCore" Version="9.0.3" />
@@ -32,10 +33,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.2.2" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.2.2" />
-    <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.9.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.9.2" />
+    <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="SendGrid" Version="9.29.3" />
     <PackageReference Include="Twilio" Version="7.11.3" />
   </ItemGroup>
@@ -46,6 +47,10 @@
     <Folder Include="Server\Features\Base\ProfileService\Data\Migrations\" />
     <Folder Include="Server\Features\Base\UserService\Data\Migrations\" />
     <Folder Include="Shared\Dto\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="ClearMigrationsLock.csproj" />
   </ItemGroup>
 
 </Project>

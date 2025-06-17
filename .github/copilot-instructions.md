@@ -16,5 +16,7 @@ Shared - this is for code that is shared between the server and the client. It s
 
 Settings should be stored in the database with correspond User interface. If setting is not in database then it should be in the appsettings.json file. The settings should be loaded into a service that can be injected into the components that need them. The settings should be strongly typed and use the Options pattern.
 
+Local development will use SQLlite and production will use mySQL. Make sure datatypes support both databases.
+
 
 
