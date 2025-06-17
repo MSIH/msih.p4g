@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -6,18 +12,23 @@
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Features.Base.SettingsService.Model;
 
-namespace msih.p4g.Server.Features.Base.SettingsService.Data
+namespace msih.p4g.Server.Common.Data
 {
     /// <summary>
-    /// DbContext for Setting entity only
+    /// Partial DbContext implementation for Setting entity
     /// </summary>
-    public class SettingsDbContext : DbContext
+    public partial class ApplicationDbContext
     {
-        public SettingsDbContext(DbContextOptions<SettingsDbContext> options) : base(options) { }
+        /// <summary>
+        /// Gets or sets the Settings DbSet
+        /// </summary>
         public DbSet<Setting> Settings { get; set; }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+
+        /// <summary>
+        /// Configure the Setting entity
+        /// </summary>
+        partial void ConfigureSettingsModel(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Setting>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -29,3 +40,5 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Data
         }
     }
 }
+
+

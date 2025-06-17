@@ -12,18 +12,23 @@
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Features.CampaignService.Model;
 
-namespace msih.p4g.Server.Features.CampaignService.Data
+namespace msih.p4g.Server.Common.Data
 {
     /// <summary>
-    /// DbContext for Campaign entity only
+    /// Partial DbContext implementation for Campaign entity
     /// </summary>
-    public class CampaignDbContext : DbContext
+    public partial class ApplicationDbContext
     {
-        public CampaignDbContext(DbContextOptions<CampaignDbContext> options) : base(options) { }
+        /// <summary>
+        /// Gets or sets the Campaigns DbSet
+        /// </summary>
         public DbSet<Campaign> Campaigns { get; set; }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+
+        /// <summary>
+        /// Configure the Campaign entity
+        /// </summary>
+        partial void ConfigureCampaignModel(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Campaign>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -38,3 +43,5 @@ namespace msih.p4g.Server.Features.CampaignService.Data
         }
     }
 }
+
+

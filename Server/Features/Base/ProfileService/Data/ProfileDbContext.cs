@@ -12,18 +12,23 @@
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
 
-namespace msih.p4g.Server.Features.Base.ProfileService.Data
+namespace msih.p4g.Server.Common.Data
 {
     /// <summary>
-    /// DbContext for Profile entity only
+    /// Partial DbContext implementation for Profile entity
     /// </summary>
-    public class ProfileDbContext : DbContext
+    public partial class ApplicationDbContext
     {
-        public ProfileDbContext(DbContextOptions<ProfileDbContext> options) : base(options) { }
+        /// <summary>
+        /// Gets or sets the Profiles DbSet
+        /// </summary>
         public DbSet<Profile> Profiles { get; set; }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+
+        /// <summary>
+        /// Configure the Profile entity
+        /// </summary>
+        partial void ConfigureProfileModel(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Profile>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -56,3 +61,5 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Data
         }
     }
 }
+
+

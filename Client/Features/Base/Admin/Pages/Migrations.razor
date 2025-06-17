@@ -8,7 +8,7 @@
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.EntityFrameworkCore
-@using msih.p4g.Server.Features.Base.SmsService.Data
+@using msih.p4g.Server.Common.Data
 @inject IServiceProvider ServiceProvider
 
 <h3>Database Migrations</h3>
@@ -17,14 +17,14 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                SMS Service Migrations
+                Database Migrations
             </div>
             <div class="card-body">
                 <div class="mb-3">
                     <label for="migrationName" class="form-label">Migration Name</label>
                     <input @bind="MigrationName" type="text" class="form-control" id="migrationName" placeholder="InitialCreate" />
                 </div>
-                <button @onclick="AddSmsDbMigration" class="btn btn-primary me-2" disabled="@IsBusy">
+                <button @onclick="AddMigration" class="btn btn-primary me-2" disabled="@IsBusy">
                     @if (IsBusy)
                     {
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -35,7 +35,7 @@
                         <span>Add Migration</span>
                     }
                 </button>
-                <button @onclick="ApplySmsDbMigrations" class="btn btn-success" disabled="@IsBusy">
+                <button @onclick="ApplyMigrations" class="btn btn-success" disabled="@IsBusy">
                     @if (IsBusy)
                     {
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -84,7 +84,7 @@
     private string Message { get; set; } = "";
     private string MessageClass { get; set; } = "alert-info";
     private bool IsBusy { get; set; } = false;
-    private string[] PendingMigrations { get; set; } = Array.Empty<string>();
+    private IEnumerable<string> PendingMigrations { get; set; } = Enumerable.Empty<string>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -93,12 +93,20 @@
 
     private async Task LoadPendingMigrations()
     {
-        using var scope = ServiceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SmsDbContext>();
-        var PendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+        try
+        {
+            using var scope = ServiceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            PendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ShowError($"Error loading pending migrations: {ex.Message}");
+        }
     }
 
-    private async Task AddSmsDbMigration()
+    private async Task AddMigration()
     {
         if (string.IsNullOrWhiteSpace(MigrationName))
         {
@@ -125,7 +133,7 @@
         }
     }
 
-    private async Task ApplySmsDbMigrations()
+    private async Task ApplyMigrations()
     {
         IsBusy = true;
         Message = "";
@@ -133,7 +141,7 @@
         try
         {
             using var scope = ServiceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<SmsDbContext>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             await dbContext.Database.MigrateAsync();
             await LoadPendingMigrations();
             ShowSuccess("Migrations applied successfully!");

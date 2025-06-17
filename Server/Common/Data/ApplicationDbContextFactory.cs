@@ -1,3 +1,8 @@
+/**
+ * Copyright (c) 2025 MSIH LLC. All rights reserved.
+ * This file is developed for Make Sure It Happens Inc.
+ * Unauthorized copying, modification, distribution, or use is prohibited.
+ */
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -5,14 +10,14 @@ using msih.p4g.Server.Common.Data.Extensions;
 using System;
 using System.IO;
 
-namespace msih.p4g.Server.Features.Base.UserService.Data
+namespace msih.p4g.Server.Common.Data
 {
     /// <summary>
-    /// Design-time factory for UserDbContext to support EF Core migrations
+    /// Design-time factory for ApplicationDbContext to support EF Core migrations
     /// </summary>
-    public class UserDbContextFactory : IDesignTimeDbContextFactory<UserDbContext>
+    public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
     {
-        public UserDbContext CreateDbContext(string[] args)
+        public ApplicationDbContext CreateDbContext(string[] args)
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -20,13 +25,13 @@ namespace msih.p4g.Server.Features.Base.UserService.Data
                 .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development"}.json", optional: true)
                 .Build();
 
-            var optionsBuilder = new DbContextOptionsBuilder<UserDbContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             DatabaseConfigurationHelper.ConfigureDbContextOptions(
                 optionsBuilder,
                 configuration,
                 isDevelopment: Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development");
 
-            return new UserDbContext(optionsBuilder.Options);
+            return new ApplicationDbContext(optionsBuilder.Options);
         }
     }
 }

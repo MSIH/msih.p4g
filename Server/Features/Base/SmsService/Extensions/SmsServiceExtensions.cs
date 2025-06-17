@@ -3,7 +3,11 @@
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
-using msih.p4g.Server.Common.Data.Extensions;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using msih.p4g.Server.Common.Data;
+using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.SmsService.Data;
 using msih.p4g.Server.Features.Base.SmsService.Interfaces;
 using msih.p4g.Server.Features.Base.SmsService.Model;
@@ -29,20 +33,13 @@ namespace msih.p4g.Server.Features.Base.SmsService.Extensions
             IConfiguration configuration,
             IHostEnvironment hostEnvironment)
         {
-            // Add SMS DbContext with the appropriate provider
-            DatabaseConfigurationHelper.AddConfiguredDbContext<SmsDbContext>(
-                services,
-                configuration,
-                hostEnvironment);
-
-
             // Register services
             services.AddScoped<ISmsService, TwilioSmsService>();
             services.AddScoped<IValidatedPhoneNumberRepository, ValidatedPhoneNumberRepository>();
             services.AddScoped<PhoneValidationService>();
 
             // Register generic repositories
-            services.AddGenericRepository<ValidatedPhoneNumber, SmsDbContext>();
+            services.AddScoped<IGenericRepository<ValidatedPhoneNumber>, GenericRepository<ValidatedPhoneNumber, ApplicationDbContext>>();
 
             // Register migration applier as a hosted service
             services.AddHostedService<MigrationApplier>();

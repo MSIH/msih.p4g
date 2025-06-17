@@ -4,20 +4,31 @@
 //  * Unauthorized copying, modification, distribution, or use is prohibited.
 //  */
 
+/**
+ * Copyright (c) 2025 MSIH LLC. All rights reserved.
+ * This file is developed for Make Sure It Happens Inc.
+ * Unauthorized copying, modification, distribution, or use is prohibited.
+ */
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Features.Base.UserService.Models;
 
-namespace msih.p4g.Server.Features.Base.UserService.Data
+namespace msih.p4g.Server.Common.Data
 {
-    public class UserDbContext : DbContext
+    /// <summary>
+    /// Partial DbContext implementation for User entity
+    /// </summary>
+    public partial class ApplicationDbContext
     {
-        public UserDbContext(DbContextOptions<UserDbContext> options) : base(options) { }
+        /// <summary>
+        /// Gets or sets the Users DbSet
+        /// </summary>
         public DbSet<User> Users { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        /// <summary>
+        /// Configure the User entity
+        /// </summary>
+        partial void ConfigureUserModel(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
             modelBuilder.Entity<User>(entity =>
             {
                 entity.ToTable("Users");
@@ -30,3 +41,5 @@ namespace msih.p4g.Server.Features.Base.UserService.Data
         }
     }
 }
+
+

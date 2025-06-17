@@ -12,18 +12,23 @@
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Features.DonorService.Model;
 
-namespace msih.p4g.Server.Features.DonorService.Data
+namespace msih.p4g.Server.Common.Data
 {
     /// <summary>
-    /// DbContext for Donor entity only
+    /// Partial DbContext implementation for Donor entity
     /// </summary>
-    public class DonorDbContext : DbContext
+    public partial class ApplicationDbContext
     {
-        public DonorDbContext(DbContextOptions<DonorDbContext> options) : base(options) { }
+        /// <summary>
+        /// Gets or sets the Donors DbSet
+        /// </summary>
         public DbSet<Donor> Donors { get; set; }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+
+        /// <summary>
+        /// Configure the Donor entity
+        /// </summary>
+        partial void ConfigureDonorModel(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Donor>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -35,3 +40,5 @@ namespace msih.p4g.Server.Features.DonorService.Data
         }
     }
 }
+
+
