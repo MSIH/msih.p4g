@@ -162,5 +162,40 @@ namespace msih.p4g.Server.Features.Base.MessageService.Interfaces
         /// <param name="messageType">The message type (Email or SMS)</param>
         /// <returns>The default template for the category and message type</returns>
         Task<MessageTemplate> GetDefaultTemplateAsync(string category, string messageType);
+
+        /// <summary>
+        /// Gets a template by ID
+        /// </summary>
+        /// <param name="id">The ID of the template to retrieve</param>
+        /// <returns>The template with the specified ID, or null if not found</returns>
+        Task<MessageTemplate> GetTemplateByIdAsync(int id);
+
+        /// <summary>
+        /// Creates a new message template
+        /// </summary>
+        /// <param name="template">The template to create</param>
+        /// <returns>The created template with ID assigned</returns>
+        Task<MessageTemplate> CreateTemplateAsync(MessageTemplate template);
+
+        /// <summary>
+        /// Updates an existing message template
+        /// </summary>
+        /// <param name="template">The template to update</param>
+        /// <returns>The updated template</returns>
+        Task<MessageTemplate> UpdateTemplateAsync(MessageTemplate template);
+
+        /// <summary>
+        /// Deletes a message template
+        /// </summary>
+        /// <param name="id">The ID of the template to delete</param>
+        /// <returns>True if deleted successfully, false otherwise</returns>
+        Task<bool> DeleteTemplateAsync(int id);
+
+        /// <summary>
+        /// Sets a template as the default for its category and message type
+        /// </summary>
+        /// <param name="id">The ID of the template to set as default</param>
+        /// <returns>True if successful, false otherwise</returns>
+        Task<bool> SetTemplateAsDefaultAsync(int id);
     }
 }

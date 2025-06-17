@@ -564,5 +564,147 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
 
             return await _templateRepository.GetDefaultTemplateAsync(category, messageType);
         }
+
+        /// <inheritdoc />
+        public async Task<MessageTemplate> GetTemplateByIdAsync(int id)
+        {
+            return await _templateRepository.GetByIdAsync(id);
+        }
+
+        /// <inheritdoc />
+        public async Task<MessageTemplate> CreateTemplateAsync(MessageTemplate template)
+        {
+            if (template == null)
+                throw new ArgumentNullException(nameof(template));
+
+            // Validate the template
+            ValidateTemplate(template);
+
+            // If this is set as default, we need to unset any existing defaults
+            if (template.IsDefault)
+            {
+                await UnsetDefaultTemplatesAsync(template.Category, template.MessageType);
+            }
+
+            // Set audit properties
+            template.CreatedOn = DateTime.UtcNow;
+            template.IsActive = true;
+            template.CreatedBy = template.CreatedBy ?? "System";
+
+            // Create the template
+            return await _templateRepository.AddAsync(template);
+        }
+
+        /// <inheritdoc />
+        public async Task<MessageTemplate> UpdateTemplateAsync(MessageTemplate template)
+        {
+            if (template == null)
+                throw new ArgumentNullException(nameof(template));
+
+            // Validate the template
+            ValidateTemplate(template);
+
+            // Get the existing template
+            var existingTemplate = await _templateRepository.GetByIdAsync(template.Id);
+            if (existingTemplate == null)
+                throw new ArgumentException($"Template with ID {template.Id} not found", nameof(template.Id));
+
+            // If this is set as default, we need to unset any existing defaults
+            if (template.IsDefault && !existingTemplate.IsDefault)
+            {
+                await UnsetDefaultTemplatesAsync(template.Category, template.MessageType);
+            }
+
+            // Update the template
+            existingTemplate.Name = template.Name;
+            existingTemplate.Description = template.Description;
+            existingTemplate.Category = template.Category;
+            existingTemplate.MessageType = template.MessageType;
+            existingTemplate.DefaultSubject = template.DefaultSubject;
+            existingTemplate.DefaultSender = template.DefaultSender;
+            existingTemplate.TemplateContent = template.TemplateContent;
+            existingTemplate.IsHtml = template.IsHtml;
+            existingTemplate.AvailablePlaceholders = template.AvailablePlaceholders;
+            existingTemplate.IsDefault = template.IsDefault;
+            existingTemplate.ModifiedOn = DateTime.UtcNow;
+            existingTemplate.ModifiedBy = template.ModifiedBy ?? "System";
+
+            await _templateRepository.UpdateAsync(existingTemplate);
+            return existingTemplate;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> DeleteTemplateAsync(int id)
+        {
+            var template = await _templateRepository.GetByIdAsync(id);
+            if (template == null)
+                return false;
+
+            // Check if there are any messages using this template
+            var usageCount = await _messageRepository.GetContext().Set<MessageTemplateUsage>()
+                .CountAsync(tu => tu.TemplateId == id);
+
+            if (usageCount > 0)
+            {
+                // Soft delete if there are messages using this template
+                template.IsDeleted = true;
+                template.ModifiedOn = DateTime.UtcNow;
+                template.ModifiedBy = "System";
+                await _templateRepository.UpdateAsync(template);
+            }
+            else
+            {
+                // Hard delete if no messages are using this template
+                await _templateRepository.DeleteAsync(id);
+            }
+
+            return true;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> SetTemplateAsDefaultAsync(int id)
+        {
+            return await _templateRepository.SetAsDefaultAsync(id);
+        }
+
+        /// <summary>
+        /// Validates a message template
+        /// </summary>
+        private void ValidateTemplate(MessageTemplate template)
+        {
+            if (string.IsNullOrWhiteSpace(template.Name))
+                throw new ArgumentException("Template name cannot be empty", nameof(template.Name));
+
+            if (string.IsNullOrWhiteSpace(template.Category))
+                throw new ArgumentException("Template category cannot be empty", nameof(template.Category));
+
+            if (string.IsNullOrWhiteSpace(template.MessageType))
+                throw new ArgumentException("Template message type cannot be empty", nameof(template.MessageType));
+
+            if (string.IsNullOrWhiteSpace(template.TemplateContent))
+                throw new ArgumentException("Template content cannot be empty", nameof(template.TemplateContent));
+
+            if (template.MessageType != _emailType && template.MessageType != _smsType)
+                throw new ArgumentException($"Invalid message type: {template.MessageType}. Must be '{_emailType}' or '{_smsType}'", nameof(template.MessageType));
+
+            // SMS templates cannot be HTML
+            if (template.MessageType == _smsType && template.IsHtml)
+                throw new ArgumentException("SMS templates cannot be HTML", nameof(template.IsHtml));
+        }
+
+        /// <summary>
+        /// Unsets default flag for all templates in a category and message type
+        /// </summary>
+        private async Task UnsetDefaultTemplatesAsync(string category, string messageType)
+        {
+            var templates = await _templateRepository.GetByCategoryAsync(category, messageType);
+            foreach (var template in templates.Where(t => t.IsDefault))
+            {
+                template.IsDefault = false;
+                template.ModifiedOn = DateTime.UtcNow;
+                template.ModifiedBy = "System";
+                await _templateRepository.UpdateAsync(template);
+            }
+        }
     }
 }

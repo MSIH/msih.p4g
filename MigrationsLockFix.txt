@@ -1,0 +1,19 @@
+# Alternative manual solution to clear the EF migrations lock:
+
+# If you're comfortable using SQLite commands directly, you can run:
+
+# For Windows (Command Prompt):
+# sqlite3 msih_p4g.db "DROP TABLE IF EXISTS __EFMigrationsLock"
+
+# For Windows (PowerShell):
+# sqlite3 msih_p4g.db "DROP TABLE IF EXISTS __EFMigrationsLock"
+
+# For macOS/Linux:
+# sqlite3 msih_p4g.db "DROP TABLE IF EXISTS __EFMigrationsLock"
+
+# If you don't have sqlite3 installed, you can use the .NET tool:
+# dotnet tool install --global dotnet-sqlite3
+# dotnet sqlite3 msih_p4g.db "DROP TABLE IF EXISTS __EFMigrationsLock"
+
+# Ensure you run this command from the directory containing your SQLite database file (msih_p4g.db)
+# The database filename might be different in your project based on your connection string
