@@ -21,31 +21,24 @@ namespace msih.p4g.Server.Features.DonorService.Services
 
         public async Task<List<Donor>> GetAllAsync()
         {
-            return await _db.Donors.Where(d => !d.IsDeleted).ToListAsync();
+            return await _db.Donors.ToListAsync();
         }
 
         public async Task<Donor?> GetByIdAsync(int id)
         {
-            return await _db.Donors.FirstOrDefaultAsync(d => d.Id == id && !d.IsDeleted);
+            return await _db.Donors.FirstOrDefaultAsync(d => d.Id == id);
         }
 
         public async Task<List<Donor>> SearchAsync(string searchTerm)
         {
-            // Only search by DonorId or PaymentProcessorDonorId now
+            // Only search by PaymentProcessorDonorId now
             return await _db.Donors
-                .Where(d => !d.IsDeleted && (
-                    d.DonorId.Contains(searchTerm) ||
-                    (d.PaymentProcessorDonorId != null && d.PaymentProcessorDonorId.Contains(searchTerm))
-                ))
+                .Where(d => d.PaymentProcessorDonorId != null && d.PaymentProcessorDonorId.Contains(searchTerm))
                 .ToListAsync();
         }
 
         public async Task<Donor> AddAsync(Donor donor)
         {
-            if (string.IsNullOrWhiteSpace(donor.DonorId))
-            {
-                donor.DonorId = Guid.NewGuid().ToString();
-            }
             _db.Donors.Add(donor);
             await _db.SaveChangesAsync();
             return donor;
@@ -53,7 +46,7 @@ namespace msih.p4g.Server.Features.DonorService.Services
 
         public async Task<bool> UpdateAsync(Donor donor)
         {
-            var existing = await _db.Donors.FirstOrDefaultAsync(d => d.Id == donor.Id && !d.IsDeleted);
+            var existing = await _db.Donors.FirstOrDefaultAsync(d => d.Id == donor.Id);
             if (existing == null) return false;
             _db.Entry(existing).CurrentValues.SetValues(donor);
             await _db.SaveChangesAsync();
@@ -62,9 +55,9 @@ namespace msih.p4g.Server.Features.DonorService.Services
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var donor = await _db.Donors.FirstOrDefaultAsync(d => d.Id == id && !d.IsDeleted);
+            var donor = await _db.Donors.FirstOrDefaultAsync(d => d.Id == id);
             if (donor == null) return false;
-            donor.IsDeleted = true;
+            _db.Donors.Remove(donor);
             await _db.SaveChangesAsync();
             return true;
         }

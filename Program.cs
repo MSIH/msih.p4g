@@ -29,6 +29,9 @@ using msih.p4g.Server.Features.DonationService.Data;
 using msih.p4g.Server.Features.DonationService.Services;
 using msih.p4g.Server.Features.DonorService.Interfaces;
 using msih.p4g.Server.Features.DonorService.Services;
+using msih.p4g.Server.Features.FundraiserService.Interfaces;
+using msih.p4g.Server.Features.FundraiserService.Repositories;
+using msih.p4g.Server.Features.FundraiserService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,6 +99,10 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 // Register UserProfileService for coordinating User and Profile operations
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+
+// Register FundraiserRepository and FundraiserService for DI
+builder.Services.AddScoped<FundraiserRepository>();
+builder.Services.AddScoped<IFundraiserService, FundraiserService>();
 
 var app = builder.Build();
 

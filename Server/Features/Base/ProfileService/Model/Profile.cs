@@ -21,7 +21,7 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Model
         // Navigation to User
         public int UserId { get; set; }
         [ForeignKey("UserId")]
-        [NotMapped]
+
         public virtual UserService.Models.User User { get; set; }
 
         // Profile fields

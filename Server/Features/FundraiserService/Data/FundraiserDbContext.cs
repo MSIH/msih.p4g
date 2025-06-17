@@ -10,33 +10,31 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using Microsoft.EntityFrameworkCore;
-using msih.p4g.Server.Features.DonorService.Model;
+using msih.p4g.Server.Features.FundraiserService.Model;
 
 namespace msih.p4g.Server.Common.Data
 {
     /// <summary>
-    /// Partial DbContext implementation for Donor entity
+    /// Partial DbContext implementation for Fundraiser entity
     /// </summary>
     public partial class ApplicationDbContext
     {
         /// <summary>
-        /// Gets or sets the Donors DbSet
+        /// Gets or sets the Fundraisers DbSet
         /// </summary>
-        public DbSet<Donor> Donors { get; set; }
+        public DbSet<Fundraiser> Fundraisers { get; set; }
 
         /// <summary>
-        /// Configure the Donor entity
+        /// Configure the Fundraiser entity
         /// </summary>
-        partial void ConfigureDonorModel(ModelBuilder modelBuilder)
+        partial void ConfigureFundraiserModel(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Donor>(entity =>
+            modelBuilder.Entity<Fundraiser>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.UserId).IsRequired();
-                entity.Property(e => e.PaymentProcessorDonorId).IsRequired(false);
+                entity.Property(e => e.PayPalAccount).HasMaxLength(200);
+                entity.Property(e => e.W9Document).HasMaxLength(500);
             });
         }
     }
 }
-
-
