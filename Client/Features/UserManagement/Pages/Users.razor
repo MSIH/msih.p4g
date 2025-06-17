@@ -8,7 +8,8 @@
 @namespace msih.p4g.Client.Features.UserManagement.Pages
 
 @using msih.p4g.Server.Features.Base.UserService.Models
-@inject msih.p4g.Server.Features.Base.UserService.Services.UserService UserManagementService
+@using msih.p4g.Server.Features.Base.UserService.Interfaces
+@inject IUserService UserManagementService
 @inject NavigationManager Navigation
 
 <PageTitle>User Management</PageTitle>

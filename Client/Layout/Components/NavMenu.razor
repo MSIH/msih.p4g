@@ -5,6 +5,8 @@
  *@
 
 @namespace msih.p4g.Client.Layout.Components
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <style>
     .navbar, .top-row {
@@ -38,7 +40,7 @@
     </div>
 </div>
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="CollapseNavMenu">
+<div class="@NavMenuCssClass nav-scrollable" @onclick="MaybeCollapseNavMenu">
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
@@ -91,7 +93,7 @@
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="admin/campaignmanager">
+            <NavLink class="nav-link" href="admin/campaigns">
                 <span class="oi oi-briefcase" aria-hidden="true"></span> Campaigns
             </NavLink>
         </div>
@@ -117,7 +119,10 @@
 </div>
 
 @code {
-    private bool collapseNavMenu = false; // Changed from true to false to have the menu expanded by default
+    private bool collapseNavMenu = false; // Default expanded
+    private bool isSmallScreen = false;
+    private const int MOBILE_WIDTH_THRESHOLD = 768; // Bootstrap's md breakpoint
+    private DotNetObjectReference<NavMenu>? objRef;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
@@ -126,8 +131,57 @@
         collapseNavMenu = !collapseNavMenu;
     }
 
-    private void CollapseNavMenu()
+    private void MaybeCollapseNavMenu()
     {
-        collapseNavMenu = true;
+        // Only collapse the menu on small screens
+        if (isSmallScreen)
+        {
+            collapseNavMenu = true;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Create reference to this component
+            objRef = DotNetObjectReference.Create(this);
+            
+            // Check initial screen size
+            await CheckScreenSize();
+            
+            // Register for resize events
+            await JSRuntime.InvokeVoidAsync("setNavMenuReference", objRef);
+        }
+    }
+
+    private async Task CheckScreenSize()
+    {
+        try 
+        {
+            var width = await JSRuntime.InvokeAsync<int>("getWindowWidth");
+            isSmallScreen = width < MOBILE_WIDTH_THRESHOLD;
+        }
+        catch
+        {
+            // If JS interop fails, default to false to prevent menu from collapsing
+            isSmallScreen = false;
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnBrowserResize()
+    {
+        await CheckScreenSize();
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Clean up the reference when the component is disposed
+        if (objRef != null)
+        {
+            objRef.Dispose();
+        }
     }
 }

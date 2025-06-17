@@ -5,8 +5,8 @@
  *@
 
 @page "/sms"
-@using System.Net.Http.Json
-@inject HttpClient Http
+@using msih.p4g.Server.Features.Base.SmsService.Interfaces
+@inject ISmsService SmsService
 @inject ILogger<SendSMS> Logger
 
 <h3>Send SMS Message</h3>
@@ -71,25 +71,24 @@
         try
         {
             isSending = true;
-            var response = await Http.PostAsJsonAsync("api/sms/send", request);
             
-            if (response.IsSuccessStatusCode)
+            if (!SmsService.IsValidPhoneNumber(request.To))
             {
-                message = "SMS sent successfully!";
-                alertClass = "alert-success";
-                request = new SendSMSRequest();
-            }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                message = $"Failed to send SMS: {error}";
+                message = "Invalid phone number format. Must be in E.164 format (e.g., +12125551234)";
                 alertClass = "alert-danger";
-                Logger.LogError("SMS sending failed: {Error}", error);
+                return;
             }
+
+            // Call the ISmsService directly
+            await SmsService.SendSmsAsync(request.To, request.Message);
+            
+            message = "SMS sent successfully!";
+            alertClass = "alert-success";
+            request = new SendSMSRequest();
         }
         catch (Exception ex)
         {
-            message = "An error occurred while sending the SMS.";
+            message = $"An error occurred while sending the SMS: {ex.Message}";
             alertClass = "alert-danger";
             Logger.LogError(ex, "Error sending SMS");
         }

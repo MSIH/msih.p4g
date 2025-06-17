@@ -1,0 +1,71 @@
+@* 
+ * Copyright (c) 2025 MSIH LLC. All rights reserved.
+ * This file is developed for Make Sure It Happens Inc.
+ * Unauthorized copying, modification, distribution, or use is prohibited.
+ *@
+
+@namespace msih.p4g.Client.Layout.Components
+@using msih.p4g.Server.Features.Base.UserService.Models
+@using msih.p4g.Server.Features.Base.UserService.Interfaces
+@inject IUserService UserService
+@inject NavigationManager NavigationManager
+
+<div class="dropdown">
+    <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="oi oi-person" aria-hidden="true"></span>
+        @(currentUser?.Email ?? "Account")
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
+        @if (currentUser != null)
+        {
+            <li><a class="dropdown-item" href="profile">My Profile</a></li>
+            <li><a class="dropdown-item" href="donations">My Donations</a></li>
+            @if (currentUser.Role == UserRole.Admin)
+            {
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="users">User Management</a></li>
+                <li><a class="dropdown-item" href="admin/donors">Donor Management</a></li>
+            }
+            <li><hr class="dropdown-divider"></li>
+            <li><button class="dropdown-item" @onclick="Logout">Logout</button></li>
+        }
+        else
+        {
+            <li><a class="dropdown-item" href="login">Login</a></li>
+            <li><a class="dropdown-item" href="register">Register</a></li>
+        }
+    </ul>
+</div>
+
+@code {
+    private User? currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUser();
+    }
+
+    private async Task LoadCurrentUser()
+    {
+        try
+        {
+            // This is a placeholder - in a real app, you would get the current user
+            // from an authentication service or state provider
+            // For now, we'll just use the first user as an example
+            var users = await UserService.GetAllAsync(includeInactive: false);
+            currentUser = users.FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading user: {ex.Message}");
+            currentUser = null;
+        }
+    }
+
+    private void Logout()
+    {
+        // This would be implemented with proper authentication service
+        currentUser = null;
+        NavigationManager.NavigateTo("/");
+    }
+}
