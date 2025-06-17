@@ -19,7 +19,7 @@ else
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Age</th>
+                    <th>Date of Birth</th>
                     <th>Mobile</th>
                     <th>IsActive</th>
                     <th>Consent (Text/Email/Mail)</th>
@@ -32,7 +32,7 @@ else
                 {
                     <tr>
                         <td>@profile.FullName</td>
-                        <td>@profile.Age</td>
+                        <td>@(profile.DateOfBirth?.ToShortDateString() ?? "Not set")</td>
                         <td>@profile.MobileNumber</td>
                         <td>
                             <input type="checkbox" checked="@profile.IsActive" disabled />

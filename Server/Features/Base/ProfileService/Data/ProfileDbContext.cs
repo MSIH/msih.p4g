@@ -32,7 +32,7 @@ namespace msih.p4g.Server.Common.Data
             modelBuilder.Entity<Profile>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Age).IsRequired(false);
+                entity.Property(e => e.DateOfBirth).IsRequired(false);
                 entity.Property(e => e.FirstName).HasMaxLength(100).IsRequired(false);
                 entity.Property(e => e.LastName).HasMaxLength(100).IsRequired(false);
                 entity.Ignore(e => e.FullName);
