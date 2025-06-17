@@ -93,12 +93,7 @@
 
                     <div class="mb-6">
                         <label for="role" class="form-label">Role</label>
-                        <InputSelect id="role" @bind-Value="user.Role" class="form-select">
-                            @foreach (var role in Enum.GetValues<UserRole>())
-                            {
-                                <option value="@role">@role</option>
-                            }
-                        </InputSelect>
+                        <input id="role" class="form-control" value="Fundraiser" readonly />
                     </div>
 
                     <button type="submit" class="btn btn-primary" disabled="@isProcessing">
