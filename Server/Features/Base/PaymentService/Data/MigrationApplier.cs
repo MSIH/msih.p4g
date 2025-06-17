@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using msih.p4g.Server.Common.Data;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ using System.Threading.Tasks;
 namespace msih.p4g.Server.Features.Base.PaymentService.Data
 {
     /// <summary>
-    /// Applies migrations for the PaymentDbContext during application startup
+    /// Applies migrations for the Payment service during application startup
     /// </summary>
     public class MigrationApplier : IHostedService
     {
@@ -34,7 +35,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Data
             _logger.LogInformation("Applying Payment database migrations...");
             
             using var scope = _serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             
             try
             {

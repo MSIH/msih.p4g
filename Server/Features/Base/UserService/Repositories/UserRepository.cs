@@ -1,15 +1,15 @@
 using msih.p4g.Server.Common.Data.Repositories;
-using msih.p4g.Server.Features.Base.UserService.Data;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using msih.p4g.Server.Common.Data;
 
 namespace msih.p4g.Server.Features.Base.UserService.Repositories
 {
-    public class UserRepository : GenericRepository<User, UserDbContext>, IUserRepository
+    public class UserRepository : GenericRepository<User, ApplicationDbContext>, IUserRepository
     {
-        public UserRepository(UserDbContext context) : base(context)
+        public UserRepository(ApplicationDbContext context) : base(context)
         {
         }
 

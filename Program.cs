@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -10,29 +16,22 @@ using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.EmailService.Services;
-using msih.p4g.Server.Features.Base.PaymentService.Data;
 using msih.p4g.Server.Features.Base.PaymentService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
-using msih.p4g.Server.Features.Base.ProfileService.Data;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Repositories;
 using msih.p4g.Server.Features.Base.ProfileService.Services;
-using msih.p4g.Server.Features.Base.SettingsService.Data;
 using msih.p4g.Server.Features.Base.SettingsService.Extensions;
 using msih.p4g.Server.Features.Base.SettingsService.Model; // Add this using for EF Core migrations
 using msih.p4g.Server.Features.Base.SettingsService.Services;
-using msih.p4g.Server.Features.Base.SmsService.Data;
 using msih.p4g.Server.Features.Base.SmsService.Extensions;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.UserProfileService.Services;
-using msih.p4g.Server.Features.Base.UserService.Data;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Repositories;
 using msih.p4g.Server.Features.Base.UserService.Services;
-using msih.p4g.Server.Features.CampaignService.Data;
 using msih.p4g.Server.Features.DonationService.Data;
 using msih.p4g.Server.Features.DonationService.Services;
-using msih.p4g.Server.Features.DonorService.Data;
 using msih.p4g.Server.Features.DonorService.Interfaces;
 using msih.p4g.Server.Features.DonorService.Services;
 
@@ -51,81 +50,6 @@ DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
     builder.Services,
     builder.Configuration,
     builder.Environment);
-
-// Register the legacy DbContexts for backward compatibility
-// These will be removed in a future version
-
-// CampaignDbContext backward compatibility
-builder.Services.AddScoped(provider =>
-{
-    var optionsBuilder = new DbContextOptionsBuilder<CampaignDbContext>();
-    DatabaseConfigurationHelper.ConfigureDbContextOptions(
-        optionsBuilder, builder.Configuration, builder.Environment);
-    return new CampaignDbContext(optionsBuilder.Options);
-});
-
-// UserDbContext backward compatibility
-builder.Services.AddScoped(provider =>
-{
-    var optionsBuilder = new DbContextOptionsBuilder<UserDbContext>();
-    DatabaseConfigurationHelper.ConfigureDbContextOptions(
-        optionsBuilder, builder.Configuration, builder.Environment);
-    return new UserDbContext(optionsBuilder.Options);
-});
-
-// SmsDbContext backward compatibility
-builder.Services.AddScoped(provider =>
-{
-    var optionsBuilder = new DbContextOptionsBuilder<SmsDbContext>();
-    DatabaseConfigurationHelper.ConfigureDbContextOptions(
-        optionsBuilder, builder.Configuration, builder.Environment);
-    return new SmsDbContext(optionsBuilder.Options);
-});
-
-// PaymentDbContext backward compatibility
-builder.Services.AddScoped(provider =>
-{
-    var optionsBuilder = new DbContextOptionsBuilder<PaymentDbContext>();
-    DatabaseConfigurationHelper.ConfigureDbContextOptions(
-        optionsBuilder, builder.Configuration, builder.Environment);
-    return new PaymentDbContext(optionsBuilder.Options);
-});
-
-// SettingsDbContext backward compatibility
-builder.Services.AddScoped(provider =>
-{
-    var optionsBuilder = new DbContextOptionsBuilder<SettingsDbContext>();
-    DatabaseConfigurationHelper.ConfigureDbContextOptions(
-        optionsBuilder, builder.Configuration, builder.Environment);
-    return new SettingsDbContext(optionsBuilder.Options);
-});
-
-// DonorDbContext backward compatibility
-builder.Services.AddScoped(provider =>
-{
-    var optionsBuilder = new DbContextOptionsBuilder<DonorDbContext>();
-    DatabaseConfigurationHelper.ConfigureDbContextOptions(
-        optionsBuilder, builder.Configuration, builder.Environment);
-    return new DonorDbContext(optionsBuilder.Options);
-});
-
-// ProfileDbContext backward compatibility
-builder.Services.AddScoped(provider =>
-{
-    var optionsBuilder = new DbContextOptionsBuilder<ProfileDbContext>();
-    DatabaseConfigurationHelper.ConfigureDbContextOptions(
-        optionsBuilder, builder.Configuration, builder.Environment);
-    return new ProfileDbContext(optionsBuilder.Options);
-});
-
-// DonationDbContext backward compatibility
-builder.Services.AddScoped(provider =>
-{
-    var optionsBuilder = new DbContextOptionsBuilder<DonationDbContext>();
-    DatabaseConfigurationHelper.ConfigureDbContextOptions(
-        optionsBuilder, builder.Configuration, builder.Environment);
-    return new DonationDbContext(optionsBuilder.Options);
-});
 
 // Register generic repository for Setting using ApplicationDbContext 
 builder.Services.AddScoped<IGenericRepository<Setting>, GenericRepository<Setting, ApplicationDbContext>>();
@@ -172,7 +96,6 @@ builder.Services.AddScoped<DonationService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 
-
 // Register UserProfileService for coordinating User and Profile operations
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
@@ -184,7 +107,7 @@ using (var scope = app.Services.CreateScope())
     // Migrate the unified ApplicationDbContext
     var appDbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     appDbContext.Database.Migrate();
-    
+
     // Initialize settings from appsettings.json
     var settingsInitializer = scope.ServiceProvider.GetRequiredService<SettingsInitializer>();
     await settingsInitializer.InitializeSettingsAsync();
