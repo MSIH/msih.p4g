@@ -41,9 +41,9 @@ namespace msih.p4g.Server.Features.FundraiserService.Services
         /// <inheritdoc />
         public async Task UpdateAsync(Fundraiser fundraiser) => 
             await _repository.UpdateAsync(fundraiser);
-            
+
         /// <inheritdoc />
-        public async Task DeleteAsync(int id) => 
-            await _repository.DeleteAsync(id);
+        public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System") =>
+            await _repository.SetActiveStatusAsync(id, isActive, modifiedBy);
     }
 }

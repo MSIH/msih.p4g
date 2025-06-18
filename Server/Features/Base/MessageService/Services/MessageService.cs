@@ -647,15 +647,18 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
             if (usageCount > 0)
             {
                 // Soft delete if there are messages using this template
-                template.IsDeleted = true;
+                template.IsActive = false;
                 template.ModifiedOn = DateTime.UtcNow;
                 template.ModifiedBy = "System";
                 await _templateRepository.UpdateAsync(template);
             }
             else
             {
-                // Hard delete if no messages are using this template
-                await _templateRepository.DeleteAsync(id);
+                // Also soft delete for consistency
+                template.IsActive = false;
+                template.ModifiedOn = DateTime.UtcNow;
+                template.ModifiedBy = "System";
+                await _templateRepository.UpdateAsync(template);
             }
 
             return true;

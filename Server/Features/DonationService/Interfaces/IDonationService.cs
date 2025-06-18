@@ -64,9 +64,9 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         Task<bool> UpdateAsync(Donation donation);
 
         /// <summary>
-        /// Deletes a donation by its ID.
+        /// Sets the active status of a donation.
         /// </summary>
-        Task<bool> DeleteAsync(int id);
+        Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System");
 
         /// <summary>
         /// Gets the total donation amount for a specific campaign.

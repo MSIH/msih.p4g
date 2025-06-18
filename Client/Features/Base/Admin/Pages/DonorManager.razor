@@ -27,6 +27,7 @@ else
                 <tr>
                     <th>UserId</th>
                     <th>PaymentProcessorDonorId</th>
+                    <th>Active</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -37,9 +38,12 @@ else
                         <td>@donor.UserId</td>
                         <td>@donor.PaymentProcessorDonorId</td>
                         <td>
+                            <input type="checkbox" checked="@donor.IsActive" @onchange="e => ToggleActive(donor, (bool)e.Value)" />
+                        </td>
+                        <td>
                             <button class="btn btn-sm btn-success me-1" @onclick="() => SaveDonor(donor)">Save</button>
                             <button class="btn btn-sm btn-primary me-1" @onclick="() => EditDonor(donor)">Edit</button>
-                            <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDeleteDonor(donor)">Delete</button>
+                            <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDeactivate(donor)">Deactivate</button>
                         </td>
                     </tr>
                 }
@@ -48,67 +52,14 @@ else
     </div>
 }
 
-@if (showModal)
-{
-    <div class="modal fade show" style="display:block;" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">@((editingDonor?.Id ?? 0) == 0 ? "Add Donor" : "Edit Donor")</h5>
-                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
-                </div>
-                <div class="modal-body">
-                    <EditForm Model="@editingDonor" OnValidSubmit="SaveDonor">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary />
-                        <div class="mb-2">
-                            <label>UserId</label>
-                            <InputNumber class="form-control" @bind-Value="editingDonor.UserId" />
-                        </div>
-                        <div class="mb-2">
-                            <label>Payment Processor Donor Id</label>
-                            <InputText class="form-control" @bind-Value="editingDonor.PaymentProcessorDonorId" />
-                        </div>
-                        <button type="submit" class="btn btn-success">Save</button>
-                        <button type="button" class="btn btn-secondary ms-2" @onclick="CloseModal">Cancel</button>
-                    </EditForm>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop fade show"></div>
-}
-
-@if (showDeleteModal)
-{
-    <div class="modal fade show" style="display:block;" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Delete Donor</h5>
-                    <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete donor with UserId <strong>@deletingDonor?.UserId</strong>?</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CloseDeleteModal">Cancel</button>
-                    <button class="btn btn-danger" @onclick="DeleteDonor">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop fade show"></div>
-}
-
 @code {
     private List<Donor> donors = new();
     private string searchTerm = string.Empty;
     private bool isLoading = true;
     private bool showModal = false;
-    private bool showDeleteModal = false;
+    private bool showDeactivateModal = false;
     private Donor? editingDonor;
-    private Donor? deletingDonor;
+    private Donor? deactivatingDonor;
 
     private IEnumerable<Donor> filteredDonors => string.IsNullOrWhiteSpace(searchTerm)
         ? donors
@@ -173,24 +124,31 @@ else
         await LoadDonors();
     }
 
-    private void ConfirmDeleteDonor(Donor donor)
+    private async Task ToggleActive(Donor donor, bool isActive)
     {
-        deletingDonor = donor;
-        showDeleteModal = true;
+        await DonorService.SetActiveAsync(donor.Id, isActive);
+        donor.IsActive = isActive;
+        StateHasChanged();
     }
 
-    private void CloseDeleteModal()
+    private void ConfirmDeactivate(Donor donor)
     {
-        showDeleteModal = false;
-        deletingDonor = null;
+        deactivatingDonor = donor;
+        showDeactivateModal = true;
     }
 
-    private async Task DeleteDonor()
+    private void CloseDeactivateModal()
     {
-        if (deletingDonor != null)
+        showDeactivateModal = false;
+        deactivatingDonor = null;
+    }
+
+    private async Task DeactivateDonor()
+    {
+        if (deactivatingDonor != null)
         {
-            await DonorService.DeleteAsync(deletingDonor.Id);
-            showDeleteModal = false;
+            await DonorService.SetActiveAsync(deactivatingDonor.Id, false);
+            showDeactivateModal = false;
             await LoadDonors();
         }
     }

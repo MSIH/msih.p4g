@@ -15,7 +15,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Repositories
 
         public async Task<User?> GetByEmailAsync(string email)
         {
-            return await _dbSet.FirstOrDefaultAsync(u => u.Email == email && !u.IsDeleted);
+            return await _dbSet.FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
         }
         // All other CRUD methods are inherited from GenericRepository
     }

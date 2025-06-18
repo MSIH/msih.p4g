@@ -10,6 +10,6 @@ namespace msih.p4g.Server.Features.FundraiserService.Interfaces
         Task<IEnumerable<Fundraiser>> GetAllAsync();
         Task<Fundraiser> AddAsync(Fundraiser fundraiser);
         Task UpdateAsync(Fundraiser fundraiser);
-        Task DeleteAsync(int id);
+        Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System");
     }
 }

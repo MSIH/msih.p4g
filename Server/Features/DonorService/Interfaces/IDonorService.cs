@@ -15,6 +15,6 @@ namespace msih.p4g.Server.Features.DonorService.Interfaces
         Task<List<Donor>> SearchAsync(string searchTerm);
         Task<Donor> AddAsync(Donor donor);
         Task<bool> UpdateAsync(Donor donor);
-        Task<bool> DeleteAsync(int id);
+        Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System");
     }
 }

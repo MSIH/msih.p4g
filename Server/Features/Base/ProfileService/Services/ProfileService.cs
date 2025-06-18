@@ -15,7 +15,7 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Services
 
         public async Task<IEnumerable<Profile>> GetAllAsync(bool includeInactive = false)
         {
-            return await _profileRepository.GetAllAsync(includeInactive: includeInactive, includeDeleted: false);
+            return await _profileRepository.GetAllAsync(includeInactive: includeInactive);
         }
 
         public async Task<Profile> GetByIdAsync(int id)
@@ -33,11 +33,6 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Services
         public async Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "System")
         {
             return await _profileRepository.UpdateAsync(profile, modifiedBy);
-        }
-
-        public async Task<bool> DeleteAsync(int id, string modifiedBy = "System")
-        {
-            return await _profileRepository.DeleteAsync(id, modifiedBy);
         }
 
         public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System")

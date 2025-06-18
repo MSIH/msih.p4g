@@ -38,7 +38,8 @@
                     <input type="checkbox" @bind="campaign.IsActive" />
                 </td>
                 <td>
-                    <button class="btn btn-danger btn-sm" @onclick="() => DeleteCampaign(campaign.Id)">Delete</button>
+                    <button class="btn btn-warning btn-sm" @onclick="() => SaveCampaign(campaign)">Save</button>
+                    <button class="btn btn-danger btn-sm" @onclick="() => DeactivateCampaign(campaign.Id)">Deactivate</button>
                 </td>
             </tr>
         }
@@ -69,9 +70,15 @@
         }
     }
 
-    private async Task DeleteCampaign(int id)
+    private async Task SaveCampaign(Campaign campaign)
     {
-        if (await CampaignService.DeleteAsync(id))
+        await CampaignService.UpdateAsync(campaign);
+        await LoadCampaigns();
+    }
+
+    private async Task DeactivateCampaign(int id)
+    {
+        if (await CampaignService.SetActiveAsync(id, false))
         {
             await LoadCampaigns();
         }

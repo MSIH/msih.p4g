@@ -49,7 +49,7 @@ else
                 </td>
                 <td>
                     <button class="btn btn-primary" @onclick="() => SaveUser(user)">Save</button>
-                    <button class="btn btn-danger ms-2" @onclick="() => DeleteUser(user)">Delete</button>
+                    <button class="btn btn-danger ms-2" @onclick="() => DeactivateUser(user)">Deactivate</button>
                 </td>
             </tr>
         }
@@ -62,7 +62,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // Get all users, including inactive, but not deleted
+        // Get all users, including inactive
         users = (await UserManagementService.GetAllAsync(includeInactive: true)).ToList();
     }
 
@@ -87,10 +87,10 @@ else
         StateHasChanged();
     }
 
-    private async Task DeleteUser(User user)
+    private async Task DeactivateUser(User user)
     {
-        await UserManagementService.DeleteAsync(user.Id);
-        users.Remove(user);
+        await UserManagementService.SetActiveAsync(user.Id, false);
+        user.IsActive = false;
         StateHasChanged();
     }
 }
