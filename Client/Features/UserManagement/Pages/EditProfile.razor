@@ -1,0 +1,336 @@
+@page "/profile"
+@namespace msih.p4g.Client.Features.UserManagement.Pages
+@using msih.p4g.Server.Features.Base.ProfileService.Model
+@using msih.p4g.Server.Features.Base.UserProfileService.Interfaces
+@using msih.p4g.Server.Features.Base.UserService.Interfaces
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IUserProfileService UserProfileService
+@inject IUserService UserService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Edit Profile</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">My Profile</h3>
+                </div>
+                <div class="card-body">
+                    @if (isLoading)
+                    {
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (profile == null)
+                    {
+                        <div class="alert alert-warning">
+                            <p>Profile not found. Please contact support if you believe this is an error.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (!string.IsNullOrEmpty(message))
+                        {
+                            <div class="alert @(message.StartsWith("Error") ? "alert-danger" : "alert-success") mb-4">
+                                @message
+                            </div>
+                        }
+
+                        <EditForm Model="@profile" OnValidSubmit="HandleProfileUpdate">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="firstName" class="form-label">First Name</label>
+                                        <InputText id="firstName" @bind-Value="profile.FirstName" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="lastName" class="form-label">Last Name</label>
+                                        <InputText id="lastName" @bind-Value="profile.LastName" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="mobileNumber" class="form-label">Mobile Number</label>
+                                <InputText id="mobileNumber" @bind-Value="profile.MobileNumber" class="form-control" />
+                                <ValidationMessage For="@(() => profile.MobileNumber)" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Date of Birth</label>
+                                <div class="d-flex gap-2">
+                                    <InputSelect @bind-Value="month" class="form-select" style="width: 33%;">
+                                        <option value="">Month</option>
+                                        @for (int m = 1; m <= 12; m++)
+                                        {
+                                            <option value="@m">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)</option>
+                                        }
+                                    </InputSelect>
+                                    <InputSelect @bind-Value="day" class="form-select" style="width: 33%;">
+                                        <option value="">Day</option>
+                                        @for (int d = 1; d <= 31; d++)
+                                        {
+                                            <option value="@d">@d</option>
+                                        }
+                                    </InputSelect>
+                                    <InputSelect @bind-Value="year" class="form-select" style="width: 33%;">
+                                        <option value="">Year</option>
+                                        @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 120; y--)
+                                        {
+                                            <option value="@y">@y</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            </div>
+
+                            <h4 class="mt-4">Address Information</h4>
+
+                            <div class="mb-3">
+                                <label for="street" class="form-label">Street Address</label>
+                                <InputText id="street" @bind-Value="address.Street" class="form-control" />
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="city" class="form-label">City</label>
+                                    <InputText id="city" @bind-Value="address.City" class="form-control" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="state" class="form-label">State/Province</label>
+                                    <InputText id="state" @bind-Value="address.State" class="form-control" />
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label for="postalCode" class="form-label">Postal Code</label>
+                                    <InputText id="postalCode" @bind-Value="address.PostalCode" class="form-control" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="country" class="form-label">Country</label>
+                                    <InputText id="country" @bind-Value="address.Country" class="form-control" />
+                                </div>
+                            </div>
+
+                            <h4 class="mt-4">Communication Preferences</h4>
+
+                            <div class="form-check mb-3">
+                                <InputCheckbox id="consentEmail" @bind-Value="profile.ConsentReceiveEmail" class="form-check-input" />
+                                <label class="form-check-label" for="consentEmail">
+                                    I consent to receive emails
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <InputCheckbox id="unsubscribeEmail" @bind-Value="profile.UnsubscribeEmail" class="form-check-input" disabled="@(!profile.ConsentReceiveEmail)" />
+                                <label class="form-check-label @(!profile.ConsentReceiveEmail ? "text-muted" : "")" for="unsubscribeEmail">
+                                    Unsubscribe from emails
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <InputCheckbox id="consentText" @bind-Value="profile.ConsentReceiveText" class="form-check-input" />
+                                <label class="form-check-label" for="consentText">
+                                    I consent to receive text messages
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <InputCheckbox id="unsubscribeMobile" @bind-Value="profile.UnsubscribeMobile" class="form-check-input" disabled="@(!profile.ConsentReceiveText)" />
+                                <label class="form-check-label @(!profile.ConsentReceiveText ? "text-muted" : "")" for="unsubscribeMobile">
+                                    Unsubscribe from text messages
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-4">
+                                <InputCheckbox id="consentMail" @bind-Value="profile.ConsentReceiveMail" class="form-check-input" />
+                                <label class="form-check-label" for="consentMail">
+                                    I consent to receive mail
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-4">
+                                <InputCheckbox id="unsubscribeMail" @bind-Value="profile.UnsubscribeMail" class="form-check-input" disabled="@(!profile.ConsentReceiveMail)" />
+                                <label class="form-check-label @(!profile.ConsentReceiveMail ? "text-muted" : "")" for="unsubscribeMail">
+                                    Unsubscribe from mail
+                                </label>
+                            </div>
+
+                            <div class="mb-3">
+                                <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                                    @if (isSaving)
+                                    {
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                        <span> Saving...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Save Changes</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private Profile profile;
+    private AddressModel address = new() 
+    { 
+        Street = string.Empty, 
+        City = string.Empty, 
+        State = string.Empty, 
+        PostalCode = string.Empty,
+        Country = string.Empty 
+    };
+    
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private string message = string.Empty;
+
+    // Date of birth fields
+    private int month;
+    private int day; 
+    private int year;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserProfileAsync();
+    }
+
+    private async Task LoadUserProfileAsync()
+    {
+        isLoading = true;
+        message = string.Empty;
+
+        try
+        {
+            // First attempt: Try to get the current user from claims
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated ?? false)
+            {
+                var email = user.FindFirst(ClaimTypes.Email)?.Value;
+                
+                if (!string.IsNullOrEmpty(email))
+                {
+                    // Get profile by email
+                    profile = await UserProfileService.GetProfileByUserEmailAsync(email);
+                }
+            }
+
+            // If profile is still null (not found via claims), try using same approach as UserMenu
+            if (profile == null)
+            {
+                var users = await UserService.GetAllAsync(includeInactive: false);
+                var firstUser = users.FirstOrDefault();
+                
+                if (firstUser != null)
+                {
+                    profile = await UserProfileService.GetProfileByUserEmailAsync(firstUser.Email);
+                }
+            }
+
+            // If we have a profile now, set up the form fields
+            if (profile != null)
+            {
+                // Initialize address if it exists
+                if (profile.Address != null)
+                {
+                    address = profile.Address;
+                }
+                else
+                {
+                    // Create new address if none exists
+                    profile.Address = address;
+                }
+
+                // Initialize date of birth fields
+                if (profile.DateOfBirth.HasValue)
+                {
+                    month = profile.DateOfBirth.Value.Month;
+                    day = profile.DateOfBirth.Value.Day;
+                    year = profile.DateOfBirth.Value.Year;
+                }
+                else
+                {
+                    // Default values
+                    month = DateTime.Now.Month;
+                    day = DateTime.Now.Day;
+                    year = DateTime.Now.Year - 25; // Default to 25 years ago
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error loading profile: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleProfileUpdate()
+    {
+        isSaving = true;
+        message = string.Empty;
+
+        try
+        {
+            // Set date of birth from inputs
+            SetDateOfBirth();
+
+            // Set address
+            profile.Address = address;
+
+            // Save profile
+            var updatedProfile = await UserProfileService.UpdateAsync(profile);
+            if (updatedProfile != null)
+            {
+                profile = updatedProfile;
+                message = "Profile updated successfully!";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error updating profile: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    // Helper method to set the DateOfBirth from month, day, and year
+    private void SetDateOfBirth()
+    {
+        try
+        {
+            profile.DateOfBirth = new DateTime(year, month, day);
+        }
+        catch
+        {
+            // Handle invalid date (like February 30th)
+            profile.DateOfBirth = null;
+        }
+    }
+}

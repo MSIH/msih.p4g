@@ -24,5 +24,13 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Interfaces
         /// <param name="email">The email address of the user</param>
         /// <returns>The user's profile or null if not found</returns>
         Task<Profile?> GetProfileByUserEmailAsync(string email);
+
+        /// <summary>
+        /// Updates an existing profile
+        /// </summary>
+        /// <param name="profile">The profile with updated information</param>
+        /// <param name="modifiedBy">Who modified the profile</param>
+        /// <returns>The updated profile</returns>
+        Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "System");
     }
 }
