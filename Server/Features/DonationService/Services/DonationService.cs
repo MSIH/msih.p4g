@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.DonorService.Interfaces;
-using msih.p4g.Server.Features.DonationService.Data;
 using msih.p4g.Server.Features.DonationService.Models;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Models;
@@ -11,13 +12,14 @@ using msih.p4g.Server.Features.Base.UserService.Models;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
 using msih.p4g.Server.Features.DonorService.Model;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
+using msih.p4g.Server.Features.DonationService.Interfaces;
 
 namespace msih.p4g.Server.Features.DonationService.Services
 {
     /// <summary>
     /// Service to process donations from the client.
     /// </summary>
-    public class DonationService
+    public class DonationService : IDonationService
     {
         private readonly IUserRepository _userRepository;
         private readonly IProfileService _profileService;
@@ -165,6 +167,133 @@ namespace msih.p4g.Server.Features.DonationService.Services
 
             donation = await _donationRepository.AddAsync(donation, "DonationService");
             return donation;
+        }
+
+        /// <summary>
+        /// Gets all donations.
+        /// </summary>
+        public async Task<List<Donation>> GetAllAsync()
+        {
+            var donations = await _donationRepository.GetAllAsync();
+            return donations.ToList();
+        }
+
+        /// <summary>
+        /// Gets a donation by its ID.
+        /// </summary>
+        public async Task<Donation?> GetByIdAsync(int id)
+        {
+            return await _donationRepository.GetByIdAsync(id);
+        }
+
+        /// <summary>
+        /// Gets donations by donor ID.
+        /// </summary>
+        public async Task<List<Donation>> GetByDonorIdAsync(int donorId)
+        {
+            var donations = await _donationRepository.FindAsync(d => d.DonorId == donorId);
+            return donations.ToList();
+        }
+
+        /// <summary>
+        /// Gets donations by campaign ID.
+        /// </summary>
+        public async Task<List<Donation>> GetByCampaignIdAsync(int campaignId)
+        {
+            var donations = await _donationRepository.FindAsync(d => d.CampaignId == campaignId);
+            return donations.ToList();
+        }
+
+        /// <summary>
+        /// Gets donations by campaign code.
+        /// </summary>
+        public async Task<List<Donation>> GetByCampaignCodeAsync(string campaignCode)
+        {
+            if (string.IsNullOrEmpty(campaignCode))
+                return new List<Donation>();
+
+            var donations = await _donationRepository.FindAsync(d => d.CampaignCode == campaignCode);
+            return donations.ToList();
+        }
+
+        /// <summary>
+        /// Gets donations by referral code.
+        /// </summary>
+        public async Task<List<Donation>> GetByReferralCodeAsync(string referralCode)
+        {
+            if (string.IsNullOrEmpty(referralCode))
+                return new List<Donation>();
+
+            var donations = await _donationRepository.FindAsync(d => d.ReferralCode == referralCode);
+            return donations.ToList();
+        }
+
+        /// <summary>
+        /// Searches for donations matching the specified search term.
+        /// </summary>
+        public async Task<List<Donation>> SearchAsync(string searchTerm)
+        {
+            if (string.IsNullOrEmpty(searchTerm))
+                return await GetAllAsync();
+
+            // Simple search implementation - can be expanded based on requirements
+            var donations = await _donationRepository.FindAsync(d => 
+                (d.DonationMessage != null && d.DonationMessage.Contains(searchTerm)) ||
+                (d.ReferralCode != null && d.ReferralCode.Contains(searchTerm)) ||
+                (d.CampaignCode != null && d.CampaignCode.Contains(searchTerm))
+            );
+            
+            return donations.ToList();
+        }
+
+        /// <summary>
+        /// Adds a new donation.
+        /// </summary>
+        public async Task<Donation> AddAsync(Donation donation)
+        {
+            donation.CreatedOn = DateTime.UtcNow;
+            donation.CreatedBy = "DonationService";
+            donation.IsActive = true;
+            
+            return await _donationRepository.AddAsync(donation, "DonationService");
+        }
+
+        /// <summary>
+        /// Updates an existing donation.
+        /// </summary>
+        public async Task<bool> UpdateAsync(Donation donation)
+        {
+            donation.ModifiedOn = DateTime.UtcNow;
+            donation.ModifiedBy = "DonationService";
+            
+            await _donationRepository.UpdateAsync(donation, "DonationService");
+            return true;
+        }
+
+        /// <summary>
+        /// Deletes a donation by its ID.
+        /// </summary>
+        public async Task<bool> DeleteAsync(int id)
+        {
+            return await _donationRepository.DeleteAsync(id, "DonationService");
+        }
+
+        /// <summary>
+        /// Gets the total donation amount for a specific campaign.
+        /// </summary>
+        public async Task<decimal> GetTotalAmountByCampaignIdAsync(int campaignId)
+        {
+            var donations = await GetByCampaignIdAsync(campaignId);
+            return donations.Sum(d => d.Amount);
+        }
+
+        /// <summary>
+        /// Gets the total donation amount for a specific donor.
+        /// </summary>
+        public async Task<decimal> GetTotalAmountByDonorIdAsync(int donorId)
+        {
+            var donations = await GetByDonorIdAsync(donorId);
+            return donations.Sum(d => d.Amount);
         }
     }
 }
