@@ -18,21 +18,21 @@
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
         @if (currentUser != null)
         {
-            <li><a class="dropdown-item" href="profile">My Profile</a></li>
-            <li><a class="dropdown-item" href="donations">My Donations</a></li>
+            <li><a class="dropdown-item" href="/profile">My Profile</a></li>
+            <li><a class="dropdown-item" href="/donations">My Donations</a></li>
             @if (currentUser.Role == UserRole.Admin)
             {
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="users">User Management</a></li>
-                <li><a class="dropdown-item" href="admin/donors">Donor Management</a></li>
+                <li><a class="dropdown-item" href="/users">User Management</a></li>
+                <li><a class="dropdown-item" href="/admin/donors">Donor Management</a></li>
             }
             <li><hr class="dropdown-divider"></li>
             <li><button class="dropdown-item" @onclick="Logout">Logout</button></li>
         }
         else
         {
-            <li><a class="dropdown-item" href="login">Login</a></li>
-            <li><a class="dropdown-item" href="register">Register</a></li>
+            <li><a class="dropdown-item" href="/login">Login</a></li>
+            <li><a class="dropdown-item" href="/register">Register</a></li>
         }
     </ul>
 </div>
