@@ -3,11 +3,9 @@
 @using msih.p4g.Server.Features.Base.ProfileService.Model
 @using msih.p4g.Server.Features.Base.UserProfileService.Interfaces
 @using msih.p4g.Server.Features.Base.UserService.Interfaces
-@using System.Security.Claims
-@using Microsoft.AspNetCore.Components.Authorization
+@using msih.p4g.Client.Features.Authentication.Services
 @inject IUserProfileService UserProfileService
-@inject IUserService UserService
-@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject AuthService AuthService
 @inject IJSRuntime JSRuntime
 
 <PageTitle>Edit Profile</PageTitle>
@@ -350,37 +348,19 @@
 
         try
         {
-            // First attempt: Try to get the current user from claims
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-
-            if (user.Identity?.IsAuthenticated ?? false)
+            // Get the current user using the AuthService
+            var currentUser = await AuthService.GetCurrentUserAsync();
+            
+            if (currentUser != null)
             {
-                var email = user.FindFirst(ClaimTypes.Email)?.Value;
-
-                if (!string.IsNullOrEmpty(email))
-                {
-                    // Get profile by email
-                    profile = await UserProfileService.GetProfileByUserEmailAsync(email);               
-                }
+                // Get profile using the user's email
+                profile = await UserProfileService.GetProfileByUserEmailAsync(currentUser.Email);
             }
-
-            // If profile is still null (not found via claims), try using same approach as UserMenu
-            if (profile == null)
-            {
-                var users = await UserService.GetAllAsync(includeInactive: false);
-                var firstUser = users.FirstOrDefault();
-
-                if (firstUser != null)
-                {
-                    profile = await UserProfileService.GetProfileByUserEmailAsync(firstUser.Email);
-                }
-            }
-
+            
             // If we have a profile now, set up the form fields
             if (profile != null)
             {            
-                    referralCode = profile.ReferralCode;
+                referralCode = profile.ReferralCode;
           
                 // Initialize address if it exists
                 if (profile.Address != null)
