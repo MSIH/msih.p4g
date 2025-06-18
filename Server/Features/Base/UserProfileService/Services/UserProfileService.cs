@@ -64,5 +64,17 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Services
             // Get the user's profile
             return await _profileService.GetByIdAsync(user.Id);
         }
+
+        /// <summary>
+        /// Updates an existing profile
+        /// </summary>
+        /// <param name="profile">The profile with updated information</param>
+        /// <param name="modifiedBy">Who modified the profile</param>
+        /// <returns>The updated profile</returns>
+        public async Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "System")
+        {
+            // Update the profile using the profile service
+            return await _profileService.UpdateAsync(profile, modifiedBy);
+        }
     }
 }
