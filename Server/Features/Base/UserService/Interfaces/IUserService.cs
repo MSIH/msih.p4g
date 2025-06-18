@@ -17,6 +17,13 @@ namespace msih.p4g.Server.Features.Base.UserService.Interfaces
         Task<User?> GetByEmailAsync(string email);
 
         /// <summary>
+        /// Retrieves a user by their ID
+        /// </summary>
+        /// <param name="userId">The ID of the user to retrieve</param>
+        /// <returns>The found user or null if not found</returns>
+        Task<User?> GetByIdAsync(int userId);
+
+        /// <summary>
         /// Creates a new user in the system
         /// </summary>
         /// <param name="user">The user to create</param>

@@ -34,7 +34,7 @@
                 <li><a class="dropdown-item" href="/admin/donors">Donor Management</a></li>
             }
             <li><hr class="dropdown-divider"></li>
-            <li><button class="dropdown-item" @onclick="Logout">Logout</button></li>
+            <li><button class="dropdown-item" @onclick="LogoutAsync">Logout</button></li>
         }
         else
         {
@@ -48,30 +48,11 @@
     protected override async Task OnInitializedAsync()
     {
         AuthService.AuthStateChanged += OnAuthStateChanged;
-        
-        // Only initialize if no user is set in the auth service
+
+        // Only try to restore authentication if not already authenticated
         if (!AuthService.IsAuthenticated)
         {
-            await InitializeUserAsync();
-        }
-    }
-
-    private async Task InitializeUserAsync()
-    {
-        try
-        {
-            // For MVP, we get the first user as a placeholder for a real authentication system
-            var users = await UserService.GetAllAsync(includeInactive: false);
-            var user = users.FirstOrDefault();
-            
-            if (user != null)
-            {
-                AuthService.Login(user);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error initializing user: {ex.Message}");
+            await AuthService.InitializeAuthenticationStateAsync();
         }
     }
 
@@ -81,9 +62,9 @@
         StateHasChanged();
     }
 
-    private void Logout()
+    private async Task LogoutAsync()
     {
-        AuthService.Logout();
+        await AuthService.LogoutAsync();
         NavigationManager.NavigateTo("/");
     }
 
