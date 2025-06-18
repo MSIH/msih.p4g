@@ -1,5 +1,6 @@
-@page "/my-fundraiser"
+@page "/fundraiser"
 @namespace msih.p4g.Client.Features.FundraiserManagement.Pages
+@using msih.p4g.Client.Features.Authentication.Services
 @using msih.p4g.Server.Features.FundraiserService.Model
 @using msih.p4g.Server.Features.FundraiserService.Interfaces
 @using msih.p4g.Server.Features.Base.UserService.Interfaces
@@ -10,8 +11,8 @@
 @inject IUserService UserService
 @inject IProfileService ProfileService
 @inject msih.p4g.Server.Features.FundraiserService.Interfaces.IFundraiserStatisticsService FundraiserStatsService
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
+@inject AuthService AuthService
 
 <PageTitle>My Fundraiser</PageTitle>
 
@@ -46,29 +47,29 @@
                             </div>
                         }
 
-                                    @if (referralCode != null)
-            {
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h3 class="card-title">My Donation Referral Code</h3>
-                    </div>
-                    <div class="card-body">
-                          <div class="alert alert-info">
-                            <p class="mb-1">Share this full URL:</p>
-                            <h5 class="mt-2 mb-3">https://gd4.org/d/@referralCode</h5>
-                            <p class="mb-0">
-                                <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
-                                    <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
-                                </button>
-                                @if (copyUrlSuccess)
-                                {
-                                    <span class="text-success ms-2">Copied!</span>
-                                }
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            }
+                        @if (referralCode != null)
+                        {
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h3 class="card-title">My Donation Referral Code</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <p class="mb-1">Share this full URL:</p>
+                                        <h5 class="mt-2 mb-3">https://gd4.org/d/@referralCode</h5>
+                                        <p class="mb-0">
+                                            <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
+                                                <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
+                                            </button>
+                                            @if (copyUrlSuccess)
+                                            {
+                                                <span class="text-success ms-2">Copied!</span>
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
 
                         <EditForm Model="@fundraiser" OnValidSubmit="HandleFundraiserUpdate">
                             <DataAnnotationsValidator />
@@ -196,7 +197,7 @@
 </div>
 
 @code {
-    private Fundraiser fundraiser;
+    private msih.p4g.Server.Features.FundraiserService.Model.Fundraiser fundraiser;
     private string referralCode;
     private FundraiserStatistics statistics;
     private bool isLoading = true;
@@ -217,69 +218,30 @@
 
         try
         {
-            // First attempt: Try to get the current user from claims
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
+            // Get the current user using the AuthService
+            var userPrincipal = await AuthService.GetCurrentUserAsync();
 
-            if (user.Identity?.IsAuthenticated ?? false)
+
+            // Get the fundraiser for this user
+            fundraiser = await FundraiserService.GetByUserIdAsync(userPrincipal.Id);
+
+            // Get user's profile for the referral code
+            var profile = await ProfileService.GetByIdAsync(userPrincipal.Id);
+            if (profile != null)
             {
-                var email = user.FindFirst(ClaimTypes.Email)?.Value;
-
-                if (!string.IsNullOrEmpty(email))
-                {
-                    // Get user by email
-                    var currentUser = await UserService.GetByEmailAsync(email);
-                    if (currentUser != null)
-                    {
-                        // Get the fundraiser for this user
-                        fundraiser = await FundraiserService.GetByUserIdAsync(currentUser.Id);
-                        
-                        // Get user's profile for the referral code
-                        var profile = await ProfileService.GetByIdAsync(currentUser.Id);
-                        if (profile != null)
-                        {
-                            referralCode = profile.ReferralCode;
-                        }
-                        
-                        // Get donation statistics for this fundraiser
-                        if (fundraiser != null)
-                        {
-                            statistics = await FundraiserStatsService.GetStatisticsAsync(fundraiser.Id);
-                        }
-                    }
-                }
+                referralCode = profile.ReferralCode;
             }
 
-            // If fundraiser is still null (not found via claims), try using same approach as UserMenu
-            if (fundraiser == null)
+            // Get donation statistics for this fundraiser
+            if (fundraiser != null)
             {
-                var users = await UserService.GetAllAsync(includeInactive: false);
-                var firstUser = users.FirstOrDefault(u => u.Role == Server.Features.Base.UserService.Models.UserRole.Fundraiser);
-
-                if (firstUser != null)
-                {
-                    // Get the fundraiser for this user
-                    fundraiser = await FundraiserService.GetByUserIdAsync(firstUser.Id);
-                    
-                    // Get user's profile for the referral code
-                    var profile = await ProfileService.GetByIdAsync(firstUser.Id);
-                    if (profile != null)
-                    {
-                        referralCode = profile.ReferralCode;
-                    }
-                    
-                    // Get donation statistics for this fundraiser
-                    if (fundraiser != null)
-                    {
-                        statistics = await FundraiserStatsService.GetStatisticsAsync(fundraiser.Id);
-                    }
-                }
+                statistics = await FundraiserStatsService.GetStatisticsAsync(fundraiser.Id);
             }
-
+            
             // If fundraiser is still null, create a default one
             if (fundraiser == null)
             {
-                fundraiser = new Fundraiser
+                fundraiser = new msih.p4g.Server.Features.FundraiserService.Model.Fundraiser
                 {
                     PayPalAccount = string.Empty,
                     W9Document = string.Empty
@@ -326,7 +288,7 @@
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralCode);
             copyCodeSuccess = true;
             StateHasChanged();
-            
+
             // Reset the success message after 3 seconds
             await Task.Delay(3000);
             copyCodeSuccess = false;
@@ -347,7 +309,7 @@
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
             copyUrlSuccess = true;
             StateHasChanged();
-            
+
             // Reset the success message after 3 seconds
             await Task.Delay(3000);
             copyUrlSuccess = false;

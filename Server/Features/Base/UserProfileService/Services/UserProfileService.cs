@@ -9,6 +9,8 @@ using msih.p4g.Server.Features.Base.ProfileService.Model;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
+using msih.p4g.Server.Features.FundraiserService.Interfaces;
+using msih.p4g.Server.Features.FundraiserService.Model;
 
 namespace msih.p4g.Server.Features.Base.UserProfileService.Services
 {
@@ -19,13 +21,17 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Services
     {
         private readonly IUserService _userService;
         private readonly IProfileService _profileService;
+        private readonly IFundraiserService _fundraiserService;
 
         public UserProfileService(
             IUserService userService,
-            IProfileService profileService)
+            IProfileService profileService,
+            IFundraiserService fundraiserService
+            )
         {
             _userService = userService;
             _profileService = profileService;
+            _fundraiserService = fundraiserService;
         }
 
         /// <summary>
@@ -45,6 +51,19 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Services
 
             // Step 3: Add the profile (ProfileService.AddAsync will call GenerateReferralCode)
             var createdProfile = await _profileService.AddAsync(profile, createdBy);
+
+            // Step 4: If the user role is Fundraiser, create a Fundraiser entity
+            if (createdUser.Role == UserRole.Fundraiser)
+            {
+                var fundraiser = new Fundraiser
+                {
+                    UserId = createdUser.Id,
+                    // Set any default properties for a new Fundraiser
+                    IsActive = true
+                };
+
+                await _fundraiserService.AddAsync(fundraiser);
+            }
 
             return createdProfile;
         }
