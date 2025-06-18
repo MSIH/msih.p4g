@@ -25,7 +25,7 @@
             <li><a class="dropdown-item" href="/donations">My Donations</a></li>
             @if (AuthService.CurrentUser?.Role == UserRole.Fundraiser)
             {
-                <li><a class="dropdown-item" href="/my-fundraiser">My Fundraiser</a></li>
+                <li><a class="dropdown-item" href="/fundraiser">My Fundraiser</a></li>
             }
             @if (AuthService.CurrentUser?.Role == UserRole.Admin)
             {

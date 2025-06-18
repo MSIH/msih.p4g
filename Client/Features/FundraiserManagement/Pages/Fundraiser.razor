@@ -1,4 +1,4 @@
-@page "/my-fundraiser"
+@page "/fundraiser"
 @namespace msih.p4g.Client.Features.FundraiserManagement.Pages
 @using msih.p4g.Client.Features.Authentication.Services
 @using msih.p4g.Server.Features.FundraiserService.Model
@@ -197,7 +197,7 @@
 </div>
 
 @code {
-    private Fundraiser fundraiser;
+    private msih.p4g.Server.Features.FundraiserService.Model.Fundraiser fundraiser;
     private string referralCode;
     private FundraiserStatistics statistics;
     private bool isLoading = true;
@@ -241,7 +241,7 @@
             // If fundraiser is still null, create a default one
             if (fundraiser == null)
             {
-                fundraiser = new Fundraiser
+                fundraiser = new msih.p4g.Server.Features.FundraiserService.Model.Fundraiser
                 {
                     PayPalAccount = string.Empty,
                     W9Document = string.Empty
