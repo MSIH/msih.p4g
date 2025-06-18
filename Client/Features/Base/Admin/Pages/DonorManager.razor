@@ -25,10 +25,8 @@ else
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
-                    <th>DonorId</th>
                     <th>UserId</th>
                     <th>PaymentProcessorDonorId</th>
-                    <th>IsActive</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -36,12 +34,8 @@ else
                 @foreach (var donor in filteredDonors)
                 {
                     <tr>
-                        <td>@donor.DonorId</td>
                         <td>@donor.UserId</td>
                         <td>@donor.PaymentProcessorDonorId</td>
-                        <td>
-                            <input type="checkbox" @bind="donor.IsActive" />
-                        </td>
                         <td>
                             <button class="btn btn-sm btn-success me-1" @onclick="() => SaveDonor(donor)">Save</button>
                             <button class="btn btn-sm btn-primary me-1" @onclick="() => EditDonor(donor)">Edit</button>
@@ -75,10 +69,6 @@ else
                             <label>Payment Processor Donor Id</label>
                             <InputText class="form-control" @bind-Value="editingDonor.PaymentProcessorDonorId" />
                         </div>
-                        <div class="mb-2">
-                            <label>IsActive</label>
-                            <InputCheckbox class="form-check-input" @bind-Value="editingDonor.IsActive" />
-                        </div>
                         <button type="submit" class="btn btn-success">Save</button>
                         <button type="button" class="btn btn-secondary ms-2" @onclick="CloseModal">Cancel</button>
                     </EditForm>
@@ -99,7 +89,7 @@ else
                     <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to delete <strong>@deletingDonor?.DonorId</strong>?</p>
+                    <p>Are you sure you want to delete donor with UserId <strong>@deletingDonor?.UserId</strong>?</p>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CloseDeleteModal">Cancel</button>
@@ -122,8 +112,7 @@ else
 
     private IEnumerable<Donor> filteredDonors => string.IsNullOrWhiteSpace(searchTerm)
         ? donors
-        : donors.Where(d => (d.DonorId?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
-            || (d.PaymentProcessorDonorId?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false));
+        : donors.Where(d => d.PaymentProcessorDonorId?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false);
 
     protected override async Task OnInitializedAsync()
     {
@@ -149,10 +138,8 @@ else
         editingDonor = new Donor
         {
             Id = donor.Id,
-            DonorId = donor.DonorId,
             UserId = donor.UserId,
-            PaymentProcessorDonorId = donor.PaymentProcessorDonorId,
-            IsActive = donor.IsActive
+            PaymentProcessorDonorId = donor.PaymentProcessorDonorId
         };
         showModal = true;
     }

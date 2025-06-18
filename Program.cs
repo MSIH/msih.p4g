@@ -25,10 +25,18 @@ using msih.p4g.Server.Features.Base.UserProfileService.Services;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Repositories;
 using msih.p4g.Server.Features.Base.UserService.Services;
-using msih.p4g.Server.Features.DonationService.Data;
 using msih.p4g.Server.Features.DonationService.Services;
 using msih.p4g.Server.Features.DonorService.Interfaces;
+using msih.p4g.Server.Features.DonorService.Repositories;
 using msih.p4g.Server.Features.DonorService.Services;
+using msih.p4g.Server.Features.FundraiserService.Interfaces;
+using msih.p4g.Server.Features.FundraiserService.Repositories;
+using msih.p4g.Server.Features.FundraiserService.Services;
+using msih.p4g.Server.Features.CampaignService.Interfaces;
+using msih.p4g.Server.Features.CampaignService.Repositories;
+using msih.p4g.Server.Features.CampaignService.Services;
+using msih.p4g.Server.Features.DonationService.Repositories;
+using msih.p4g.Server.Features.DonationService.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,8 +87,13 @@ builder.Services.AddScoped<IPaymentService>(provider =>
 // Register Settings Service and related dependencies
 builder.Services.AddSettingsServices();
 
-// Register DonorService for DI
+// Register DonorRepository and DonorService for DI
+builder.Services.AddScoped<IDonorRepository, DonorRepository>();
 builder.Services.AddScoped<IDonorService, DonorService>();
+
+// Register CampaignRepository and CampaignService for DI
+builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
+builder.Services.AddScoped<ICampaignService, CampaignService>();
 
 // Register ProfileRepository and ProfileService for DI
 builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
@@ -88,7 +101,7 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 
 // Register DonationRepository and DonationService for DI
 builder.Services.AddScoped<IDonationRepository, DonationRepository>();
-builder.Services.AddScoped<DonationService>();
+builder.Services.AddScoped<IDonationService, DonationService>();
 
 // Register UserRepository and UserService for DI
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -96,6 +109,10 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 // Register UserProfileService for coordinating User and Profile operations
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+
+// Register FundraiserRepository and FundraiserService for DI
+builder.Services.AddScoped<IFundraiserRepository, FundraiserRepository>();
+builder.Services.AddScoped<IFundraiserService, FundraiserService>();
 
 var app = builder.Build();
 
