@@ -4,62 +4,65 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 
-using Microsoft.EntityFrameworkCore;
-using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Features.DonorService.Interfaces;
 using msih.p4g.Server.Features.DonorService.Model;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.DonorService.Services
 {
+    /// <summary>
+    /// Service implementation for Donor operations
+    /// </summary>
     public class DonorService : IDonorService
     {
-        private readonly ApplicationDbContext _db;
-        public DonorService(ApplicationDbContext db)
+        private readonly IDonorRepository _repository;
+
+        /// <summary>
+        /// Initializes a new instance of the DonorService class
+        /// </summary>
+        /// <param name="repository">The donor repository</param>
+        public DonorService(IDonorRepository repository)
         {
-            _db = db;
+            _repository = repository;
         }
 
+        /// <inheritdoc />
         public async Task<List<Donor>> GetAllAsync()
         {
-            return await _db.Donors.ToListAsync();
+            var donors = await _repository.GetAllAsync();
+            return donors.ToList();
         }
 
+        /// <inheritdoc />
         public async Task<Donor?> GetByIdAsync(int id)
         {
-            return await _db.Donors.FirstOrDefaultAsync(d => d.Id == id);
+            return await _repository.GetByIdAsync(id);
         }
 
+        /// <inheritdoc />
         public async Task<List<Donor>> SearchAsync(string searchTerm)
         {
-            // Only search by PaymentProcessorDonorId now
-            return await _db.Donors
-                .Where(d => d.PaymentProcessorDonorId != null && d.PaymentProcessorDonorId.Contains(searchTerm))
-                .ToListAsync();
+            return await _repository.SearchAsync(searchTerm);
         }
 
+        /// <inheritdoc />
         public async Task<Donor> AddAsync(Donor donor)
         {
-            _db.Donors.Add(donor);
-            await _db.SaveChangesAsync();
-            return donor;
+            return await _repository.AddAsync(donor);
         }
 
+        /// <inheritdoc />
         public async Task<bool> UpdateAsync(Donor donor)
         {
-            var existing = await _db.Donors.FirstOrDefaultAsync(d => d.Id == donor.Id);
-            if (existing == null) return false;
-            _db.Entry(existing).CurrentValues.SetValues(donor);
-            await _db.SaveChangesAsync();
+            await _repository.UpdateAsync(donor);
             return true;
         }
 
+        /// <inheritdoc />
         public async Task<bool> DeleteAsync(int id)
         {
-            var donor = await _db.Donors.FirstOrDefaultAsync(d => d.Id == id);
-            if (donor == null) return false;
-            _db.Donors.Remove(donor);
-            await _db.SaveChangesAsync();
-            return true;
+            return await _repository.DeleteAsync(id);
         }
     }
 }

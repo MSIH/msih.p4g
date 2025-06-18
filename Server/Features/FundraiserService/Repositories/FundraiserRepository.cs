@@ -1,50 +1,28 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using msih.p4g.Server.Features.FundraiserService.Model;
+/**
+ * Copyright (c) 2025 MSIH LLC. All rights reserved.
+ * This file is developed for Make Sure It Happens Inc.
+ * Unauthorized copying, modification, distribution, or use is prohibited.
+ */
 using msih.p4g.Server.Common.Data;
+using msih.p4g.Server.Common.Data.Repositories;
+using msih.p4g.Server.Features.FundraiserService.Interfaces;
+using msih.p4g.Server.Features.FundraiserService.Model;
 
 namespace msih.p4g.Server.Features.FundraiserService.Repositories
 {
-    public class FundraiserRepository
+    /// <summary>
+    /// Repository implementation for Fundraiser entity
+    /// </summary>
+    public class FundraiserRepository : GenericRepository<Fundraiser, ApplicationDbContext>, IFundraiserRepository
     {
-        private readonly ApplicationDbContext _context;
-        public FundraiserRepository(ApplicationDbContext context)
+        /// <summary>
+        /// Initializes a new instance of the FundraiserRepository class
+        /// </summary>
+        /// <param name="context">The database context</param>
+        public FundraiserRepository(ApplicationDbContext context) : base(context)
         {
-            _context = context;
         }
-
-        public async Task<Fundraiser?> GetByIdAsync(int id)
-        {
-            return await _context.Set<Fundraiser>().FindAsync(id);
-        }
-
-        public async Task<IEnumerable<Fundraiser>> GetAllAsync()
-        {
-            return await _context.Set<Fundraiser>().ToListAsync();
-        }
-
-        public async Task<Fundraiser> AddAsync(Fundraiser fundraiser)
-        {
-            _context.Set<Fundraiser>().Add(fundraiser);
-            await _context.SaveChangesAsync();
-            return fundraiser;
-        }
-
-        public async Task UpdateAsync(Fundraiser fundraiser)
-        {
-            _context.Set<Fundraiser>().Update(fundraiser);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var entity = await GetByIdAsync(id);
-            if (entity != null)
-            {
-                _context.Set<Fundraiser>().Remove(entity);
-                await _context.SaveChangesAsync();
-            }
-        }
+        
+        // Add Fundraiser-specific repository methods here if needed
     }
 }

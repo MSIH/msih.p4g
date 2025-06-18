@@ -3,6 +3,8 @@
    Unauthorized copying, modification, distribution, or use is prohibited. *@
 @page "/admin/campaigns"
 @using msih.p4g.Server.Features.CampaignService.Model
+@using msih.p4g.Server.Features.CampaignService.Interfaces
+@inject ICampaignService CampaignService
 @inject NavigationManager Navigation
 
 <h3>Manage Donation Campaigns</h3>
@@ -47,34 +49,31 @@
     private List<Campaign> campaigns = new();
     private Campaign newCampaign = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // For MVP, use local state. Replace with service call in production.
-        campaigns = new List<Campaign>();
+        await LoadCampaigns();
     }
 
-    private void AddCampaign()
+    private async Task LoadCampaigns()
+    {
+        campaigns = (await CampaignService.GetAllAsync()).ToList();
+    }
+
+    private async Task AddCampaign()
     {
         if (!string.IsNullOrWhiteSpace(newCampaign.Title))
         {
-            var toAdd = new Campaign
-            {
-                Id = campaigns.Count > 0 ? campaigns.Max(c => c.Id) + 1 : 1,
-                Title = newCampaign.Title,
-                Description = newCampaign.Description,
-                IsActive = true
-            };
-            campaigns.Add(toAdd);
+            await CampaignService.AddAsync(newCampaign);
             newCampaign = new();
+            await LoadCampaigns();
         }
     }
 
-    private void DeleteCampaign(int id)
+    private async Task DeleteCampaign(int id)
     {
-        var campaign = campaigns.FirstOrDefault(c => c.Id == id);
-        if (campaign != null)
+        if (await CampaignService.DeleteAsync(id))
         {
-            campaigns.Remove(campaign);
+            await LoadCampaigns();
         }
     }
 }
