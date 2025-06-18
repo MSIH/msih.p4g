@@ -7,24 +7,27 @@
 @namespace msih.p4g.Client.Layout.Components
 @using msih.p4g.Server.Features.Base.UserService.Models
 @using msih.p4g.Server.Features.Base.UserService.Interfaces
+@using msih.p4g.Client.Features.Authentication.Services
 @inject IUserService UserService
 @inject NavigationManager NavigationManager
+@inject AuthService AuthService
+@implements IDisposable
 
 <div class="dropdown">
     <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
         <span class="oi oi-person" aria-hidden="true"></span>
-        @(currentUser?.Email ?? "Account")
+        @(AuthService.CurrentUser?.Email ?? "Account")
     </button>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
-        @if (currentUser != null)
+        @if (AuthService.IsAuthenticated)
         {
             <li><a class="dropdown-item" href="/profile">My Profile</a></li>
             <li><a class="dropdown-item" href="/donations">My Donations</a></li>
-            @if (currentUser.Role == UserRole.Fundraiser)
+            @if (AuthService.CurrentUser?.Role == UserRole.Fundraiser)
             {
                 <li><a class="dropdown-item" href="/my-fundraiser">My Fundraiser</a></li>
             }
-            @if (currentUser.Role == UserRole.Admin)
+            @if (AuthService.CurrentUser?.Role == UserRole.Admin)
             {
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="/users">User Management</a></li>
@@ -42,34 +45,51 @@
 </div>
 
 @code {
-    private User? currentUser;
-
     protected override async Task OnInitializedAsync()
     {
-        await LoadCurrentUser();
+        AuthService.AuthStateChanged += OnAuthStateChanged;
+        
+        // Only initialize if no user is set in the auth service
+        if (!AuthService.IsAuthenticated)
+        {
+            await InitializeUserAsync();
+        }
     }
 
-    private async Task LoadCurrentUser()
+    private async Task InitializeUserAsync()
     {
         try
         {
-            // This is a placeholder - in a real app, you would get the current user
-            // from an authentication service or state provider
-            // For now, we'll just use the first user as an example
+            // For MVP, we get the first user as a placeholder for a real authentication system
             var users = await UserService.GetAllAsync(includeInactive: false);
-            currentUser = users.FirstOrDefault();
+            var user = users.FirstOrDefault();
+            
+            if (user != null)
+            {
+                AuthService.Login(user);
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading user: {ex.Message}");
-            currentUser = null;
+            Console.WriteLine($"Error initializing user: {ex.Message}");
         }
+    }
+
+    private void OnAuthStateChanged()
+    {
+        // This will trigger a UI refresh when the auth state changes
+        StateHasChanged();
     }
 
     private void Logout()
     {
-        // This would be implemented with proper authentication service
-        currentUser = null;
+        AuthService.Logout();
         NavigationManager.NavigateTo("/");
+    }
+
+    public void Dispose()
+    {
+        // Unsubscribe from the event when the component is disposed
+        AuthService.AuthStateChanged -= OnAuthStateChanged;
     }
 }
