@@ -32,7 +32,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         public async Task<PaymentTransaction> GetByTransactionIdAsync(string transactionId)
         {
             return await _dbSet
-                .Where(t => t.TransactionId == transactionId && !t.IsDeleted)
+                .Where(t => t.TransactionId == transactionId && t.IsActive)
                 .FirstOrDefaultAsync();
         }
         
@@ -44,7 +44,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         public async Task<IEnumerable<PaymentTransaction>> GetByStatusAsync(PaymentStatus status)
         {
             return await _dbSet
-                .Where(t => t.Status == status && !t.IsDeleted)
+                .Where(t => t.Status == status && t.IsActive)
                 .OrderByDescending(t => t.ProcessedOn)
                 .ToListAsync();
         }
@@ -57,7 +57,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         public async Task<IEnumerable<PaymentTransaction>> GetByOrderReferenceAsync(string orderReference)
         {
             return await _dbSet
-                .Where(t => t.OrderReference == orderReference && !t.IsDeleted)
+                .Where(t => t.OrderReference == orderReference && t.IsActive)
                 .OrderByDescending(t => t.ProcessedOn)
                 .ToListAsync();
         }
@@ -70,7 +70,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         public async Task<IEnumerable<PaymentTransaction>> GetByCustomerEmailAsync(string email)
         {
             return await _dbSet
-                .Where(t => t.CustomerEmail == email && !t.IsDeleted)
+                .Where(t => t.CustomerEmail == email && t.IsActive)
                 .OrderByDescending(t => t.ProcessedOn)
                 .ToListAsync();
         }
@@ -84,7 +84,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         public async Task<IEnumerable<PaymentTransaction>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
             return await _dbSet
-                .Where(t => t.ProcessedOn >= startDate && t.ProcessedOn <= endDate && !t.IsDeleted)
+                .Where(t => t.ProcessedOn >= startDate && t.ProcessedOn <= endDate && t.IsActive)
                 .OrderByDescending(t => t.ProcessedOn)
                 .ToListAsync();
         }
@@ -100,7 +100,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         public async Task<bool> UpdateStatusAsync(int id, PaymentStatus status, string? errorMessage = null, string modifiedBy = "System")
         {
             var transaction = await _dbSet.FindAsync(id);
-            if (transaction == null || transaction.IsDeleted)
+            if (transaction == null || !transaction.IsActive)
             {
                 return false;
             }

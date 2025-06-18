@@ -32,7 +32,7 @@ namespace msih.p4g.Server.Features.DonorService.Repositories
             return await _dbSet
                 .Where(d => d.PaymentProcessorDonorId != null && 
                        d.PaymentProcessorDonorId.Contains(searchTerm) && 
-                       !d.IsDeleted)
+                       d.IsActive)
                 .ToListAsync();
         }
     }

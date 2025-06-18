@@ -41,12 +41,12 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
         /// <summary>
         /// Gets all validated phone numbers
         /// </summary>
-        public async Task<IEnumerable<ValidatedPhoneNumber>> GetAllAsync(bool includeInactive = false, bool includeDeleted = false)
+        public async Task<IEnumerable<ValidatedPhoneNumber>> GetAllAsync(bool includeInactive = false)
         {
             var repository = _phoneNumberRepository as IGenericRepository<ValidatedPhoneNumber>;
             if (repository == null)
                 throw new InvalidOperationException("Repository does not implement IGenericRepository");
-            return await repository.GetAllAsync(includeInactive, includeDeleted);
+            return await repository.GetAllAsync(includeInactive);
         }
     }
 }

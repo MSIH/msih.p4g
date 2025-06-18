@@ -42,10 +42,12 @@ namespace msih.p4g.Server.Features.CampaignService.Interfaces
         Task<bool> UpdateAsync(Campaign campaign);
         
         /// <summary>
-        /// Deletes a campaign (soft delete)
+        /// Sets the active status of a campaign
         /// </summary>
-        /// <param name="id">The ID of the campaign to delete</param>
-        /// <returns>True if deleted, false if not found</returns>
-        Task<bool> DeleteAsync(int id);
+        /// <param name="id">The ID of the campaign</param>
+        /// <param name="isActive">The new active status</param>
+        /// <param name="modifiedBy">Who modified the campaign</param>
+        /// <returns>True if updated, false if not found</returns>
+        Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System");
     }
 }

@@ -46,7 +46,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Models
         /// <summary>
         /// Gets the placeholder values as a dictionary
         /// </summary>
-       
+        [NotMapped]
         public Dictionary<string, string> PlaceholderValues
         {
             get

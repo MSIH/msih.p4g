@@ -271,11 +271,11 @@ namespace msih.p4g.Server.Features.DonationService.Services
         }
 
         /// <summary>
-        /// Deletes a donation by its ID.
+        /// Sets the active status of a donation.
         /// </summary>
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System")
         {
-            return await _donationRepository.DeleteAsync(id, "DonationService");
+            return await _donationRepository.SetActiveStatusAsync(id, isActive, modifiedBy);
         }
 
         /// <summary>

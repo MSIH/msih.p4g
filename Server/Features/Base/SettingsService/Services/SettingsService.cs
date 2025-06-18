@@ -64,7 +64,7 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Services
         /// </summary>
         public async Task SetValueAsync(string key, string? value, string modifiedBy = "System")
         {
-            var setting = (await _settingsRepository.FindAsync(s => s.Key == key, true, true)).FirstOrDefault();
+            var setting = (await _settingsRepository.FindAsync(s => s.Key == key)).FirstOrDefault();
             if (setting == null)
             {
                 await _settingsRepository.AddAsync(new Setting { Key = key, Value = value }, modifiedBy);

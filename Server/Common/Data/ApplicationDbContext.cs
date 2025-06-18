@@ -54,7 +54,6 @@ namespace msih.p4g.Server.Common.Data
                     // Set defaults for new entities
                     ((IAuditableEntity)entityEntry.Entity).CreatedOn = DateTime.UtcNow;
                     ((IAuditableEntity)entityEntry.Entity).IsActive = true;
-                    ((IAuditableEntity)entityEntry.Entity).IsDeleted = false;
                 }
                 else
                 {

@@ -28,7 +28,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
         public async Task<IEnumerable<Message>> GetPendingMessagesAsync(int limit = 50)
         {
             return await _dbSet
-                .Where(m => !m.IsSent && !m.IsDeleted && m.IsActive &&
+                .Where(m => !m.IsSent && m.IsActive &&
                           (m.ScheduledFor == null || m.ScheduledFor <= DateTime.UtcNow))
                 .OrderBy(m => m.CreatedOn)
                 .Take(limit)
@@ -39,7 +39,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
         public async Task<IEnumerable<Message>> GetScheduledMessagesAsync(DateTime before, int limit = 50)
         {
             return await _dbSet
-                .Where(m => !m.IsSent && !m.IsDeleted && m.IsActive && 
+                .Where(m => !m.IsSent && m.IsActive && 
                           m.ScheduledFor != null && m.ScheduledFor <= before)
                 .OrderBy(m => m.ScheduledFor)
                 .Take(limit)
@@ -50,7 +50,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
         public async Task<IEnumerable<Message>> GetMessagesByTypeAsync(string messageType, int limit = 50)
         {
             return await _dbSet
-                .Where(m => m.MessageType == messageType && !m.IsDeleted)
+                .Where(m => m.MessageType == messageType && m.IsActive)
                 .OrderByDescending(m => m.CreatedOn)
                 .Take(limit)
                 .ToListAsync();
@@ -60,7 +60,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
         public async Task<IEnumerable<Message>> GetMessagesByRecipientAsync(string recipient, int limit = 50)
         {
             return await _dbSet
-                .Where(m => m.To == recipient && !m.IsDeleted)
+                .Where(m => m.To == recipient && m.IsActive)
                 .OrderByDescending(m => m.CreatedOn)
                 .Take(limit)
                 .ToListAsync();
