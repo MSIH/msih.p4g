@@ -45,7 +45,7 @@
                         @if (referralCode != null)
                         {
                             <div class="card mb-4">                  
-                                <h4 class="card-title">My Donation Referral Code</h4>
+                                <h4 class="card-title">My Donation Referral</h4>
                                 <div class="card-body">
                                     <div class="alert alert-info">
                                         <p class="mb-1">Share this full URL</p>
@@ -502,7 +502,7 @@
     {
         try
         {
-            string referralUrl = $"https://gd4 .org/d/{referralCode}";
+            string referralUrl = $"https://gd4.org/d/{referralCode}";
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
             copyUrlSuccess = true;
             StateHasChanged();

@@ -343,7 +343,7 @@
     {
         try
         {
-            string referralUrl = $"https://gd4 .org/d/{referralCode}";
+            string referralUrl = $"https://gd4.org/d/{referralCode}";
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
             copyUrlSuccess = true;
             StateHasChanged();
