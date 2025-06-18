@@ -53,7 +53,7 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Model
         /// </summary>
         public void GenerateReferralCode()
         {
-            ReferralCode = RandomStringGenerator.Generate(UserId);
+            ReferralCode = RandomStringGenerator.Generate(UserId, 6, RandomStringGenerator.CharSet.LowercaseAndUppercase);
         }
     }
 }
