@@ -31,6 +31,10 @@ namespace msih.p4g.Server.Features.FundraiserService.Services
             await _repository.GetByIdAsync(id);
             
         /// <inheritdoc />
+        public async Task<Fundraiser?> GetByUserIdAsync(int userId) => 
+            await _repository.GetByUserIdAsync(userId);
+            
+        /// <inheritdoc />
         public async Task<IEnumerable<Fundraiser>> GetAllAsync() => 
             await _repository.GetAllAsync();
             

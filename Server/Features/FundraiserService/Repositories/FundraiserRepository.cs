@@ -7,6 +7,8 @@ using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.FundraiserService.Interfaces;
 using msih.p4g.Server.Features.FundraiserService.Model;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.FundraiserService.Repositories
 {
@@ -23,6 +25,15 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
         {
         }
         
-        // Add Fundraiser-specific repository methods here if needed
+        /// <summary>
+        /// Gets a fundraiser by user ID
+        /// </summary>
+        /// <param name="userId">The user ID</param>
+        /// <returns>The fundraiser if found, otherwise null</returns>
+        public async Task<Fundraiser?> GetByUserIdAsync(int userId)
+        {
+            return await _context.Set<Fundraiser>()
+                .FirstOrDefaultAsync(f => f.UserId == userId && f.IsActive);
+        }
     }
 }

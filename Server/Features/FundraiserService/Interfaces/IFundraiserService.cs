@@ -7,6 +7,7 @@ namespace msih.p4g.Server.Features.FundraiserService.Interfaces
     public interface IFundraiserService
     {
         Task<Fundraiser?> GetByIdAsync(int id);
+        Task<Fundraiser?> GetByUserIdAsync(int userId);
         Task<IEnumerable<Fundraiser>> GetAllAsync();
         Task<Fundraiser> AddAsync(Fundraiser fundraiser);
         Task UpdateAsync(Fundraiser fundraiser);

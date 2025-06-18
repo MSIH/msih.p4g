@@ -1,0 +1,338 @@
+@page "/my-fundraiser"
+@namespace msih.p4g.Client.Features.FundraiserManagement.Pages
+@using msih.p4g.Server.Features.FundraiserService.Model
+@using msih.p4g.Server.Features.FundraiserService.Interfaces
+@using msih.p4g.Server.Features.Base.UserService.Interfaces
+@using msih.p4g.Server.Features.Base.ProfileService.Interfaces
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IFundraiserService FundraiserService
+@inject IUserService UserService
+@inject IProfileService ProfileService
+@inject msih.p4g.Server.Features.FundraiserService.Interfaces.IFundraiserStatisticsService FundraiserStatsService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+
+<PageTitle>My Fundraiser</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">My Fundraiser</h3>
+                </div>
+                <div class="card-body">
+                    @if (isLoading)
+                    {
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (fundraiser == null)
+                    {
+                        <div class="alert alert-warning">
+                            <p>Fundraiser information not found. Please contact support if you believe this is an error.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (!string.IsNullOrEmpty(message))
+                        {
+                            <div class="alert @(message.StartsWith("Error") ? "alert-danger" : "alert-success") mb-4">
+                                @message
+                            </div>
+                        }
+
+                        <EditForm Model="@fundraiser" OnValidSubmit="HandleFundraiserUpdate">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <div class="mb-4">
+                                <label for="paypalAccount" class="form-label">PayPal Account Email</label>
+                                <InputText id="paypalAccount" @bind-Value="fundraiser.PayPalAccount" class="form-control" />
+                                <small class="text-muted">This is the email address where your fundraising proceeds will be sent.</small>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="w9Document" class="form-label">W9 Document Reference</label>
+                                <InputText id="w9Document" @bind-Value="fundraiser.W9Document" class="form-control" />
+                                <small class="text-muted">Reference to your submitted W9 tax form.</small>
+                            </div>
+
+                            <div class="mb-4">
+                                <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                                    @if (isSaving)
+                                    {
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                        <span> Saving...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Save Changes</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+
+            @if (referralCode != null)
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">My Referral Code</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <p class="mb-1">Share this code with potential donors to track your referrals:</p>
+                            <h4 class="mt-2 mb-3">@referralCode</h4>
+                            <p class="mb-0">
+                                <button class="btn btn-sm btn-secondary" @onclick="CopyReferralCode">
+                                    <span class="oi oi-clipboard me-1"></span> Copy to Clipboard
+                                </button>
+                                @if (copySuccess)
+                                {
+                                    <span class="text-success ms-2">Copied!</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (statistics != null)
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Donation Statistics</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Total Donations</h5>
+                                        <p class="display-4">@statistics.DonationCount</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Total Raised</h5>
+                                        <p class="display-4">$@statistics.TotalRaised.ToString("N2")</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Average Donation</h5>
+                                        <p class="display-4">$@statistics.AverageDonation.ToString("N2")</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Donation History</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (statistics.Donations.Count == 0)
+                        {
+                            <div class="alert alert-info">
+                                <p class="mb-0">No donations have been made using your referral code yet.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Donor</th>
+                                            <th>Amount</th>
+                                            <th>Message</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var donation in statistics.Donations)
+                                        {
+                                            <tr>
+                                                <td>@donation.DonationDate.ToString("MM/dd/yyyy")</td>
+                                                <td>@donation.DonorName</td>
+                                                <td>$@donation.Amount.ToString("N2")</td>
+                                                <td>
+                                                    @if (string.IsNullOrEmpty(donation.Message))
+                                                    {
+                                                        <span class="text-muted">(No message)</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        @donation.Message
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private Fundraiser fundraiser;
+    private string referralCode;
+    private FundraiserStatistics statistics;
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private string message = string.Empty;
+    private bool copySuccess = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFundraiserDataAsync();
+    }
+
+    private async Task LoadFundraiserDataAsync()
+    {
+        isLoading = true;
+        message = string.Empty;
+
+        try
+        {
+            // First attempt: Try to get the current user from claims
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated ?? false)
+            {
+                var email = user.FindFirst(ClaimTypes.Email)?.Value;
+
+                if (!string.IsNullOrEmpty(email))
+                {
+                    // Get user by email
+                    var currentUser = await UserService.GetByEmailAsync(email);
+                    if (currentUser != null)
+                    {
+                        // Get the fundraiser for this user
+                        fundraiser = await FundraiserService.GetByUserIdAsync(currentUser.Id);
+                        
+                        // Get user's profile for the referral code
+                        var profile = await ProfileService.GetByIdAsync(currentUser.Id);
+                        if (profile != null)
+                        {
+                            referralCode = profile.ReferralCode;
+                        }
+                        
+                        // Get donation statistics for this fundraiser
+                        if (fundraiser != null)
+                        {
+                            statistics = await FundraiserStatsService.GetStatisticsAsync(fundraiser.Id);
+                        }
+                    }
+                }
+            }
+
+            // If fundraiser is still null (not found via claims), try using same approach as UserMenu
+            if (fundraiser == null)
+            {
+                var users = await UserService.GetAllAsync(includeInactive: false);
+                var firstUser = users.FirstOrDefault(u => u.Role == Server.Features.Base.UserService.Models.UserRole.Fundraiser);
+
+                if (firstUser != null)
+                {
+                    // Get the fundraiser for this user
+                    fundraiser = await FundraiserService.GetByUserIdAsync(firstUser.Id);
+                    
+                    // Get user's profile for the referral code
+                    var profile = await ProfileService.GetByIdAsync(firstUser.Id);
+                    if (profile != null)
+                    {
+                        referralCode = profile.ReferralCode;
+                    }
+                    
+                    // Get donation statistics for this fundraiser
+                    if (fundraiser != null)
+                    {
+                        statistics = await FundraiserStatsService.GetStatisticsAsync(fundraiser.Id);
+                    }
+                }
+            }
+
+            // If fundraiser is still null, create a default one
+            if (fundraiser == null)
+            {
+                fundraiser = new Fundraiser
+                {
+                    PayPalAccount = string.Empty,
+                    W9Document = string.Empty
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error loading fundraiser data: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleFundraiserUpdate()
+    {
+        isSaving = true;
+        message = string.Empty;
+
+        try
+        {
+            // Save fundraiser
+            await FundraiserService.UpdateAsync(fundraiser);
+            message = "Fundraiser information updated successfully!";
+        }
+        catch (Exception ex)
+        {
+            message = $"Error updating fundraiser information: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CopyReferralCode()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralCode);
+            copySuccess = true;
+            StateHasChanged();
+            
+            // Reset the success message after 3 seconds
+            await Task.Delay(3000);
+            copySuccess = false;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            // Handle clipboard error
+            message = "Unable to copy to clipboard. Please select and copy the code manually.";
+        }
+    }
+}
