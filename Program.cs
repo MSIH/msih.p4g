@@ -114,6 +114,10 @@ builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IFundraiserRepository, FundraiserRepository>();
 builder.Services.AddScoped<IFundraiserService, FundraiserService>();
 
+// Register FundraiserStatisticsRepository and FundraiserStatisticsService for DI
+builder.Services.AddScoped<IFundraiserStatisticsRepository, FundraiserStatisticsRepository>();
+builder.Services.AddScoped<IFundraiserStatisticsService, FundraiserStatisticsService>();
+
 var app = builder.Build();
 
 // Apply pending migrations and create database/tables if needed

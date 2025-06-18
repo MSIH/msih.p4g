@@ -8,6 +8,7 @@
 @inject IUserProfileService UserProfileService
 @inject IUserService UserService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Edit Profile</PageTitle>
 
@@ -39,6 +40,27 @@
                         {
                             <div class="alert @(message.StartsWith("Error") ? "alert-danger" : "alert-success") mb-4">
                                 @message
+                            </div>
+                        }
+                        @if (referralCode != null)
+                        {
+                            <div class="card mb-4">                  
+                                <h4 class="card-title">My Donation Referral</h4>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <p class="mb-1">Share this full URL</p>
+                                        <h5 class="mt-2 mb-3">https://gd4.org/d/@referralCode</h5>
+                                        <p class="mb-0">
+                                            <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
+                                                <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
+                                            </button>
+                                            @if (copyUrlSuccess)
+                                            {
+                                                <span class="text-success ms-2">Copied!</span>
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         }
 
@@ -199,6 +221,10 @@
 </div>
 
 @code {
+    private string referralCode;
+    private bool copyCodeSuccess = false;
+    private bool copyUrlSuccess = false;
+
     private Profile profile;
     private AddressModel address = new()
     {
@@ -335,7 +361,7 @@
                 if (!string.IsNullOrEmpty(email))
                 {
                     // Get profile by email
-                    profile = await UserProfileService.GetProfileByUserEmailAsync(email);
+                    profile = await UserProfileService.GetProfileByUserEmailAsync(email);               
                 }
             }
 
@@ -353,7 +379,9 @@
 
             // If we have a profile now, set up the form fields
             if (profile != null)
-            {
+            {            
+                    referralCode = profile.ReferralCode;
+          
                 // Initialize address if it exists
                 if (profile.Address != null)
                 {
@@ -447,6 +475,47 @@
         {
             // Handle invalid date (like February 30th)
             profile.DateOfBirth = null;
+        }
+    }
+
+    private async Task CopyReferralCode()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralCode);
+            copyCodeSuccess = true;
+            StateHasChanged();
+
+            // Reset the success message after 3 seconds
+            await Task.Delay(3000);
+            copyCodeSuccess = false;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            // Handle clipboard error
+            message = "Unable to copy to clipboard. Please select and copy the code manually.";
+        }
+    }
+
+    private async Task CopyReferralUrl()
+    {
+        try
+        {
+            string referralUrl = $"https://gd4.org/d/{referralCode}";
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
+            copyUrlSuccess = true;
+            StateHasChanged();
+
+            // Reset the success message after 3 seconds
+            await Task.Delay(3000);
+            copyUrlSuccess = false;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            // Handle clipboard error
+            message = "Unable to copy to clipboard. Please select and copy the URL manually.";
         }
     }
 }
