@@ -23,6 +23,16 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
             return await _userRepository.GetByEmailAsync(email);
         }
 
+        /// <summary>
+        /// Gets a user by their ID
+        /// </summary>
+        /// <param name="userId">The ID of the user to retrieve</param>
+        /// <returns>The user if found, otherwise null</returns>
+        public async Task<User?> GetByIdAsync(int userId)
+        {
+            return await _userRepository.GetByIdAsync(userId);
+        }
+
         /// <inheritdoc />
         public async Task<User> AddAsync(User user, string createdBy = "System")
         {

@@ -49,8 +49,8 @@ builder.Services.AddRazorPages(options =>
 //builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-// Register the AuthService as a singleton so it persists throughout the application lifecycle
-builder.Services.AddSingleton<AuthService>();
+// Register the AuthService as a scoped service so it's created per user session
+builder.Services.AddScoped<AuthService>();
 
 // Add Entity Framework with the unified ApplicationDbContext
 DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
