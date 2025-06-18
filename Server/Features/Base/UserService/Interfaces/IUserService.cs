@@ -39,7 +39,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Interfaces
         Task UpdateAsync(User user, string modifiedBy = "System");
 
         /// <summary>
-        /// Deletes a user (soft delete)
+        /// Permanently deletes a user from the system
         /// </summary>
         /// <param name="userId">The ID of the user to delete</param>
         /// <param name="modifiedBy">Who deleted the user</param>

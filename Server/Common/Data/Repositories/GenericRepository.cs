@@ -14,7 +14,7 @@ using msih.p4g.Server.Common.Models;
 namespace msih.p4g.Server.Common.Data.Repositories
 {
     /// <summary>
-    /// Generic repository implementation for CRUD operations with support for soft delete and active status
+    /// Generic repository implementation for CRUD operations with support for active status
     /// </summary>
     /// <typeparam name="TEntity">The entity type</typeparam>
     /// <typeparam name="TContext">The DbContext type</typeparam>
@@ -32,19 +32,14 @@ namespace msih.p4g.Server.Common.Data.Repositories
         }
         
         /// <inheritdoc />
-        public virtual async Task<IEnumerable<TEntity>> GetAllAsync(bool includeInactive = false, bool includeDeleted = false)
+        public virtual async Task<IEnumerable<TEntity>> GetAllAsync(bool includeInactive = false)
         {
             var query = _dbSet.AsQueryable();
             
-            // Apply filters for IsActive and IsDeleted
+            // Apply filter for IsActive
             if (!includeInactive)
             {
                 query = query.Where(e => e.IsActive);
-            }
-            
-            if (!includeDeleted)
-            {
-                query = query.Where(e => !e.IsDeleted);
             }
             
             return await query.ToListAsync();
@@ -53,39 +48,28 @@ namespace msih.p4g.Server.Common.Data.Repositories
         /// <inheritdoc />
         public virtual async Task<IEnumerable<TEntity>> FindAsync(
             Expression<Func<TEntity, bool>> predicate, 
-            bool includeInactive = false, 
-            bool includeDeleted = false)
+            bool includeInactive = false)
         {
             var query = _dbSet.Where(predicate);
             
-            // Apply filters for IsActive and IsDeleted
+            // Apply filter for IsActive
             if (!includeInactive)
             {
                 query = query.Where(e => e.IsActive);
-            }
-            
-            if (!includeDeleted)
-            {
-                query = query.Where(e => !e.IsDeleted);
             }
             
             return await query.ToListAsync();
         }
         
         /// <inheritdoc />
-        public virtual async Task<TEntity> GetByIdAsync(int id, bool includeInactive = false, bool includeDeleted = false)
+        public virtual async Task<TEntity> GetByIdAsync(int id, bool includeInactive = false)
         {
             var query = _dbSet.Where(e => e.Id == id);
             
-            // Apply filters for IsActive and IsDeleted
+            // Apply filter for IsActive
             if (!includeInactive)
             {
                 query = query.Where(e => e.IsActive);
-            }
-            
-            if (!includeDeleted)
-            {
-                query = query.Where(e => !e.IsDeleted);
             }
             
             return await query.FirstOrDefaultAsync();
@@ -103,7 +87,6 @@ namespace msih.p4g.Server.Common.Data.Repositories
             entity.CreatedOn = DateTime.UtcNow;
             entity.CreatedBy = createdBy;
             entity.IsActive = true;
-            entity.IsDeleted = false;
             
             await _dbSet.AddAsync(entity);
             await _context.SaveChangesAsync();
@@ -143,25 +126,6 @@ namespace msih.p4g.Server.Common.Data.Repositories
                 return false;
             }
             
-            // Soft delete
-            entity.IsDeleted = true;
-            entity.ModifiedOn = DateTime.UtcNow;
-            entity.ModifiedBy = modifiedBy;
-            
-            await _context.SaveChangesAsync();
-            
-            return true;
-        }
-        
-        /// <inheritdoc />
-        public virtual async Task<bool> HardDeleteAsync(int id)
-        {
-            var entity = await _dbSet.FindAsync(id);
-            if (entity == null)
-            {
-                return false;
-            }
-            
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync();
             
@@ -172,7 +136,7 @@ namespace msih.p4g.Server.Common.Data.Repositories
         public virtual async Task<bool> SetActiveStatusAsync(int id, bool isActive, string modifiedBy = "System")
         {
             var entity = await _dbSet.FindAsync(id);
-            if (entity == null || entity.IsDeleted)
+            if (entity == null)
             {
                 return false;
             }
@@ -190,7 +154,7 @@ namespace msih.p4g.Server.Common.Data.Repositories
         public virtual async Task<IEnumerable<TEntity>> GetActiveOnlyAsync()
         {
             return await _dbSet
-                .Where(e => e.IsActive && !e.IsDeleted)
+                .Where(e => e.IsActive)
                 .ToListAsync();
         }
         
@@ -198,53 +162,19 @@ namespace msih.p4g.Server.Common.Data.Repositories
         public virtual async Task<IEnumerable<TEntity>> GetInactiveOnlyAsync()
         {
             return await _dbSet
-                .Where(e => !e.IsActive && !e.IsDeleted)
+                .Where(e => !e.IsActive)
                 .ToListAsync();
         }
         
         /// <inheritdoc />
-        public virtual async Task<IEnumerable<TEntity>> GetDeletedOnlyAsync()
-        {
-            return await _dbSet
-                .Where(e => e.IsDeleted)
-                .ToListAsync();
-        }
-        
-        /// <inheritdoc />
-        public virtual async Task<bool> RestoreDeletedAsync(int id, string modifiedBy = "System")
-        {
-            var entity = await _dbSet
-                .Where(e => e.Id == id && e.IsDeleted)
-                .FirstOrDefaultAsync();
-                
-            if (entity == null)
-            {
-                return false;
-            }
-            
-            entity.IsDeleted = false;
-            entity.ModifiedOn = DateTime.UtcNow;
-            entity.ModifiedBy = modifiedBy;
-            
-            await _context.SaveChangesAsync();
-            
-            return true;
-        }
-        
-        /// <inheritdoc />
-        public virtual async Task<bool> ExistsAsync(int id, bool includeInactive = false, bool includeDeleted = false)
+        public virtual async Task<bool> ExistsAsync(int id, bool includeInactive = false)
         {
             var query = _dbSet.Where(e => e.Id == id);
             
-            // Apply filters for IsActive and IsDeleted
+            // Apply filter for IsActive
             if (!includeInactive)
             {
                 query = query.Where(e => e.IsActive);
-            }
-            
-            if (!includeDeleted)
-            {
-                query = query.Where(e => !e.IsDeleted);
             }
             
             return await query.AnyAsync();

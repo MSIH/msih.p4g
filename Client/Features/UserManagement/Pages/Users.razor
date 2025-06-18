@@ -62,7 +62,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // Get all users, including inactive, but not deleted
+        // Get all users, including inactive
         users = (await UserManagementService.GetAllAsync(includeInactive: true)).ToList();
     }
 

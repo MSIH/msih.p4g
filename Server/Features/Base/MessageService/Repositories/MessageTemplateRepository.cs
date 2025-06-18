@@ -33,7 +33,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
             }
 
             var query = _dbSet
-                .Where(t => t.Category == category && !t.IsDeleted && t.IsActive);
+                .Where(t => t.Category == category && t.IsActive);
 
             if (!string.IsNullOrWhiteSpace(messageType))
             {
@@ -61,7 +61,6 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
                 .Where(t => t.Category == category && 
                            t.MessageType == messageType && 
                            t.IsDefault && 
-                           !t.IsDeleted && 
                            t.IsActive)
                 .FirstOrDefaultAsync();
 
@@ -71,7 +70,6 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
                 defaultTemplate = await _dbSet
                     .Where(t => t.Category == category && 
                                t.MessageType == messageType && 
-                               !t.IsDeleted && 
                                t.IsActive)
                     .OrderBy(t => t.CreatedOn)
                     .FirstOrDefaultAsync();
@@ -89,7 +87,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
             }
 
             return await _dbSet
-                .Where(t => t.Name == name && !t.IsDeleted && t.IsActive)
+                .Where(t => t.Name == name && t.IsActive)
                 .FirstOrDefaultAsync();
         }
 
@@ -97,7 +95,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
         public async Task<bool> SetAsDefaultAsync(int templateId)
         {
             var template = await _dbSet.FindAsync(templateId);
-            if (template == null || template.IsDeleted || !template.IsActive)
+            if (template == null || !template.IsActive)
             {
                 return false;
             }
@@ -112,7 +110,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
                     .Where(t => t.Category == template.Category && 
                                t.MessageType == template.MessageType && 
                                t.IsDefault && 
-                               !t.IsDeleted)
+                               t.IsActive)
                     .ToListAsync();
 
                 foreach (var existingDefault in templates)

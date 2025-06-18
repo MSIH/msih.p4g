@@ -8,7 +8,7 @@ using System;
 namespace msih.p4g.Server.Common.Models
 {
     /// <summary>
-    /// Interface for entities that support soft delete and active status functionality
+    /// Interface for entities that support active status and audit functionality
     /// </summary>
     public interface IAuditableEntity
     {
@@ -16,11 +16,6 @@ namespace msih.p4g.Server.Common.Models
         /// Gets or sets whether the entity is active
         /// </summary>
         bool IsActive { get; set; }
-        
-        /// <summary>
-        /// Gets or sets whether the entity is deleted (for soft delete)
-        /// </summary>
-        bool IsDeleted { get; set; }
         
         /// <summary>
         /// Gets or sets when the entity was created

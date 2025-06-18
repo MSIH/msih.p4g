@@ -15,7 +15,7 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Services
 
         public async Task<IEnumerable<Profile>> GetAllAsync(bool includeInactive = false)
         {
-            return await _profileRepository.GetAllAsync(includeInactive: includeInactive, includeDeleted: false);
+            return await _profileRepository.GetAllAsync(includeInactive: includeInactive);
         }
 
         public async Task<Profile> GetByIdAsync(int id)

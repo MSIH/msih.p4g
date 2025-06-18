@@ -32,8 +32,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         /// <inheritdoc />
         public async Task<IEnumerable<User>> GetAllAsync(bool includeInactive = false)
         {
-            // Only include deleted if specifically needed elsewhere
-            return await _userRepository.GetAllAsync(includeInactive: includeInactive, includeDeleted: false);
+            return await _userRepository.GetAllAsync(includeInactive: includeInactive);
         }
 
         /// <inheritdoc />

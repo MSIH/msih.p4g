@@ -31,7 +31,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
             }
 
             return await _dbSet
-                .FirstOrDefaultAsync(p => p.PhoneNumber == phoneNumber && !p.IsDeleted) ?? null!;
+                .FirstOrDefaultAsync(p => p.PhoneNumber == phoneNumber && p.IsActive) ?? null!;
         }
 
         /// <inheritdoc />

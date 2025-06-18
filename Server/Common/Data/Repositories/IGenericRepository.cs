@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace msih.p4g.Server.Common.Data.Repositories
 {
     /// <summary>
-    /// Generic repository interface for CRUD operations with support for soft delete and active status
+    /// Generic repository interface for CRUD operations with support for active status
     /// </summary>
     /// <typeparam name="TEntity">The entity type</typeparam>
     public interface IGenericRepository<TEntity> where TEntity : class
@@ -20,27 +20,24 @@ namespace msih.p4g.Server.Common.Data.Repositories
         /// Gets all entities
         /// </summary>
         /// <param name="includeInactive">Whether to include inactive entities</param>
-        /// <param name="includeDeleted">Whether to include soft-deleted entities</param>
         /// <returns>All entities matching the criteria</returns>
-        Task<IEnumerable<TEntity>> GetAllAsync(bool includeInactive = false, bool includeDeleted = false);
+        Task<IEnumerable<TEntity>> GetAllAsync(bool includeInactive = false);
         
         /// <summary>
         /// Gets entities that match the specified predicate
         /// </summary>
         /// <param name="predicate">The filter expression</param>
         /// <param name="includeInactive">Whether to include inactive entities</param>
-        /// <param name="includeDeleted">Whether to include soft-deleted entities</param>
         /// <returns>Entities matching the predicate and criteria</returns>
-        Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, bool includeInactive = false, bool includeDeleted = false);
+        Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, bool includeInactive = false);
         
         /// <summary>
         /// Gets an entity by its ID
         /// </summary>
         /// <param name="id">The entity ID</param>
         /// <param name="includeInactive">Whether to include inactive entities</param>
-        /// <param name="includeDeleted">Whether to include soft-deleted entities</param>
         /// <returns>The entity with the specified ID, or null if not found</returns>
-        Task<TEntity> GetByIdAsync(int id, bool includeInactive = false, bool includeDeleted = false);
+        Task<TEntity> GetByIdAsync(int id, bool includeInactive = false);
         
         /// <summary>
         /// Adds a new entity
@@ -59,19 +56,12 @@ namespace msih.p4g.Server.Common.Data.Repositories
         Task<TEntity> UpdateAsync(TEntity entity, string modifiedBy = "System");
         
         /// <summary>
-        /// Soft deletes an entity
-        /// </summary>
-        /// <param name="id">The ID of the entity to delete</param>
-        /// <param name="modifiedBy">The user who deleted the entity</param>
-        /// <returns>True if the entity was deleted, false otherwise</returns>
-        Task<bool> DeleteAsync(int id, string modifiedBy = "System");
-        
-        /// <summary>
         /// Permanently removes an entity from the database
         /// </summary>
         /// <param name="id">The ID of the entity to remove</param>
+        /// <param name="modifiedBy">The user who deleted the entity</param>
         /// <returns>True if the entity was removed, false otherwise</returns>
-        Task<bool> HardDeleteAsync(int id);
+        Task<bool> DeleteAsync(int id, string modifiedBy = "System");
         
         /// <summary>
         /// Activates or deactivates an entity
@@ -95,26 +85,11 @@ namespace msih.p4g.Server.Common.Data.Repositories
         Task<IEnumerable<TEntity>> GetInactiveOnlyAsync();
         
         /// <summary>
-        /// Gets only deleted entities
-        /// </summary>
-        /// <returns>Deleted entities</returns>
-        Task<IEnumerable<TEntity>> GetDeletedOnlyAsync();
-        
-        /// <summary>
-        /// Restores a soft-deleted entity
-        /// </summary>
-        /// <param name="id">The ID of the entity to restore</param>
-        /// <param name="modifiedBy">The user who restored the entity</param>
-        /// <returns>True if the entity was restored, false otherwise</returns>
-        Task<bool> RestoreDeletedAsync(int id, string modifiedBy = "System");
-        
-        /// <summary>
         /// Checks if an entity with the specified ID exists
         /// </summary>
         /// <param name="id">The entity ID</param>
         /// <param name="includeInactive">Whether to include inactive entities</param>
-        /// <param name="includeDeleted">Whether to include soft-deleted entities</param>
         /// <returns>True if the entity exists, false otherwise</returns>
-        Task<bool> ExistsAsync(int id, bool includeInactive = false, bool includeDeleted = false);
+        Task<bool> ExistsAsync(int id, bool includeInactive = false);
     }
 }
