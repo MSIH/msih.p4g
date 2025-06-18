@@ -42,12 +42,6 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         }
 
         /// <inheritdoc />
-        public async Task DeleteAsync(int userId, string modifiedBy = "System")
-        {
-            await _userRepository.DeleteAsync(userId, modifiedBy);
-        }
-
-        /// <inheritdoc />
         public async Task SetActiveAsync(int userId, bool isActive, string modifiedBy = "System")
         {
             await _userRepository.SetActiveStatusAsync(userId, isActive, modifiedBy);

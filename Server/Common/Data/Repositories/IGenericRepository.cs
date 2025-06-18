@@ -56,14 +56,6 @@ namespace msih.p4g.Server.Common.Data.Repositories
         Task<TEntity> UpdateAsync(TEntity entity, string modifiedBy = "System");
         
         /// <summary>
-        /// Permanently removes an entity from the database
-        /// </summary>
-        /// <param name="id">The ID of the entity to remove</param>
-        /// <param name="modifiedBy">The user who deleted the entity</param>
-        /// <returns>True if the entity was removed, false otherwise</returns>
-        Task<bool> DeleteAsync(int id, string modifiedBy = "System");
-        
-        /// <summary>
         /// Activates or deactivates an entity
         /// </summary>
         /// <param name="id">The ID of the entity</param>

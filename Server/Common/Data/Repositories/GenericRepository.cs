@@ -118,21 +118,6 @@ namespace msih.p4g.Server.Common.Data.Repositories
         }
         
         /// <inheritdoc />
-        public virtual async Task<bool> DeleteAsync(int id, string modifiedBy = "System")
-        {
-            var entity = await _dbSet.FindAsync(id);
-            if (entity == null)
-            {
-                return false;
-            }
-            
-            _dbSet.Remove(entity);
-            await _context.SaveChangesAsync();
-            
-            return true;
-        }
-        
-        /// <inheritdoc />
         public virtual async Task<bool> SetActiveStatusAsync(int id, bool isActive, string modifiedBy = "System")
         {
             var entity = await _dbSet.FindAsync(id);

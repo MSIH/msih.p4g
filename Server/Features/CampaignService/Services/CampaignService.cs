@@ -52,9 +52,9 @@ namespace msih.p4g.Server.Features.CampaignService.Services
         }
 
         /// <inheritdoc />
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System")
         {
-            return await _repository.DeleteAsync(id);
+            return await _repository.SetActiveStatusAsync(id, isActive, modifiedBy);
         }
     }
 }

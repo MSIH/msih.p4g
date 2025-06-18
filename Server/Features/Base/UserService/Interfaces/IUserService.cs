@@ -39,13 +39,6 @@ namespace msih.p4g.Server.Features.Base.UserService.Interfaces
         Task UpdateAsync(User user, string modifiedBy = "System");
 
         /// <summary>
-        /// Permanently deletes a user from the system
-        /// </summary>
-        /// <param name="userId">The ID of the user to delete</param>
-        /// <param name="modifiedBy">Who deleted the user</param>
-        Task DeleteAsync(int userId, string modifiedBy = "System");
-
-        /// <summary>
         /// Sets the active status of a user
         /// </summary>
         /// <param name="userId">The ID of the user</param>

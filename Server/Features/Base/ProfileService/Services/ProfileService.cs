@@ -35,11 +35,6 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Services
             return await _profileRepository.UpdateAsync(profile, modifiedBy);
         }
 
-        public async Task<bool> DeleteAsync(int id, string modifiedBy = "System")
-        {
-            return await _profileRepository.DeleteAsync(id, modifiedBy);
-        }
-
         public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System")
         {
             return await _profileRepository.SetActiveStatusAsync(id, isActive, modifiedBy);
