@@ -108,7 +108,12 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label for="state" class="form-label">State/Province</label>
-                                    <InputText id="state" @bind-Value="address.State" class="form-control" />
+                                    <InputSelect id="state" @bind-Value="address.State" class="form-control">
+                                        @foreach (var state in UsStates)
+                                        {
+                                            <option value="@state.Abbreviation">@state.Name</option>
+                                        }
+                                    </InputSelect>
                                 </div>
                             </div>
 
@@ -117,9 +122,14 @@
                                     <label for="postalCode" class="form-label">Postal Code</label>
                                     <InputText id="postalCode" @bind-Value="address.PostalCode" class="form-control" />
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6" style="display: none;">
                                     <label for="country" class="form-label">Country</label>
-                                    <InputText id="country" @bind-Value="address.Country" class="form-control" />
+                                    <InputSelect id="country" @bind-Value="address.Country" class="form-control">
+                                        @foreach (var country in Countries)
+                                        {
+                                            <option value="@country.Code">@country.Name</option>
+                                        }
+                                    </InputSelect>
                                 </div>
                             </div>
 
@@ -190,23 +200,117 @@
 
 @code {
     private Profile profile;
-    private AddressModel address = new() 
-    { 
-        Street = string.Empty, 
-        City = string.Empty, 
-        State = string.Empty, 
+    private AddressModel address = new()
+    {
+        Street = string.Empty,
+        City = string.Empty,
+        State = string.Empty, // Default to "US" as requested
         PostalCode = string.Empty,
-        Country = string.Empty 
+        Country = "USA" // Default to USA
     };
-    
+
     private bool isLoading = true;
     private bool isSaving = false;
     private string message = string.Empty;
 
     // Date of birth fields
     private int month;
-    private int day; 
+    private int day;
     private int year;
+
+    // US States list with abbreviations
+    private class StateInfo
+    {
+        public string Abbreviation { get; set; }
+        public string Name { get; set; }
+    }
+
+    // Country list with code and name
+    private class CountryInfo
+    {
+        public string Code { get; set; }
+        public string Name { get; set; }
+    }
+
+    // List of US states for dropdown
+    private List<StateInfo> UsStates { get; } = new List<StateInfo>
+    {
+        new StateInfo { Abbreviation = "AL", Name = "Alabama" },
+        new StateInfo { Abbreviation = "AK", Name = "Alaska" },
+        new StateInfo { Abbreviation = "AZ", Name = "Arizona" },
+        new StateInfo { Abbreviation = "AR", Name = "Arkansas" },
+        new StateInfo { Abbreviation = "CA", Name = "California" },
+        new StateInfo { Abbreviation = "CO", Name = "Colorado" },
+        new StateInfo { Abbreviation = "CT", Name = "Connecticut" },
+        new StateInfo { Abbreviation = "DE", Name = "Delaware" },
+        new StateInfo { Abbreviation = "FL", Name = "Florida" },
+        new StateInfo { Abbreviation = "GA", Name = "Georgia" },
+        new StateInfo { Abbreviation = "HI", Name = "Hawaii" },
+        new StateInfo { Abbreviation = "ID", Name = "Idaho" },
+        new StateInfo { Abbreviation = "IL", Name = "Illinois" },
+        new StateInfo { Abbreviation = "IN", Name = "Indiana" },
+        new StateInfo { Abbreviation = "IA", Name = "Iowa" },
+        new StateInfo { Abbreviation = "KS", Name = "Kansas" },
+        new StateInfo { Abbreviation = "KY", Name = "Kentucky" },
+        new StateInfo { Abbreviation = "LA", Name = "Louisiana" },
+        new StateInfo { Abbreviation = "ME", Name = "Maine" },
+        new StateInfo { Abbreviation = "MD", Name = "Maryland" },
+        new StateInfo { Abbreviation = "MA", Name = "Massachusetts" },
+        new StateInfo { Abbreviation = "MI", Name = "Michigan" },
+        new StateInfo { Abbreviation = "MN", Name = "Minnesota" },
+        new StateInfo { Abbreviation = "MS", Name = "Mississippi" },
+        new StateInfo { Abbreviation = "MO", Name = "Missouri" },
+        new StateInfo { Abbreviation = "MT", Name = "Montana" },
+        new StateInfo { Abbreviation = "NE", Name = "Nebraska" },
+        new StateInfo { Abbreviation = "NV", Name = "Nevada" },
+        new StateInfo { Abbreviation = "NH", Name = "New Hampshire" },
+        new StateInfo { Abbreviation = "NJ", Name = "New Jersey" },
+        new StateInfo { Abbreviation = "NM", Name = "New Mexico" },
+        new StateInfo { Abbreviation = "NY", Name = "New York" },
+        new StateInfo { Abbreviation = "NC", Name = "North Carolina" },
+        new StateInfo { Abbreviation = "ND", Name = "North Dakota" },
+        new StateInfo { Abbreviation = "OH", Name = "Ohio" },
+        new StateInfo { Abbreviation = "OK", Name = "Oklahoma" },
+        new StateInfo { Abbreviation = "OR", Name = "Oregon" },
+        new StateInfo { Abbreviation = "PA", Name = "Pennsylvania" },
+        new StateInfo { Abbreviation = "RI", Name = "Rhode Island" },
+        new StateInfo { Abbreviation = "SC", Name = "South Carolina" },
+        new StateInfo { Abbreviation = "SD", Name = "South Dakota" },
+        new StateInfo { Abbreviation = "TN", Name = "Tennessee" },
+        new StateInfo { Abbreviation = "TX", Name = "Texas" },
+        new StateInfo { Abbreviation = "UT", Name = "Utah" },
+        new StateInfo { Abbreviation = "VT", Name = "Vermont" },
+        new StateInfo { Abbreviation = "VA", Name = "Virginia" },
+        new StateInfo { Abbreviation = "WA", Name = "Washington" },
+        new StateInfo { Abbreviation = "WV", Name = "West Virginia" },
+        new StateInfo { Abbreviation = "WI", Name = "Wisconsin" },
+        new StateInfo { Abbreviation = "WY", Name = "Wyoming" },
+        new StateInfo { Abbreviation = "DC", Name = "District of Columbia" },
+        new StateInfo { Abbreviation = "AS", Name = "American Samoa" },
+        new StateInfo { Abbreviation = "GU", Name = "Guam" },
+        new StateInfo { Abbreviation = "MP", Name = "Northern Mariana Islands" },
+        new StateInfo { Abbreviation = "PR", Name = "Puerto Rico" },
+        new StateInfo { Abbreviation = "VI", Name = "U.S. Virgin Islands" }
+    };
+
+    // List of common countries for dropdown (hidden for now)
+    private List<CountryInfo> Countries { get; } = new List<CountryInfo>
+    {
+        new CountryInfo { Code = "USA", Name = "United States" },
+        new CountryInfo { Code = "CAN", Name = "Canada" },
+        new CountryInfo { Code = "MEX", Name = "Mexico" },
+        new CountryInfo { Code = "GBR", Name = "United Kingdom" },
+        new CountryInfo { Code = "FRA", Name = "France" },
+        new CountryInfo { Code = "DEU", Name = "Germany" },
+        new CountryInfo { Code = "ITA", Name = "Italy" },
+        new CountryInfo { Code = "ESP", Name = "Spain" },
+        new CountryInfo { Code = "JPN", Name = "Japan" },
+        new CountryInfo { Code = "CHN", Name = "China" },
+        new CountryInfo { Code = "BRA", Name = "Brazil" },
+        new CountryInfo { Code = "AUS", Name = "Australia" },
+        new CountryInfo { Code = "IND", Name = "India" },
+        // Add more countries as needed
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -227,7 +331,7 @@
             if (user.Identity?.IsAuthenticated ?? false)
             {
                 var email = user.FindFirst(ClaimTypes.Email)?.Value;
-                
+
                 if (!string.IsNullOrEmpty(email))
                 {
                     // Get profile by email
@@ -240,7 +344,7 @@
             {
                 var users = await UserService.GetAllAsync(includeInactive: false);
                 var firstUser = users.FirstOrDefault();
-                
+
                 if (firstUser != null)
                 {
                     profile = await UserProfileService.GetProfileByUserEmailAsync(firstUser.Email);
@@ -254,6 +358,18 @@
                 if (profile.Address != null)
                 {
                     address = profile.Address;
+
+                    // If state is empty, set default value to "US"
+                    if (string.IsNullOrEmpty(address.State))
+                    {
+                        address.State = "US";
+                    }
+
+                    // If country is empty, set default value to "USA"
+                    if (string.IsNullOrEmpty(address.Country))
+                    {
+                        address.Country = "USA";
+                    }
                 }
                 else
                 {
