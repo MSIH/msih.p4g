@@ -20,6 +20,10 @@
         {
             <li><a class="dropdown-item" href="/profile">My Profile</a></li>
             <li><a class="dropdown-item" href="/donations">My Donations</a></li>
+            @if (currentUser.Role == UserRole.Fundraiser)
+            {
+                <li><a class="dropdown-item" href="/my-fundraiser">My Fundraiser</a></li>
+            }
             @if (currentUser.Role == UserRole.Admin)
             {
                 <li><hr class="dropdown-divider"></li>

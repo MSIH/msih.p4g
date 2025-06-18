@@ -5,6 +5,7 @@
  */
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.FundraiserService.Model;
+using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.FundraiserService.Interfaces
 {
@@ -13,6 +14,11 @@ namespace msih.p4g.Server.Features.FundraiserService.Interfaces
     /// </summary>
     public interface IFundraiserRepository : IGenericRepository<Fundraiser>
     {
-        // Add Fundraiser-specific repository methods here if needed
+        /// <summary>
+        /// Gets a fundraiser by user ID
+        /// </summary>
+        /// <param name="userId">The user ID</param>
+        /// <returns>The fundraiser if found, otherwise null</returns>
+        Task<Fundraiser?> GetByUserIdAsync(int userId);
     }
 }
