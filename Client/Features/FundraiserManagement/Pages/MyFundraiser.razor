@@ -46,6 +46,30 @@
                             </div>
                         }
 
+                                    @if (referralCode != null)
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">My Donation Referral Code</h3>
+                    </div>
+                    <div class="card-body">
+                          <div class="alert alert-info">
+                            <p class="mb-1">Share this full URL:</p>
+                            <h5 class="mt-2 mb-3">https://gd4.org/d/@referralCode</h5>
+                            <p class="mb-0">
+                                <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
+                                    <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
+                                </button>
+                                @if (copyUrlSuccess)
+                                {
+                                    <span class="text-success ms-2">Copied!</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+
                         <EditForm Model="@fundraiser" OnValidSubmit="HandleFundraiserUpdate">
                             <DataAnnotationsValidator />
                             <ValidationSummary />
@@ -80,29 +104,7 @@
                 </div>
             </div>
 
-            @if (referralCode != null)
-            {
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h3 class="card-title">My Referral Code</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="alert alert-info">
-                            <p class="mb-1">Share this code with potential donors to track your referrals:</p>
-                            <h4 class="mt-2 mb-3">@referralCode</h4>
-                            <p class="mb-0">
-                                <button class="btn btn-sm btn-secondary" @onclick="CopyReferralCode">
-                                    <span class="oi oi-clipboard me-1"></span> Copy to Clipboard
-                                </button>
-                                @if (copySuccess)
-                                {
-                                    <span class="text-success ms-2">Copied!</span>
-                                }
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            }
+
 
             @if (statistics != null)
             {
@@ -200,7 +202,8 @@
     private bool isLoading = true;
     private bool isSaving = false;
     private string message = string.Empty;
-    private bool copySuccess = false;
+    private bool copyCodeSuccess = false;
+    private bool copyUrlSuccess = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -321,18 +324,39 @@
         try
         {
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralCode);
-            copySuccess = true;
+            copyCodeSuccess = true;
             StateHasChanged();
             
             // Reset the success message after 3 seconds
             await Task.Delay(3000);
-            copySuccess = false;
+            copyCodeSuccess = false;
             StateHasChanged();
         }
         catch (Exception)
         {
             // Handle clipboard error
             message = "Unable to copy to clipboard. Please select and copy the code manually.";
+        }
+    }
+
+    private async Task CopyReferralUrl()
+    {
+        try
+        {
+            string referralUrl = $"https://gd4 .org/d/{referralCode}";
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
+            copyUrlSuccess = true;
+            StateHasChanged();
+            
+            // Reset the success message after 3 seconds
+            await Task.Delay(3000);
+            copyUrlSuccess = false;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            // Handle clipboard error
+            message = "Unable to copy to clipboard. Please select and copy the URL manually.";
         }
     }
 }
