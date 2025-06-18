@@ -29,6 +29,7 @@ namespace Server.Common.Utilities
             Uppercase = 1,
             Lowercase = 2,
             Numbers = 4,
+            LowercaseAndUppercase = Uppercase | Lowercase,
             UppercaseAndNumbers = Uppercase | Numbers,
             LowercaseAndNumbers = Lowercase | Numbers,
             All = Uppercase | Lowercase | Numbers
