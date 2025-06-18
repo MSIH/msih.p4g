@@ -7,8 +7,8 @@
 using msih.p4g.Server.Common.Models;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
 using msih.p4g.Server.Features.DonorService.Model;
+using msih.p4g.Server.Features.FundraiserService.Model;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace msih.p4g.Server.Features.Base.UserService.Models
 {
@@ -25,10 +25,12 @@ namespace msih.p4g.Server.Features.Base.UserService.Models
         public string Email { get; set; }
         [Required]
         public UserRole Role { get; set; }
-        [NotMapped]
+
         public virtual Profile Profile { get; set; }
-        [NotMapped]
+
         public virtual Donor Donor { get; set; }
+
+        public virtual Fundraiser Fundraiser { get; set; }
 
         public void ChangeRole(UserRole newRole)
         {

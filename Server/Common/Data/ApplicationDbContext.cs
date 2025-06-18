@@ -82,6 +82,7 @@ namespace msih.p4g.Server.Common.Data
             ConfigurePaymentModel(modelBuilder);
             ConfigureSettingsModel(modelBuilder);
             ConfigureMessageModel(modelBuilder);
+            ConfigureFundraiserModel(modelBuilder);
         }
         
         // These methods are implemented in each feature's partial class
@@ -94,5 +95,6 @@ namespace msih.p4g.Server.Common.Data
         partial void ConfigurePaymentModel(ModelBuilder modelBuilder);
         partial void ConfigureSettingsModel(ModelBuilder modelBuilder);
         partial void ConfigureMessageModel(ModelBuilder modelBuilder);
+        partial void ConfigureFundraiserModel(ModelBuilder modelBuilder);
     }
 }
