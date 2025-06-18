@@ -5,6 +5,7 @@
  */
 
 using Microsoft.EntityFrameworkCore;
+using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
@@ -47,6 +48,9 @@ builder.Services.AddRazorPages(options =>
 });
 //builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+
+// Register the AuthService as a singleton so it persists throughout the application lifecycle
+builder.Services.AddSingleton<AuthService>();
 
 // Add Entity Framework with the unified ApplicationDbContext
 DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
