@@ -11,6 +11,7 @@
 @page "/d/{CampaignId:int?}/{ReferralCode?}"
 @using msih.p4g.Server.Features.Base.PaymentService.Interfaces
 @using msih.p4g.Server.Features.Base.PaymentService.Models
+@using msih.p4g.Server.Features.Base.UserService.Models
 @using msih.p4g.Server.Features.CampaignService.Interfaces
 @using msih.p4g.Server.Features.CampaignService.Model
 @using msih.p4g.Server.Features.Base.ProfileService.Interfaces
@@ -70,55 +71,40 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="firstName" class="form-label">First Name</label>
-                                <InputText id="firstName" class="form-control" @bind-Value="paymentInfo.FirstName" />
+                                <InputText id="firstName" class="form-control" @bind-Value="donorProfile.FirstName" />
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="lastName" class="form-label">Last Name</label>
-                                <InputText id="lastName" class="form-control" @bind-Value="paymentInfo.LastName" />
+                                <InputText id="lastName" class="form-control" @bind-Value="donorProfile.LastName" />
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <InputText id="email" class="form-control" @bind-Value="paymentInfo.CustomerEmail" />
+                            <InputText id="email" class="form-control" @bind-Value="user.Email" />
                         </div>
                         <div class="mb-3">
                             <label for="mobile" class="form-label">Mobile</label>
-                            <InputText id="mobile" class="form-control" @bind-Value="paymentInfo.Mobile" />
+                            <InputText id="mobile" class="form-control" @bind-Value="donorProfile.MobileNumber" />
                         </div>
                         <div class="mb-3">
                             <label for="street" class="form-label">Street</label>
-                            <InputText id="street" class="form-control" @bind-Value="paymentInfo.Street" />
+                            <InputText id="street" class="form-control" @bind-Value="donorProfile.Address.Street" />
                         </div>
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label for="city" class="form-label">City</label>
-                                <InputText id="city" class="form-control" @bind-Value="paymentInfo.City" />
+                                <InputText id="city" class="form-control" @bind-Value="donorProfile.Address.City" />
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label for="state" class="form-label">State</label>
-                                <InputText id="state" class="form-control" @bind-Value="paymentInfo.State" />
+                                <InputText id="state" class="form-control" @bind-Value="donorProfile.Address.State" />
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label for="postal" class="form-label">Postal Code</label>
-                                <InputText id="postal" class="form-control" @bind-Value="paymentInfo.PostalCode" />
+                                <InputText id="postal" class="form-control" @bind-Value="donorProfile.Address.PostalCode" />
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Donation Frequency</label>
-                            <div>
-                                <InputRadioGroup @bind-Value="paymentInfo.Frequency">
-                                    <div class="form-check form-check-inline">
-                                        <InputRadio class="form-check-input" Value="OneTime" /> <label class="form-check-label">One-Time</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <InputRadio class="form-check-input" Value="Monthly" /> <label class="form-check-label">Monthly</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <InputRadio class="form-check-input" Value="Annual" /> <label class="form-check-label">Annual</label>
-                                    </div>
-                                </InputRadioGroup>
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
                 
@@ -200,6 +186,22 @@
     private string paymentError = "";
     private bool isProcessing = false;
     private bool isPaymentFormReady = false;
+
+    @code {  
+        private Profile donorProfile = new Profile  
+        {  
+            Address = new AddressModel  
+            {  
+                Street = string.Empty, // Initialize required property 'Street'  
+                City = string.Empty,   // Initialize required property 'City'  
+                State = string.Empty,  // Initialize required property 'State'  
+                PostalCode = string.Empty // Initialize required property 'PostalCode'  
+            }  
+        };  
+    }
+
+    private User user = new User();
+
     
     protected override async Task OnInitializedAsync()
     {
