@@ -27,6 +27,26 @@ namespace msih.p4g.Server.Features.CampaignService.Services
         }
 
         /// <inheritdoc />
+        public async Task<Campaign?> GetDefaultCampaignAsync()
+        {
+            return await _repository.GetDefaultCampaignAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> SetDefaultCampaignAsync(int campaignId)
+        {
+            // Verify the campaign exists before setting it as default
+            var campaign = await _repository.GetByIdAsync(campaignId);
+            if (campaign == null || !campaign.IsActive)
+            {
+                return false;
+            }
+
+            await _repository.SetDefaultCampaignAsync(campaignId);
+            return true;
+        }
+
+        /// <inheritdoc />
         public async Task<IEnumerable<Campaign>> GetAllAsync()
         {
             return await _repository.GetAllAsync();

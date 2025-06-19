@@ -49,5 +49,18 @@ namespace msih.p4g.Server.Features.CampaignService.Interfaces
         /// <param name="modifiedBy">Who modified the campaign</param>
         /// <returns>True if updated, false if not found</returns>
         Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System");
+
+        /// <summary>
+        /// Gets the default campaign
+        /// </summary>
+        /// <returns>The default campaign or null if none is set as default</returns>
+        Task<Campaign?> GetDefaultCampaignAsync();
+
+        /// <summary>
+        /// Sets a campaign as the default campaign
+        /// </summary>
+        /// <param name="campaignId">The ID of the campaign to set as default</param>
+        /// <returns>True if the operation was successful, false otherwise</returns>
+        Task<bool> SetDefaultCampaignAsync(int campaignId);
     }
 }
