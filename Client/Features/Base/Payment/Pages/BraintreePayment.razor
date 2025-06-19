@@ -4,72 +4,115 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  *@
 @page "/payment/braintree"
+@page "/payment/braintree/{CampaignId:int?}"
+@page "/d/{CampaignId:int?}"
 @using msih.p4g.Server.Features.Base.PaymentService.Interfaces
 @using msih.p4g.Server.Features.Base.PaymentService.Models
+@using msih.p4g.Server.Features.CampaignService.Interfaces
+@using msih.p4g.Server.Features.CampaignService.Model
 @inject IPaymentServiceFactory PaymentServiceFactory
+@inject ICampaignService CampaignService
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
 <div class="container">
-    <h2>Payment Integration Demo</h2>
-    
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5>Payment Information</h5>
-                </div>
-                <div class="card-body">
-                    <EditForm Model="@paymentInfo" OnValidSubmit="HandleValidSubmit">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary />
-                        
-                        <div class="mb-3">
-                            <label for="amount" class="form-label">Amount</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <InputNumber id="amount" class="form-control" @bind-Value="paymentInfo.Amount" />
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center my-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h2>Payment</h2>
+        
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                @if (campaign != null)
+                {
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Campaign Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <h4>@campaign.Title</h4>
+                            <p class="mb-0">@campaign.Description</p>
+                        </div>
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(campaignError))
+                {
+                    <div class="alert alert-danger mb-4">
+                        @campaignError
+                    </div>
+                }
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Payment Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <EditForm Model="@paymentInfo" OnValidSubmit="HandleValidSubmit">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+                            
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <InputNumber id="amount" class="form-control" @bind-Value="paymentInfo.Amount" />
+                                </div>
+                                <ValidationMessage For="@(() => paymentInfo.Amount)" />
                             </div>
-                            <ValidationMessage For="@(() => paymentInfo.Amount)" />
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <InputText id="description" class="form-control" @bind-Value="paymentInfo.Description" />
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <InputText id="email" class="form-control" @bind-Value="paymentInfo.CustomerEmail" />
-                            <ValidationMessage For="@(() => paymentInfo.CustomerEmail)" />
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Payment Method</label>
-                            <div id="dropin-container"></div>
-                            <div class="text-danger">@paymentError</div>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-primary" disabled="@(!isPaymentFormReady || isProcessing)">
-                                @if (isProcessing)
-                                {
-                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                    <span class="ms-1">Processing...</span>
-                                }
-                                else
-                                {
-                                    <span>Pay Now</span>
-                                }
-                            </button>
-                        </div>
-                    </EditForm>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <InputText id="description" class="form-control" @bind-Value="paymentInfo.Description" />
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <InputText id="email" class="form-control" @bind-Value="paymentInfo.CustomerEmail" />
+                                <ValidationMessage For="@(() => paymentInfo.CustomerEmail)" />
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Payment Method</label>
+                                <div id="dropin-container"></div>
+                                <div class="text-danger">@paymentError</div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary" disabled="@(!isPaymentFormReady || isProcessing)">
+                                    @if (isProcessing)
+                                    {
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                        <span class="ms-1">Processing...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Pay Now</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
 </div>
 
 @code {
+    [Parameter]
+    public int? CampaignId { get; set; }
+    
+    private Campaign? campaign;
+    private string campaignError = "";
+    private bool isLoading = true;
+    
     private PaymentRequest paymentInfo = new PaymentRequest 
     { 
         Amount = 10.00m, 
@@ -79,6 +122,58 @@
     private string paymentError = "";
     private bool isProcessing = false;
     private bool isPaymentFormReady = false;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCampaignAsync();
+    }
+    
+    private async Task LoadCampaignAsync()
+    {
+        try
+        {
+            // If a campaign ID is provided, load that campaign
+            if (CampaignId.HasValue)
+            {
+                campaign = await CampaignService.GetByIdAsync(CampaignId.Value);
+                
+                if (campaign == null)
+                {
+                    campaignError = $"Campaign with ID {CampaignId.Value} not found.";
+                }
+                else if (!campaign.IsActive)
+                {
+                    campaignError = "This campaign is no longer active.";
+                    campaign = null;
+                }
+            }
+            // Otherwise, load the default campaign
+            else
+            {
+                campaign = await CampaignService.GetDefaultCampaignAsync();
+                
+                if (campaign == null)
+                {
+                    campaignError = "No default campaign is available.";
+                }
+            }
+            
+            // Update payment info with campaign details if available
+            if (campaign != null)
+            {
+                paymentInfo.Description = $"Donation to {campaign.Title}";
+                paymentInfo.OrderReference = $"Campaign-{campaign.Id}";
+            }
+        }
+        catch (Exception ex)
+        {
+            campaignError = $"Error loading campaign: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -137,6 +232,15 @@
         
         try
         {
+            // Add campaign ID to the payment metadata if available
+            if (campaign != null)
+            {
+                if (paymentInfo.OrderReference == null)
+                {
+                    paymentInfo.OrderReference = $"Campaign-{campaign.Id}";
+                }
+            }
+            
             var braintreeService = PaymentServiceFactory.GetPaymentService("Braintree");
             var response = await braintreeService.ProcessPaymentAsync(paymentInfo);
             
@@ -149,7 +253,7 @@
                 { 
                     Amount = 10.00m, 
                     Currency = "USD",
-                    Description = "Demo Payment" 
+                    Description = campaign != null ? $"Donation to {campaign.Title}" : "Demo Payment"
                 };
                 
                 // Reset Braintree form
