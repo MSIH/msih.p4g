@@ -61,6 +61,66 @@
                         @campaignError
                     </div>
                 }
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Donor Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <InputText id="firstName" class="form-control" @bind-Value="paymentInfo.FirstName" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <InputText id="lastName" class="form-control" @bind-Value="paymentInfo.LastName" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <InputText id="email" class="form-control" @bind-Value="paymentInfo.CustomerEmail" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="mobile" class="form-label">Mobile</label>
+                            <InputText id="mobile" class="form-control" @bind-Value="paymentInfo.Mobile" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="street" class="form-label">Street</label>
+                            <InputText id="street" class="form-control" @bind-Value="paymentInfo.Street" />
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="city" class="form-label">City</label>
+                                <InputText id="city" class="form-control" @bind-Value="paymentInfo.City" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="state" class="form-label">State</label>
+                                <InputText id="state" class="form-control" @bind-Value="paymentInfo.State" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="postal" class="form-label">Postal Code</label>
+                                <InputText id="postal" class="form-control" @bind-Value="paymentInfo.PostalCode" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Donation Frequency</label>
+                            <div>
+                                <InputRadioGroup @bind-Value="paymentInfo.Frequency">
+                                    <div class="form-check form-check-inline">
+                                        <InputRadio class="form-check-input" Value="OneTime" /> <label class="form-check-label">One-Time</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <InputRadio class="form-check-input" Value="Monthly" /> <label class="form-check-label">Monthly</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <InputRadio class="form-check-input" Value="Annual" /> <label class="form-check-label">Annual</label>
+                                    </div>
+                                </InputRadioGroup>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="card mb-4">
                     <div class="card-header">
