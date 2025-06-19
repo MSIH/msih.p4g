@@ -78,14 +78,16 @@
                                 <InputText id="lastName" class="form-control" @bind-Value="donorProfile.LastName" />
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <InputText id="email" class="form-control" @bind-Value="user.Email" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="mobile" class="form-label">Mobile</label>
-                            <InputText id="mobile" class="form-control" @bind-Value="donorProfile.MobileNumber" />
-                        </div>
+        <div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="mobile" class="form-label">Mobile</label>
+        <InputText id="mobile" class="form-control" @bind-Value="donorProfile.MobileNumber" />
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="email" class="form-label">Email</label>
+        <InputText id="email" class="form-control" @bind-Value="user.Email" />
+    </div>
+</div>
                         <div class="mb-3">
                             <label for="street" class="form-label">Street</label>
                             <InputText id="street" class="form-control" @bind-Value="donorProfile.Address.Street" />
@@ -131,12 +133,7 @@
                                 <InputText id="description" class="form-control" @bind-Value="paymentInfo.Description" />
                             </div>
                             
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <InputText id="email" class="form-control" @bind-Value="paymentInfo.CustomerEmail" />
-                                <ValidationMessage For="@(() => paymentInfo.CustomerEmail)" />
-                            </div>
-                            
+                           
                             <div class="mb-3">
                                 <label class="form-label">Payment Method</label>
                                 <div id="dropin-container"></div>
