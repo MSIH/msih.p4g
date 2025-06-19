@@ -202,13 +202,8 @@
         {
             if (!string.IsNullOrEmpty(ReferralCode))
             {
-                // Try to find a profile with this referral code
-                // Since we don't have a direct GetByReferralCode method, we need to get creative
-                // This would ideally be a direct method on the ProfileService
-                
-                // Use available repositories to query by referral code
-                // For now, let's assume we have a method to get profile by referral code
-                referrer = await GetProfileByReferralCodeAsync(ReferralCode);
+                // Try to find a profile with this referral code using the new method
+                referrer = await ProfileService.GetByReferralCodeAsync(ReferralCode);
                 
                 if (referrer == null)
                 {
@@ -219,26 +214,6 @@
         catch (Exception ex)
         {
             referrerError = $"Error loading referrer information: {ex.Message}";
-        }
-    }
-    
-    // Helper method to get a profile by referral code
-    // In a real implementation, this would be a method on the ProfileService
-    private async Task<Profile?> GetProfileByReferralCodeAsync(string referralCode)
-    {
-        try
-        {
-            // This would be implemented in the ProfileService
-            // For now, we're making a placeholder method
-            
-            // Example implementation:
-            // 1. Find profiles with matching referral code
-            var profiles = await ProfileService.GetAllAsync();
-            return profiles.FirstOrDefault(p => p.ReferralCode == referralCode);
-        }
-        catch (Exception)
-        {
-            return null;
         }
     }
     
