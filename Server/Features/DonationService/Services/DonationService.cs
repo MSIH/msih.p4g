@@ -182,7 +182,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 IsMonthly = dto.IsMonthly,
                 IsAnnual = dto.IsAnnual,
                 DonationMessage = dto.DonationMessage,
-                ReferralCode = profile.ReferralCode, // Use the profile's referral code
+                ReferralCode = dto.ReferralCode, // Use the profile's referral code
                 CampaignCode = dto.CampaignCode,
                 IsActive = true,
                 CreatedBy = "DonationService",
