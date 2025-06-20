@@ -61,6 +61,7 @@ function createDropInUI(clientToken) {
       return;
     }
     
+    // Assign the instance to global reference
     braintreeClient = instance;
     
     // Listen for payment method change events
