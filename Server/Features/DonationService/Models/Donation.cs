@@ -1,12 +1,18 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Common.Models;
-using msih.p4g.Server.Features.DonorService.Model;
 using msih.p4g.Server.Features.Base.PaymentService.Models;
 using msih.p4g.Server.Features.CampaignService.Model;
+using msih.p4g.Server.Features.DonorService.Model;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,23 +24,19 @@ namespace msih.p4g.Server.Features.DonationService.Models
     public class Donation : BaseEntity
     {
         /// <summary>
-        /// The base amount donated (excluding any transaction fees).
+        /// The total amount charged to the donor (Amount + TransactionFeeAmount if PayTransactionFee is true).
         /// </summary>
         [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0")]
-        public decimal Amount { get; set; }
+        public decimal DonationAmount { get; set; }
 
         /// <summary>
-        /// The transaction fee amount (if any).
-        /// </summary>
-        [Range(0, double.MaxValue)]
-        public decimal TransactionFeeAmount { get; set; }
+        /// If true, donor pays the transaction fee.
+        public bool PayTransactionFee { get; set; }
 
         /// <summary>
-        /// The total amount charged to the donor (Amount + TransactionFeeAmount if PayTransactionFee is true).
-        /// </summary>
-        [Range(0.01, double.MaxValue)]
-        public decimal TotalAmountCharged { get; set; }
+        /// Amount of transaction fee paid by Donor that disaplyed on screen.
+        public decimal PayTransactionFeeAmount { get; set; }
 
         /// <summary>
         /// The donor who made the donation (FK).
@@ -59,10 +61,6 @@ namespace msih.p4g.Server.Features.DonationService.Models
         [ForeignKey("PaymentTransactionId")]
         public virtual PaymentTransaction PaymentTransaction { get; set; }
 
-        /// <summary>
-        /// If true, donor pays the transaction fee.
-        /// </summary>
-        public bool PayTransactionFee { get; set; }
 
         /// <summary>
         /// If true, this is a monthly recurring donation.

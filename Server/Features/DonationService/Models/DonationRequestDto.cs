@@ -23,23 +23,29 @@ namespace msih.p4g.Server.Features.DonationService.Models
         [Required, EmailAddress]
         public string Email { get; set; }
 
-        [Required]
+
         public string Mobile { get; set; }
 
-        [Required]
         public AddressModel Address { get; set; }
 
+        /// <summary>
+        /// Gets or sets the amount of the donation. Donation amount entered plus transaction fee amount if PayTransactionFee is true.
+        /// </summary>
         [Required]
         public decimal DonationAmount { get; set; }
 
-        public decimal TransactionFee { get; set; }
+        public decimal PayTransactionFeeAmount { get; set; }
+
+        public bool PayTransactionFee { get; set; }
 
         public string? DonationMessage { get; set; }
-        public bool PayTransactionFee { get; set; }
+
         public bool IsMonthly { get; set; }
+
         public bool IsAnnual { get; set; }
 
         public string? ReferralCode { get; set; }
+
         public string? CampaignCode { get; set; }
 
         [Required]

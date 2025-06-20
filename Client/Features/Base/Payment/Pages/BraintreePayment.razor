@@ -131,16 +131,7 @@
                         <div class="card-header">
                             <h5>Donation Information</h5>
                         </div>
-                        <div class="card-body">
-    @*                         <div class="mb-3">
-                                <label for="amount" class="form-label">Donation Amount</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <InputNumber id="amount" class="form-control" @bind-Value="donationRequest.DonationAmount" />
-                                </div>
-                                <ValidationMessage For="@(() => donationRequest.DonationAmount)" />
-                            </div> *@
-                            
+                        <div class="card-body">                           
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label>Amount You Want To Donate:</label>
@@ -396,7 +387,11 @@
         try
         {
             // Set the transaction fee based on calculation
-            donationRequest.TransactionFee = CalculateTransactionFee();
+            if (donationRequest.PayTransactionFee)
+            {
+                donationRequest.PayTransactionFeeAmount = CalculateTransactionFee();
+                donationRequest.DonationAmount += donationRequest.PayTransactionFeeAmount; // Adding the fee to the donation amount
+            }            
             
             // Process the donation
             var donation = await DonationService.ProcessDonationAsync(donationRequest);
@@ -404,7 +399,7 @@
             if (donation != null && donation.Id > 0)
             {
                 await JSRuntime.InvokeVoidAsync("showAlert", "Donation Successful", 
-                    $"Thank you for your donation of {donation.Amount.ToString("C2")}!");
+                    $"Thank you for your donation of {donation.DonationAmount.ToString("C2")}!");
                 
                 // Reset form
                 donationRequest = new DonationRequestDto

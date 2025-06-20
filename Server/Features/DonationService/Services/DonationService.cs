@@ -147,14 +147,14 @@ namespace msih.p4g.Server.Features.DonationService.Services
             }
 
             // Calculate transaction fee and total amount
-            decimal transactionFee = CalculateTransactionFee(dto.TransactionFee);
+            //decimal transactionFee = CalculateTransactionFee(dto.TransactionFee);
             decimal amountToCharge = dto.DonationAmount;
 
-            // If donor pays the transaction fee, add it to the amount to charge
-            if (dto.PayTransactionFee)
-            {
-                amountToCharge += transactionFee;
-            }
+            //// If donor pays the transaction fee, add it to the amount to charge
+            //if (dto.PayTransactionFee)
+            //{
+            //    amountToCharge += transactionFee;
+            //}
 
             // 3. Process payment
             var paymentRequest = new PaymentRequest
@@ -175,9 +175,8 @@ namespace msih.p4g.Server.Features.DonationService.Services
             // 4. Create donation record
             var donation = new Donation
             {
-                Amount = dto.DonationAmount,
-                TransactionFeeAmount = transactionFee,
-                TotalAmountCharged = amountToCharge,
+                DonationAmount = dto.DonationAmount,
+                PayTransactionFeeAmount = dto.PayTransactionFeeAmount,
                 DonorId = donor.Id,
                 PayTransactionFee = dto.PayTransactionFee,
                 IsMonthly = dto.IsMonthly,
@@ -301,19 +300,6 @@ namespace msih.p4g.Server.Features.DonationService.Services
             donation.CreatedBy = "DonationService";
             donation.IsActive = true;
 
-            // Calculate transaction fee and total amount if not already set
-            if (donation.TransactionFeeAmount == 0)
-            {
-                donation.TransactionFeeAmount = CalculateTransactionFee(donation.Amount);
-            }
-
-            if (donation.TotalAmountCharged == 0)
-            {
-                donation.TotalAmountCharged = donation.PayTransactionFee
-                    ? donation.Amount + donation.TransactionFeeAmount
-                    : donation.Amount;
-            }
-
             return await _donationRepository.AddAsync(donation, "DonationService");
         }
 
@@ -324,12 +310,6 @@ namespace msih.p4g.Server.Features.DonationService.Services
         {
             donation.ModifiedOn = DateTime.UtcNow;
             donation.ModifiedBy = "DonationService";
-
-            // Recalculate fee amounts if amount has changed
-            donation.TransactionFeeAmount = CalculateTransactionFee(donation.Amount);
-            donation.TotalAmountCharged = donation.PayTransactionFee
-                ? donation.Amount + donation.TransactionFeeAmount
-                : donation.Amount;
 
             await _donationRepository.UpdateAsync(donation, "DonationService");
             return true;
@@ -349,7 +329,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
         public async Task<decimal> GetTotalAmountByCampaignIdAsync(int campaignId)
         {
             var donations = await GetByCampaignIdAsync(campaignId);
-            return donations.Sum(d => d.Amount);
+            return donations.Sum(d => d.DonationAmount);
         }
 
         /// <summary>
@@ -358,7 +338,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
         public async Task<decimal> GetTotalAmountByDonorIdAsync(int donorId)
         {
             var donations = await GetByDonorIdAsync(donorId);
-            return donations.Sum(d => d.Amount);
+            return donations.Sum(d => d.DonationAmount);
         }
     }
 }
