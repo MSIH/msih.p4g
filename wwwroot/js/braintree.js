@@ -1,10 +1,10 @@
 /**
  * Braintree payment integration script
  */
-
 // Global references
 let braintreeClient = null;
 let dotNetReference = null;
+let isPaymentReady = false;
 
 /**
  * Initialize the Braintree Drop-in UI
@@ -13,7 +13,7 @@ let dotNetReference = null;
  */
 window.initializeBraintree = function (clientToken, dotNetObj) {
   dotNetReference = dotNetObj;
-
+  
   // Load the Braintree script dynamically if it doesn't exist
   if (!document.getElementById('braintree-script')) {
     const script = document.createElement('script');
@@ -33,15 +33,14 @@ window.initializeBraintree = function (clientToken, dotNetObj) {
  */
 function createDropInUI(clientToken) {
   const dropinContainer = document.getElementById('dropin-container');
-
   if (!dropinContainer) {
     console.error('Drop-in container not found');
     return;
   }
-
+  
   // Clear any existing content
   dropinContainer.innerHTML = '';
-
+  
   // Create the Drop-in UI
   braintree.dropin.create({
     authorization: clientToken,
@@ -61,32 +60,51 @@ function createDropInUI(clientToken) {
       console.error('Error creating Drop-in:', err);
       return;
     }
-
+    
     braintreeClient = instance;
-
+    
     // Listen for payment method change events
     instance.on('paymentMethodRequestable', (event) => {
       // The payment method is ready, enable the submit button
+      isPaymentReady = true;
       dotNetReference.invokeMethodAsync('SetPaymentFormReady', true);
-
-      // Get the payment method nonce
-      instance.requestPaymentMethod((err, payload) => {
-        if (err) {
-          console.error('Error requesting payment method:', err);
-          return;
-        }
-
-        // Pass the payment method nonce back to .NET
-        dotNetReference.invokeMethodAsync('SetPaymentNonce', payload.nonce, payload.deviceData);
-      });
+      // DON'T call requestPaymentMethod here - this was causing the UI to close!
     });
-
+    
     instance.on('noPaymentMethodRequestable', () => {
       // No payment method is ready, disable the submit button
+      isPaymentReady = false;
       dotNetReference.invokeMethodAsync('SetPaymentFormReady', false);
     });
   });
 }
+
+/**
+ * Get payment method nonce when form is actually submitted
+ * @returns {Promise} Promise that resolves with payment data
+ */
+window.getBraintreeNonce = function() {
+  return new Promise((resolve, reject) => {
+    if (!braintreeClient || !isPaymentReady) {
+      reject('Payment method not ready');
+      return;
+    }
+    
+    braintreeClient.requestPaymentMethod((err, payload) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      
+      // Pass the payment method data back
+      resolve({
+        nonce: payload.nonce,
+        deviceData: payload.deviceData,
+        type: payload.type
+      });
+    });
+  });
+};
 
 /**
  * Reset the Braintree Drop-in UI
@@ -94,6 +112,7 @@ function createDropInUI(clientToken) {
 window.resetBraintree = function () {
   if (braintreeClient) {
     braintreeClient.clearSelectedPaymentMethod();
+    isPaymentReady = false;
   }
 };
 
