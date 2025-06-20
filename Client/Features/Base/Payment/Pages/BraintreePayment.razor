@@ -341,8 +341,8 @@
     private decimal CalculateTransactionFee()
     {
         // Using standard fee calculation from DonationService
-        const decimal transactionFeePercentage = 0.029m; // 2.9%
-        const decimal transactionFeeFlat = 0.30m; // $0.30 flat fee
+        const decimal transactionFeePercentage = 0.0219m; // 2.19%
+        const decimal transactionFeeFlat = 0.29m; // $0.29 flat fee
         
         return Math.Round(donationRequest.DonationAmount * transactionFeePercentage + transactionFeeFlat, 2);
     }
