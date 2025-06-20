@@ -1,18 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using msih.p4g.Server.Features.Base.UserService.Interfaces;
-using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
-using msih.p4g.Server.Features.DonorService.Interfaces;
-using msih.p4g.Server.Features.DonationService.Models;
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Models;
-using msih.p4g.Server.Features.Base.UserService.Models;
+using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
-using msih.p4g.Server.Features.DonorService.Model;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
+using msih.p4g.Server.Features.Base.UserService.Interfaces;
+using msih.p4g.Server.Features.Base.UserService.Models;
 using msih.p4g.Server.Features.DonationService.Interfaces;
+using msih.p4g.Server.Features.DonationService.Models;
+using msih.p4g.Server.Features.DonorService.Interfaces;
+using msih.p4g.Server.Features.DonorService.Model;
 
 namespace msih.p4g.Server.Features.DonationService.Services
 {
@@ -50,10 +52,10 @@ namespace msih.p4g.Server.Features.DonationService.Services
         public async Task<Donation> ProcessDonationAsync(DonationRequestDto dto)
         {
             // 1. Find or create user
-            var user = await _userRepository.GetByEmailAsync(dto.Email);
+            var user = await _userRepository.GetByEmailAsync(dto.Email, true, false, false, true);
             bool isNewUser = false;
             Profile? profile = null;
-            
+
             if (user == null)
             {
                 // Create new user and profile in a single coordinated operation
@@ -62,14 +64,14 @@ namespace msih.p4g.Server.Features.DonationService.Services
                     Email = dto.Email,
                     Role = UserRole.Donor
                 };
-                
+
                 profile = new Profile
                 {
                     FirstName = dto.FirstName,
                     LastName = dto.LastName,
                     Address = dto.Address
                 };
-                
+
                 // The UserProfileService handles setting the UserId and generating the referral code
                 profile = await _userProfileService.CreateUserWithProfileAsync(user, profile, "DonationService");
                 isNewUser = true;
@@ -78,7 +80,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             {
                 // User exists, get their profile
                 profile = await _profileService.GetByIdAsync(user.Id);
-                
+
                 // If profile doesn't exist, create it
                 if (profile == null)
                 {
@@ -99,7 +101,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             {
                 donor = user.Donor;
             }
-            
+
             if (donor == null)
             {
                 // If not found through navigation, try to get by user ID
@@ -107,7 +109,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 {
                     donor = await _donorService.GetByIdAsync(user.Id);
                 }
-                
+
                 // If still not found, create a new donor
                 if (donor == null)
                 {
@@ -237,12 +239,12 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 return await GetAllAsync();
 
             // Simple search implementation - can be expanded based on requirements
-            var donations = await _donationRepository.FindAsync(d => 
+            var donations = await _donationRepository.FindAsync(d =>
                 (d.DonationMessage != null && d.DonationMessage.Contains(searchTerm)) ||
                 (d.ReferralCode != null && d.ReferralCode.Contains(searchTerm)) ||
                 (d.CampaignCode != null && d.CampaignCode.Contains(searchTerm))
             );
-            
+
             return donations.ToList();
         }
 
@@ -254,7 +256,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             donation.CreatedOn = DateTime.UtcNow;
             donation.CreatedBy = "DonationService";
             donation.IsActive = true;
-            
+
             return await _donationRepository.AddAsync(donation, "DonationService");
         }
 
@@ -265,7 +267,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
         {
             donation.ModifiedOn = DateTime.UtcNow;
             donation.ModifiedBy = "DonationService";
-            
+
             await _donationRepository.UpdateAsync(donation, "DonationService");
             return true;
         }

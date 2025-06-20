@@ -1,7 +1,11 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using msih.p4g.Server.Features.Base.UserService.Models;
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
+using msih.p4g.Server.Features.Base.UserService.Models;
 
 namespace msih.p4g.Server.Features.Base.UserService.Services
 {
@@ -11,7 +15,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        
+
         public UserService(IUserRepository userRepository)
         {
             _userRepository = userRepository;
@@ -21,6 +25,20 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         public async Task<User?> GetByEmailAsync(string email)
         {
             return await _userRepository.GetByEmailAsync(email);
+        }
+
+        /// <summary>
+        /// Gets a user by their email with optional related entities
+        /// </summary>
+        /// <param name="email">The email of the user to retrieve</param>
+        /// <param name="includeProfile">Whether to include the user's profile</param>
+        /// <param name="includeDonor">Whether to include the user's donor record</param>
+        /// <param name="includeFundraiser">Whether to include the user's fundraiser record</param>
+        /// <param name="includeAddress">Whether to include the user's profile address information</param>
+        /// <returns>The user if found, otherwise null</returns>
+        public async Task<User?> GetByEmailAsync(string email, bool includeProfile = false, bool includeAddress = false, bool includeDonor = false, bool includeFundraiser = false)
+        {
+            return await _userRepository.GetByEmailAsync(email, includeProfile, includeAddress, includeDonor, includeFundraiser);
         }
 
         /// <summary>
