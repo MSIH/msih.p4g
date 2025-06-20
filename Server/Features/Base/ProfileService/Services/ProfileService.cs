@@ -1,6 +1,7 @@
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.Base.ProfileService.Services
@@ -38,6 +39,23 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Services
         public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System")
         {
             return await _profileRepository.SetActiveStatusAsync(id, isActive, modifiedBy);
+        }
+
+        /// <summary>
+        /// Gets a profile by its referral code
+        /// </summary>
+        /// <param name="referralCode">The referral code to search for</param>
+        /// <returns>The profile with the specified referral code, or null if not found</returns>
+        public async Task<Profile> GetByReferralCodeAsync(string referralCode)
+        {
+            if (string.IsNullOrEmpty(referralCode))
+                return null;
+
+            // Use the FindAsync method from the repository to find profiles with the given referral code
+            var profiles = await _profileRepository.FindAsync(p => p.ReferralCode == referralCode);
+
+            // Since referral codes are unique, we should only have one result (or none)
+            return profiles.FirstOrDefault();
         }
     }
 }

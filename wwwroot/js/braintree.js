@@ -12,19 +12,19 @@ let dotNetReference = null;
  * @param {object} dotNetObj - The .NET object reference for callbacks
  */
 window.initializeBraintree = function (clientToken, dotNetObj) {
-    dotNetReference = dotNetObj;
-    
-    // Load the Braintree script dynamically if it doesn't exist
-    if (!document.getElementById('braintree-script')) {
-        const script = document.createElement('script');
-        script.id = 'braintree-script';
-        script.src = 'https://js.braintreegateway.com/web/dropin/1.33.7/js/dropin.min.js';
-        script.async = true;
-        script.onload = () => createDropInUI(clientToken);
-        document.body.appendChild(script);
-    } else {
-        createDropInUI(clientToken);
-    }
+  dotNetReference = dotNetObj;
+
+  // Load the Braintree script dynamically if it doesn't exist
+  if (!document.getElementById('braintree-script')) {
+    const script = document.createElement('script');
+    script.id = 'braintree-script';
+    script.src = 'https://js.braintreegateway.com/web/dropin/1.33.7/js/dropin.min.js';
+    script.async = true;
+    script.onload = () => createDropInUI(clientToken);
+    document.body.appendChild(script);
+  } else {
+    createDropInUI(clientToken);
+  }
 };
 
 /**
@@ -32,63 +32,69 @@ window.initializeBraintree = function (clientToken, dotNetObj) {
  * @param {string} clientToken - The client token from Braintree
  */
 function createDropInUI(clientToken) {
-    const dropinContainer = document.getElementById('dropin-container');
-    
-    if (!dropinContainer) {
-        console.error('Drop-in container not found');
-        return;
+  const dropinContainer = document.getElementById('dropin-container');
+
+  if (!dropinContainer) {
+    console.error('Drop-in container not found');
+    return;
+  }
+
+  // Clear any existing content
+  dropinContainer.innerHTML = '';
+
+  // Create the Drop-in UI
+  braintree.dropin.create({
+    authorization: clientToken,
+    container: '#dropin-container',
+    dataCollector: true,
+    applePay: {
+      displayName: 'My Store',
+      paymentRequest: {
+        total: {
+          label: 'My Store',
+          amount: Number(parseFloat(document.getElementById('amount')?.value || '0').toFixed(2))
+        }
+      }
+    },
+  }, (err, instance) => {
+    if (err) {
+      console.error('Error creating Drop-in:', err);
+      return;
     }
-    
-    // Clear any existing content
-    dropinContainer.innerHTML = '';
-    
-    // Create the Drop-in UI
-    braintree.dropin.create({
-        authorization: clientToken,
-        container: '#dropin-container',
-        dataCollector: true,
-        paypal: {
-            flow: 'vault'
-        }
-    }, (err, instance) => {
+
+    braintreeClient = instance;
+
+    // Listen for payment method change events
+    instance.on('paymentMethodRequestable', (event) => {
+      // The payment method is ready, enable the submit button
+      dotNetReference.invokeMethodAsync('SetPaymentFormReady', true);
+
+      // Get the payment method nonce
+      instance.requestPaymentMethod((err, payload) => {
         if (err) {
-            console.error('Error creating Drop-in:', err);
-            return;
+          console.error('Error requesting payment method:', err);
+          return;
         }
-        
-        braintreeClient = instance;
-        
-        // Listen for payment method change events
-        instance.on('paymentMethodRequestable', (event) => {
-            // The payment method is ready, enable the submit button
-            dotNetReference.invokeMethodAsync('SetPaymentFormReady', true);
-            
-            // Get the payment method nonce
-            instance.requestPaymentMethod((err, payload) => {
-                if (err) {
-                    console.error('Error requesting payment method:', err);
-                    return;
-                }
-                
-                // Pass the payment method nonce back to .NET
-                dotNetReference.invokeMethodAsync('SetPaymentNonce', payload.nonce, payload.deviceData);
-            });
-        });
-        
-        instance.on('noPaymentMethodRequestable', () => {
-            // No payment method is ready, disable the submit button
-            dotNetReference.invokeMethodAsync('SetPaymentFormReady', false);
-        });
+
+        // Pass the payment method nonce back to .NET
+        dotNetReference.invokeMethodAsync('SetPaymentNonce', payload.nonce, payload.deviceData);
+      });
     });
+
+    instance.on('noPaymentMethodRequestable', () => {
+      // No payment method is ready, disable the submit button
+      dotNetReference.invokeMethodAsync('SetPaymentFormReady', false);
+    });
+  });
 }
 
 /**
  * Reset the Braintree Drop-in UI
  */
 window.resetBraintree = function () {
-    if (braintreeClient) {
-        braintreeClient.clearSelectedPaymentMethod();
-    }
+  if (braintreeClient) {
+    braintreeClient.clearSelectedPaymentMethod();
+  }
 };
 
 /**
@@ -97,5 +103,5 @@ window.resetBraintree = function () {
  * @param {string} message - The alert message
  */
 window.showAlert = function (title, message) {
-    alert(`${title}\n${message}`);
+  alert(`${title}\n${message}`);
 };

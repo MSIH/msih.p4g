@@ -63,13 +63,13 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
             var statistics = new FundraiserStatistics
             {
                 DonationCount = donations.Count,
-                TotalRaised = donations.Sum(d => d.Amount),
-                AverageDonation = donations.Any() ? donations.Average(d => d.Amount) : 0,
+                TotalRaised = donations.Sum(d => d.DonationAmount),
+                AverageDonation = donations.Any() ? donations.Average(d => d.DonationAmount) : 0,
                 Donations = donations.Select(d => new DonationInfo
                 {
                     Id = d.Id,
                     DonorName = $"{d.Donor.User.Profile.FirstName} {d.Donor.User.Profile.LastName}",
-                    Amount = d.Amount,
+                    Amount = d.DonationAmount,
                     DonationDate = d.CreatedOn,
                     Message = d.DonationMessage ?? string.Empty
                 }).ToList()

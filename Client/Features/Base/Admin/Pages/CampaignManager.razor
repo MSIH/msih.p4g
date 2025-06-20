@@ -25,6 +25,7 @@
             <th>Title</th>
             <th>Description</th>
             <th>Active</th>
+            <th>Default</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -36,10 +37,17 @@
                 <td>@campaign.Description</td>
                 <td>
                     <input type="checkbox" @bind="campaign.IsActive" />
+                </td> 
+                <td>
+                    <input type="checkbox" checked="@campaign.IsDefault" disabled />
                 </td>
                 <td>
                     <button class="btn btn-warning btn-sm" @onclick="() => SaveCampaign(campaign)">Save</button>
                     <button class="btn btn-danger btn-sm" @onclick="() => DeactivateCampaign(campaign.Id)">Deactivate</button>
+                    @if (!campaign.IsDefault)
+                    {
+                        <button class="btn btn-info btn-sm" @onclick="() => SetDefaultCampaign(campaign.Id)">Set Default</button>
+                    }
                 </td>
             </tr>
         }
@@ -79,6 +87,14 @@
     private async Task DeactivateCampaign(int id)
     {
         if (await CampaignService.SetActiveAsync(id, false))
+        {
+            await LoadCampaigns();
+        }
+    }
+
+    private async Task SetDefaultCampaign(int id)
+    {
+        if (await CampaignService.SetDefaultCampaignAsync(id))
         {
             await LoadCampaigns();
         }
