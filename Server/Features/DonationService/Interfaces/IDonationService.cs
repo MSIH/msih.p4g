@@ -15,6 +15,8 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
     {
         /// <summary>
         /// Processes a donation request from the client.
+        /// If PayTransactionFee is true in the request, the transaction fee will be added to the total charged amount.
+        /// The donation record will include base amount, transaction fee amount, and total amount charged.
         /// </summary>
         Task<Donation> ProcessDonationAsync(DonationRequestDto dto);
 
@@ -55,11 +57,13 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
 
         /// <summary>
         /// Adds a new donation.
+        /// Transaction fee and total amount charged will be automatically calculated if not already set.
         /// </summary>
         Task<Donation> AddAsync(Donation donation);
 
         /// <summary>
         /// Updates an existing donation.
+        /// Transaction fee and total amount charged will be recalculated based on the updated amount.
         /// </summary>
         Task<bool> UpdateAsync(Donation donation);
 
@@ -70,11 +74,13 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
 
         /// <summary>
         /// Gets the total donation amount for a specific campaign.
+        /// This returns the base donation amount (excluding transaction fees).
         /// </summary>
         Task<decimal> GetTotalAmountByCampaignIdAsync(int campaignId);
 
         /// <summary>
         /// Gets the total donation amount for a specific donor.
+        /// This returns the base donation amount (excluding transaction fees).
         /// </summary>
         Task<decimal> GetTotalAmountByDonorIdAsync(int donorId);
     }

@@ -18,11 +18,23 @@ namespace msih.p4g.Server.Features.DonationService.Models
     public class Donation : BaseEntity
     {
         /// <summary>
-        /// The amount donated.
+        /// The base amount donated (excluding any transaction fees).
         /// </summary>
         [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0")]
         public decimal Amount { get; set; }
+
+        /// <summary>
+        /// The transaction fee amount (if any).
+        /// </summary>
+        [Range(0, double.MaxValue)]
+        public decimal TransactionFeeAmount { get; set; }
+
+        /// <summary>
+        /// The total amount charged to the donor (Amount + TransactionFeeAmount if PayTransactionFee is true).
+        /// </summary>
+        [Range(0.01, double.MaxValue)]
+        public decimal TotalAmountCharged { get; set; }
 
         /// <summary>
         /// The donor who made the donation (FK).
