@@ -264,7 +264,12 @@
                 
                 if (campaign == null)
                 {
-                    campaignError = $"Campaign with ID {CampaignId.Value} not found.";
+                    campaign = await CampaignService.GetDefaultCampaignAsync();
+
+                    if (campaign == null)
+                    {
+                        campaignError = "No default campaign is available.";
+                    }
                 }
                 else if (!campaign.IsActive)
                 {
