@@ -52,7 +52,7 @@ function createDropInUI(clientToken) {
       paymentRequest: {
         total: {
           label: 'My Store',
-          amount: parseFloat(document.getElementById('amount')?.value || '0').toFixed(2)
+          amount: Number(parseFloat(document.getElementById('amount')?.value || '0').toFixed(2))
         }
       }
     },
