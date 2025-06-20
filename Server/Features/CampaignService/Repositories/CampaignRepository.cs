@@ -7,6 +7,7 @@ using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.CampaignService.Interfaces;
 using msih.p4g.Server.Features.CampaignService.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace msih.p4g.Server.Features.CampaignService.Repositories
 {
@@ -22,7 +23,25 @@ namespace msih.p4g.Server.Features.CampaignService.Repositories
         public CampaignRepository(ApplicationDbContext context) : base(context)
         {
         }
-        
+
+        /// <inheritdoc />
+        public async Task<Campaign?> GetDefaultCampaignAsync()
+        {
+            return await _context.Campaigns
+                .FirstOrDefaultAsync(c => c.IsDefault && c.IsActive);
+        }
+
+        /// <inheritdoc />
+        public async Task SetDefaultCampaignAsync(int campaignId)
+        {
+            var campaigns = await _context.Campaigns.ToListAsync();
+            foreach (var campaign in campaigns)
+            {
+                campaign.IsDefault = campaign.Id == campaignId;
+            }
+            await _context.SaveChangesAsync();
+        }
+
         // Add Campaign-specific repository methods here if needed
     }
 }

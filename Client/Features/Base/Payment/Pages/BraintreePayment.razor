@@ -4,81 +4,322 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  *@
 @page "/payment/braintree"
+@page "/payment/braintree/{CampaignId:int?}"
+@page "/payment/braintree/{CampaignId:int?}/{ReferralCode?}"
+@page "/d/{CampaignId:int?}"
+@page "/d/{ReferralCode?}"
+@page "/d/{CampaignId:int?}/{ReferralCode?}"
+
 @using msih.p4g.Server.Features.Base.PaymentService.Interfaces
 @using msih.p4g.Server.Features.Base.PaymentService.Models
+@using msih.p4g.Server.Features.Base.UserService.Models
+@using msih.p4g.Server.Features.CampaignService.Interfaces
+@using msih.p4g.Server.Features.CampaignService.Model
+@using msih.p4g.Server.Features.Base.ProfileService.Interfaces
+@using msih.p4g.Server.Features.Base.ProfileService.Model
+@using msih.p4g.Server.Features.DonationService.Models
+@using msih.p4g.Server.Features.DonationService.Interfaces
+@using Microsoft.AspNetCore.Components.Forms
+
 @inject IPaymentServiceFactory PaymentServiceFactory
+@inject ICampaignService CampaignService
+@inject IProfileService ProfileService
+@inject IDonationService DonationService
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
 <div class="container">
-    <h2>Payment Integration Demo</h2>
-    
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5>Payment Information</h5>
-                </div>
-                <div class="card-body">
-                    <EditForm Model="@paymentInfo" OnValidSubmit="HandleValidSubmit">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary />
-                        
-                        <div class="mb-3">
-                            <label for="amount" class="form-label">Amount</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <InputNumber id="amount" class="form-control" @bind-Value="paymentInfo.Amount" />
-                            </div>
-                            <ValidationMessage For="@(() => paymentInfo.Amount)" />
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <InputText id="description" class="form-control" @bind-Value="paymentInfo.Description" />
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <InputText id="email" class="form-control" @bind-Value="paymentInfo.CustomerEmail" />
-                            <ValidationMessage For="@(() => paymentInfo.CustomerEmail)" />
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Payment Method</label>
-                            <div id="dropin-container"></div>
-                            <div class="text-danger">@paymentError</div>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-primary" disabled="@(!isPaymentFormReady || isProcessing)">
-                                @if (isProcessing)
-                                {
-                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                    <span class="ms-1">Processing...</span>
-                                }
-                                else
-                                {
-                                    <span>Pay Now</span>
-                                }
-                            </button>
-                        </div>
-                    </EditForm>
-                </div>
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center my-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <h2>Donation</h2>
+        
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                @if (referrer != null)
+                {
+                    <div class="alert alert-info mb-4">
+                        <p class="mb-0">You were referred by: <strong>@referrer.FirstName @(referrer.LastName?.Substring(0, 1)).</strong></p>
+                    </div>
+                }
+                
+                @if (campaign != null)
+                {
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Campaign Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <h4>@campaign.Title</h4>
+                            <p class="mb-0">@campaign.Description</p>
+                        </div>
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(campaignError))
+                {
+                    <div class="alert alert-danger mb-4">
+                        @campaignError
+                    </div>
+                }
+
+                <EditForm Model="@donationRequest" OnValidSubmit="@HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Donor Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <InputText id="firstName" class="form-control" @bind-Value="donationRequest.FirstName" />
+                                    <ValidationMessage For="@(() => donationRequest.FirstName)" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <InputText id="lastName" class="form-control" @bind-Value="donationRequest.LastName" />
+                                    <ValidationMessage For="@(() => donationRequest.LastName)" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="mobile" class="form-label">Mobile</label>
+                                    <InputText id="mobile" class="form-control" @bind-Value="donationRequest.Mobile" />
+                                    <ValidationMessage For="@(() => donationRequest.Mobile)" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <InputText id="email" class="form-control" @bind-Value="donationRequest.Email" />
+                                    <ValidationMessage For="@(() => donationRequest.Email)" />
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="street" class="form-label">Street</label>
+                                <InputText id="street" class="form-control" @bind-Value="donationRequest.Address.Street" />
+                                <ValidationMessage For="@(() => donationRequest.Address.Street)" />
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="city" class="form-label">City</label>
+                                    <InputText id="city" class="form-control" @bind-Value="donationRequest.Address.City" />
+                                    <ValidationMessage For="@(() => donationRequest.Address.City)" />
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="state" class="form-label">State</label>
+                                    <InputText id="state" class="form-control" @bind-Value="donationRequest.Address.State" />
+                                    <ValidationMessage For="@(() => donationRequest.Address.State)" />
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="postal" class="form-label">Postal Code</label>
+                                    <InputText id="postal" class="form-control" @bind-Value="donationRequest.Address.PostalCode" />
+                                    <ValidationMessage For="@(() => donationRequest.Address.PostalCode)" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Donation Information</h5>
+                        </div>
+                        <div class="card-body">                           
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label>Amount You Want To Donate:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <InputNumber id="amount" class="form-control" @bind-Value="donationRequest.DonationAmount" />
+                                    </div>
+                                    <ValidationMessage For="@(() => donationRequest.DonationAmount)" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Fees we pay @(donationRequest.PayTransactionFee ? "😀" : "😠")</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" value="@(donationRequest.PayTransactionFee ? "0" : @CalculateTransactionFee().ToString("F2"))" disabled />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Amount we receive:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" 
+                                               value="@((donationRequest.PayTransactionFee ? donationRequest.DonationAmount : (donationRequest.DonationAmount - CalculateTransactionFee())).ToString("F2"))" 
+                                               style="@(donationRequest.PayTransactionFee ? "color: green;" : "color: red;")" 
+                                               disabled />
+                                    </div>
+                                </div>
+                            </div>
+                            
+
+                            
+                            <div class="mb-3 form-check">
+                                <InputCheckbox id="payTransactionFee" class="form-check-input" @bind-Value="donationRequest.PayTransactionFee" />
+                                <label class="form-check-label" for="payTransactionFee">
+                                    Cover transaction fees (additional @CalculateTransactionFee().ToString("C2")) for total charge of @((donationRequest.DonationAmount + CalculateTransactionFee()).ToString("C2"))
+                                </label>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <InputCheckbox id="isMonthly" class="form-check-input" @bind-Value="donationRequest.IsMonthly" />
+                                <label class="form-check-label" for="isMonthly">
+                                    Make this a monthly recurring donation
+                                </label>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="donationMessage" class="form-label">Message (Optional)</label>
+                                <InputTextArea id="donationMessage" class="form-control" @bind-Value="donationRequest.DonationMessage" rows="3" />
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Payment Method</label>
+                                <div id="dropin-container"></div>
+                                <div class="text-danger">@paymentError</div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary" disabled="@(!isPaymentFormReady || isProcessing)">
+                                    @if (isProcessing)
+                                    {
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                        <span class="ms-1">Processing...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Donate Now</span>
+                                    }
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
-    private PaymentRequest paymentInfo = new PaymentRequest 
-    { 
-        Amount = 10.00m, 
-        Currency = "USD",
-        Description = "Demo Payment" 
-    };
+    [Parameter]
+    public int? CampaignId { get; set; }
+    
+    [Parameter]
+    public string? ReferralCode { get; set; }
+    
+    private Campaign? campaign;
+    private Profile? referrer;
+    private string campaignError = "";
+    private string referrerError = "";
+    private bool isLoading = true;
     private string paymentError = "";
     private bool isProcessing = false;
     private bool isPaymentFormReady = false;
+    
+    private DonationRequestDto donationRequest = new DonationRequestDto
+    {
+        DonationAmount = 10.00m,
+        Address = new AddressModel
+        {
+            Street = string.Empty,
+            City = string.Empty,
+            State = string.Empty,
+            PostalCode = string.Empty
+        }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(
+            LoadCampaignAsync(),
+            LoadReferrerAsync()
+        );
+    }
+    
+    private async Task LoadCampaignAsync()
+    {
+        try
+        {
+            // If a campaign ID is provided, load that campaign
+            if (CampaignId.HasValue)
+            {
+                campaign = await CampaignService.GetByIdAsync(CampaignId.Value);
+                
+                if (campaign == null)
+                {
+                    campaign = await CampaignService.GetDefaultCampaignAsync();
+
+                    if (campaign == null)
+                    {
+                        campaignError = "No default campaign is available.";
+                    }
+                }
+                else if (!campaign.IsActive)
+                {
+                    campaignError = "This campaign is no longer active.";
+                    campaign = null;
+                }
+            }
+            // Otherwise, load the default campaign
+            else
+            {
+                campaign = await CampaignService.GetDefaultCampaignAsync();
+                
+                if (campaign == null)
+                {
+                    campaignError = "No default campaign is available.";
+                }
+            }
+            
+            // Update donation info with campaign details if available
+            if (campaign != null)
+            {
+                donationRequest.CampaignCode = campaign.Id.ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            campaignError = $"Error loading campaign: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+    
+    private async Task LoadReferrerAsync()
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(ReferralCode))
+            {
+                // Try to find a profile with this referral code
+                referrer = await ProfileService.GetByReferralCodeAsync(ReferralCode);
+                
+                if (referrer == null)
+                {
+                    referrerError = $"Referral code '{ReferralCode}' not found.";
+                }
+                else
+                {
+                    // Store the referral code in the donation request
+                    donationRequest.ReferralCode = ReferralCode;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            referrerError = $"Error loading referrer information: {ex.Message}";
+        }
+    }
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -120,13 +361,21 @@
     [JSInvokable]
     public void SetPaymentNonce(string nonce, string deviceData)
     {
-        paymentInfo.PaymentMethodNonce = nonce;
-        paymentInfo.DeviceData = deviceData;
+        donationRequest.PaymentToken = nonce;
+    }
+    
+    private decimal CalculateTransactionFee()
+    {
+        // Using standard fee calculation from DonationService
+        const decimal transactionFeePercentage = 0.0219m; // 2.19%
+        const decimal transactionFeeFlat = 0.29m; // $0.29 flat fee
+        
+        return Math.Round(donationRequest.DonationAmount * transactionFeePercentage + transactionFeeFlat, 2);
     }
     
     private async Task HandleValidSubmit()
     {
-        if (string.IsNullOrEmpty(paymentInfo.PaymentMethodNonce))
+        if (string.IsNullOrEmpty(donationRequest.PaymentToken))
         {
             paymentError = "Please complete the payment form";
             return;
@@ -137,19 +386,32 @@
         
         try
         {
-            var braintreeService = PaymentServiceFactory.GetPaymentService("Braintree");
-            var response = await braintreeService.ProcessPaymentAsync(paymentInfo);
-            
-            if (response.Success)
+            // Set the transaction fee based on calculation
+            if (donationRequest.PayTransactionFee)
             {
-                await JSRuntime.InvokeVoidAsync("showAlert", "Payment Successful", $"Transaction ID: {response.TransactionId}");
+                donationRequest.PayTransactionFeeAmount = CalculateTransactionFee();
+                donationRequest.DonationAmount += donationRequest.PayTransactionFeeAmount; // Adding the fee to the donation amount
+            }            
+            
+            // Process the donation
+            var donation = await DonationService.ProcessDonationAsync(donationRequest);
+            
+            if (donation != null && donation.Id > 0)
+            {
+                await JSRuntime.InvokeVoidAsync("showAlert", "Donation Successful", 
+                    $"Thank you for your donation of {donation.DonationAmount.ToString("C2")}!");
                 
                 // Reset form
-                paymentInfo = new PaymentRequest 
-                { 
-                    Amount = 10.00m, 
-                    Currency = "USD",
-                    Description = "Demo Payment" 
+                donationRequest = new DonationRequestDto
+                {
+                    DonationAmount = 10.00m,
+                    Address = new AddressModel
+                    {
+                        Street = string.Empty,
+                        City = string.Empty,
+                        State = string.Empty,
+                        PostalCode = string.Empty
+                    }
                 };
                 
                 // Reset Braintree form
@@ -157,12 +419,12 @@
             }
             else
             {
-                paymentError = response.ErrorMessage;
+                paymentError = "Failed to process donation. Please try again.";
             }
         }
         catch (Exception ex)
         {
-            paymentError = $"Payment processing error: {ex.Message}";
+            paymentError = $"Donation processing error: {ex.Message}";
         }
         finally
         {

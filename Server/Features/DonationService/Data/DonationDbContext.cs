@@ -32,7 +32,7 @@ namespace msih.p4g.Server.Common.Data
             modelBuilder.Entity<Donation>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Amount).IsRequired().HasPrecision(18, 2);
+                entity.Property(e => e.DonationAmount).IsRequired().HasPrecision(18, 2);
                 entity.Property(e => e.DonationMessage).HasMaxLength(1000);
                 entity.Property(e => e.ReferralCode).HasMaxLength(100);
                 entity.Property(e => e.CampaignCode).HasMaxLength(100);

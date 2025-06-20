@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -5,7 +11,6 @@
  */
 using msih.p4g.Server.Common.Models;
 using msih.p4g.Server.Features.DonationService.Models;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace msih.p4g.Server.Features.CampaignService.Model
@@ -27,10 +32,16 @@ namespace msih.p4g.Server.Features.CampaignService.Model
         /// </summary>
         [MaxLength(1000)]
         public string Description { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Collection of donations associated with this campaign.
         /// </summary>
         public virtual ICollection<Donation> Donations { get; set; } = new List<Donation>();
+
+        /// <summary>
+        /// Indicates if this campaign is the default campaign.
+        /// </summary>
+        public bool IsDefault { get; set; }
     }
+
 }
