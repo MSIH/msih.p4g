@@ -132,24 +132,49 @@
                             <h5>Donation Information</h5>
                         </div>
                         <div class="card-body">
-                            <div class="mb-3">
+    @*                         <div class="mb-3">
                                 <label for="amount" class="form-label">Donation Amount</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
                                     <InputNumber id="amount" class="form-control" @bind-Value="donationRequest.DonationAmount" />
                                 </div>
                                 <ValidationMessage For="@(() => donationRequest.DonationAmount)" />
+                            </div> *@
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label>Amount You Want To Donate:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <InputNumber id="amount" class="form-control" @bind-Value="donationRequest.DonationAmount" />
+                                    </div>
+                                    <ValidationMessage For="@(() => donationRequest.DonationAmount)" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Fees we pay @(donationRequest.PayTransactionFee ? "😀" : "😠")</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" value="@(donationRequest.PayTransactionFee ? "0" : @CalculateTransactionFee().ToString("F2"))" disabled />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Amount we receive:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" 
+                                               value="@((donationRequest.PayTransactionFee ? donationRequest.DonationAmount : (donationRequest.DonationAmount - CalculateTransactionFee())).ToString("F2"))" 
+                                               style="@(donationRequest.PayTransactionFee ? "color: green;" : "color: red;")" 
+                                               disabled />
+                                    </div>
+                                </div>
                             </div>
                             
-                            <div class="mb-3">
-                                <label for="donationMessage" class="form-label">Message (Optional)</label>
-                                <InputTextArea id="donationMessage" class="form-control" @bind-Value="donationRequest.DonationMessage" rows="3" />
-                            </div>
+
                             
                             <div class="mb-3 form-check">
                                 <InputCheckbox id="payTransactionFee" class="form-check-input" @bind-Value="donationRequest.PayTransactionFee" />
                                 <label class="form-check-label" for="payTransactionFee">
-                                    Cover transaction fees (additional @CalculateTransactionFee().ToString("C2"))
+                                    Cover transaction fees (additional @CalculateTransactionFee().ToString("C2")) for total charge of @((donationRequest.DonationAmount + CalculateTransactionFee()).ToString("C2"))
                                 </label>
                             </div>
 
@@ -158,6 +183,11 @@
                                 <label class="form-check-label" for="isMonthly">
                                     Make this a monthly recurring donation
                                 </label>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="donationMessage" class="form-label">Message (Optional)</label>
+                                <InputTextArea id="donationMessage" class="form-control" @bind-Value="donationRequest.DonationMessage" rows="3" />
                             </div>
                             
                             <div class="mb-3">
