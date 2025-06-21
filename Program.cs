@@ -15,6 +15,7 @@ using msih.p4g.Server.Features.Base.MessageService.Data;
 using msih.p4g.Server.Features.Base.MessageService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
+using msih.p4g.Server.Features.Base.PayoutService.Extensions;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Repositories;
 using msih.p4g.Server.Features.Base.ProfileService.Services;
@@ -92,6 +93,9 @@ builder.Services.AddScoped<MessageTemplateDataSeeder>();
 
 // Register Payment Service and related dependencies
 builder.Services.AddPaymentServices(builder.Configuration, builder.Environment);
+
+// Register Payout Service and related dependencies
+builder.Services.AddPayoutServices(builder.Configuration, builder.Environment);
 
 // Register IPaymentService using a factory (resolves dependency injection error)
 builder.Services.AddScoped<IPaymentService>(provider =>
