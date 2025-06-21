@@ -1,0 +1,140 @@
+@namespace msih.p4g.Client.Features.Base.Payment.Components
+@using msih.p4g.Client.Features.Base.Payment.Services
+@using msih.p4g.Shared.Models.PaymentService
+@inject PayPalPayoutService PayoutService
+
+<div class="payment-history-container">
+    <h3>Payment History</h3>
+    
+    @if (_loading)
+    {
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    }
+    else if (_error != null)
+    {
+        <div class="alert alert-danger">
+            <p>Error loading payment history: @_error</p>
+        </div>
+    }
+    else if (_payments == null || !_payments.Any())
+    {
+        <div class="alert alert-info">
+            <p>No payment records found.</p>
+        </div>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>PayPal Batch ID</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var payment in _payments)
+                {
+                    <tr>
+                        <td>@payment.CreatedAt.ToLocalTime().ToString("g")</td>
+                        <td>@payment.Amount.ToString("C") @payment.Currency</td>
+                        <td>
+                            <span class="badge @GetStatusBadgeClass(payment.Status)">
+                                @payment.Status
+                            </span>
+                        </td>
+                        <td>@(string.IsNullOrEmpty(payment.PaypalBatchId) ? "-" : payment.PaypalBatchId)</td>
+                        <td>@(string.IsNullOrEmpty(payment.Notes) ? "-" : payment.Notes)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                <button class="btn btn-outline-primary btn-sm @(_currentPage <= 1 ? "disabled" : "")" 
+                        @onclick="PreviousPage" disabled="@(_currentPage <= 1)">
+                    Previous
+                </button>
+                <span class="mx-2">Page @_currentPage</span>
+                <button class="btn btn-outline-primary btn-sm @(_payments.Count < _pageSize ? "disabled" : "")" 
+                        @onclick="NextPage" disabled="@(_payments.Count < _pageSize)">
+                    Next
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string FundraiserId { get; set; }
+    [Parameter] public int PageSize { get; set; } = 10;
+    
+    private List<PaymentDto> _payments;
+    private bool _loading = true;
+    private string _error;
+    private int _currentPage = 1;
+    private int _pageSize => PageSize;
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadPaymentsAsync();
+    }
+    
+    private async Task LoadPaymentsAsync()
+    {
+        _loading = true;
+        _error = null;
+        
+        try
+        {
+            _payments = await PayoutService.GetFundraiserPaymentHistoryAsync(
+                FundraiserId, 
+                _currentPage, 
+                _pageSize);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+    
+    private async Task PreviousPage()
+    {
+        if (_currentPage > 1)
+        {
+            _currentPage--;
+            await LoadPaymentsAsync();
+        }
+    }
+    
+    private async Task NextPage()
+    {
+        if (_payments.Count >= _pageSize)
+        {
+            _currentPage++;
+            await LoadPaymentsAsync();
+        }
+    }
+    
+    private string GetStatusBadgeClass(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "completed" => "bg-success",
+            "pending" => "bg-warning",
+            "processing" => "bg-info",
+            "failed" => "bg-danger",
+            "cancelled" => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+}
