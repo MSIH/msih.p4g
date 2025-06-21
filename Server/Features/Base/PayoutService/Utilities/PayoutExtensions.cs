@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using msih.p4g.Server.Features.Base.PayoutService.Models;
-using msih.p4g.Shared.Models.PayoutService;
+using msih.p4g.Server.Features.Base.PayoutService.Models.PayPal;
 
 namespace msih.p4g.Server.Features.Base.PayoutService.Utilities
 {

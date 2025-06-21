@@ -3,12 +3,38 @@
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
-// This file is kept for backward compatibility
-// The actual enum is now in msih.p4g.Shared.Models.PayoutService.PayoutStatus
 using System;
 
 namespace msih.p4g.Shared.Models.PayoutService
 {
-    // The enum has been moved to the Shared project
-    // See: msih.p4g.Shared.Models.PayoutService.PayoutStatus
+    /// <summary>
+    /// Represents the status of a payout
+    /// </summary>
+    public enum PayoutStatus
+    {
+        /// <summary>
+        /// Payout is pending processing
+        /// </summary>
+        Pending,
+        
+        /// <summary>
+        /// Payout is currently being processed
+        /// </summary>
+        Processing,
+        
+        /// <summary>
+        /// Payout has been successfully completed
+        /// </summary>
+        Completed,
+        
+        /// <summary>
+        /// Payout processing failed
+        /// </summary>
+        Failed,
+        
+        /// <summary>
+        /// Payout was cancelled
+        /// </summary>
+        Cancelled
+    }
 }

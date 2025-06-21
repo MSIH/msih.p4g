@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace msih.p4g.Shared.Models.PayoutService
+namespace msih.p4g.Server.Features.Base.PayoutService.Models.PayPal
 {
     /// <summary>
     /// DTO for PayPal batch payout status information

@@ -5,6 +5,8 @@
  */
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using msih.p4g.Server.Features.Base.PayoutService.Models;
+using msih.p4g.Server.Features.Base.PayoutService.Models.PayPal;
 using msih.p4g.Shared.Models.PayoutService;
 
 namespace msih.p4g.Client.Features.Base.PayoutService.Interfaces
