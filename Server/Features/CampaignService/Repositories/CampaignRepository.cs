@@ -1,13 +1,19 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
+using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.CampaignService.Interfaces;
 using msih.p4g.Server.Features.CampaignService.Model;
-using Microsoft.EntityFrameworkCore;
 
 namespace msih.p4g.Server.Features.CampaignService.Repositories
 {
@@ -25,9 +31,26 @@ namespace msih.p4g.Server.Features.CampaignService.Repositories
         }
 
         /// <inheritdoc />
+        public async Task<Campaign?> GetByIdAsync(int id)
+        {
+            return await _context.Campaigns
+                .Include(c => c.Organization)
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<Campaign>> GetAllAsync()
+        {
+            return await _context.Campaigns
+                .Include(c => c.Organization)
+                .ToListAsync();
+        }
+
+        /// <inheritdoc />
         public async Task<Campaign?> GetDefaultCampaignAsync()
         {
             return await _context.Campaigns
+                .Include(c => c.Organization)
                 .FirstOrDefaultAsync(c => c.IsDefault && c.IsActive);
         }
 
@@ -42,6 +65,13 @@ namespace msih.p4g.Server.Features.CampaignService.Repositories
             await _context.SaveChangesAsync();
         }
 
-        // Add Campaign-specific repository methods here if needed
+        /// <inheritdoc />
+        public async Task<IEnumerable<Campaign>> GetCampaignsByOrganizationIdAsync(int organizationId)
+        {
+            return await _context.Campaigns
+                .Include(c => c.Organization)
+                .Where(c => c.OrganizationId == organizationId)
+                .ToListAsync();
+        }
     }
 }

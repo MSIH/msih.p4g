@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -11,6 +5,7 @@
  */
 using msih.p4g.Server.Common.Models;
 using msih.p4g.Server.Features.DonationService.Models;
+using msih.p4g.Server.Features.OrganizationService.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace msih.p4g.Server.Features.CampaignService.Model
@@ -34,6 +29,16 @@ namespace msih.p4g.Server.Features.CampaignService.Model
         public string Description { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the organization ID to which this campaign belongs.
+        /// </summary>
+        public int? OrganizationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the organization to which this campaign belongs.
+        /// </summary>
+        public virtual Organization? Organization { get; set; }
+
+        /// <summary>
         /// Collection of donations associated with this campaign.
         /// </summary>
         public virtual ICollection<Donation> Donations { get; set; } = new List<Donation>();
@@ -43,5 +48,4 @@ namespace msih.p4g.Server.Features.CampaignService.Model
         /// </summary>
         public bool IsDefault { get; set; }
     }
-
 }

@@ -32,6 +32,13 @@ namespace msih.p4g.Server.Common.Data
                 entity.Property(e => e.CreatedOn).IsRequired();
                 entity.Property(e => e.CreatedBy).HasMaxLength(100);
                 entity.Property(e => e.ModifiedBy).HasMaxLength(100);
+
+                // Configure relationship with Organization
+                entity.HasOne(e => e.Organization)
+                      .WithMany(o => o.Campaigns)
+                      .HasForeignKey(e => e.OrganizationId)
+                      .OnDelete(DeleteBehavior.Restrict)
+                      .IsRequired(false);
             });
         }
     }
