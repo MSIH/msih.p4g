@@ -6,12 +6,12 @@
 using System;
 using System.Collections.Generic;
 
-namespace msih.p4g.Server.Features.Base.PayoutService.Models
+namespace msih.p4g.Shared.Models.PayoutService
 {
     /// <summary>
-    /// Represents the status of a PayPal batch payout
+    /// DTO for PayPal batch payout status information
     /// </summary>
-    public class PayPalBatchStatus
+    public class PayPalBatchStatusDto
     {
         /// <summary>
         /// The batch ID
@@ -56,13 +56,13 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Models
         /// <summary>
         /// Detailed status information for each item in the batch
         /// </summary>
-        public List<PayPalBatchItemStatus> Items { get; set; } = new List<PayPalBatchItemStatus>();
+        public List<PayPalBatchItemStatusDto> Items { get; set; } = new List<PayPalBatchItemStatusDto>();
     }
     
     /// <summary>
-    /// Represents the status of an individual item in a PayPal batch payout
+    /// DTO for status information of an individual item in a PayPal batch payout
     /// </summary>
-    public class PayPalBatchItemStatus
+    public class PayPalBatchItemStatusDto
     {
         /// <summary>
         /// The payout item ID
@@ -98,10 +98,5 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Models
         /// Item reference ID (typically the payment ID in our system)
         /// </summary>
         public string SenderItemId { get; set; } = null!;
-        
-        /// <summary>
-        /// Error message if the item failed
-        /// </summary>
-        public string? ErrorMessage { get; set; }
     }
 }

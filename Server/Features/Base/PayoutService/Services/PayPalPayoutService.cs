@@ -6,9 +6,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using msih.p4g.Server.Features.Base.PayoutService.Interfaces;
-using msih.p4g.Server.Features.Base.PaypalPayoutService.Interfaces;
-using msih.p4g.Server.Features.Base.PaypalPayoutService.Models;
-using msih.p4g.Server.Features.Base.PaypalPayoutService.Models.Configuration;
+using msih.p4g.Server.Features.Base.PayoutService.Models;
+using msih.p4g.Server.Features.Base.PayoutService.Models.Configuration;
 using msih.p4g.Shared.Models.PayoutService;
 using System;
 using System.Collections.Generic;
@@ -24,7 +23,7 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
     /// <summary>
     /// Service for processing payouts to fundraisers via PayPal
     /// </summary>
-    public class PayPalPayoutService : IPayPalPayoutService
+    public class PayPalPayoutService : IPayoutService
     {
         private readonly IPayoutRepository _PayoutRepository;
         private readonly ILogger<PayPalPayoutService> _logger;

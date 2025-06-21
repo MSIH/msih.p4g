@@ -44,8 +44,15 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Interfaces
         /// <summary>
         /// Get multiple Payouts by their IDs
         /// </summary>
-        /// <param name="PayoutIds">List of Payout IDs</param>
+        /// <param name="payoutIds">List of Payout IDs</param>
         /// <returns>List of Payouts</returns>
-        Task<List<Payout>> GetPayoutsByIdsAsync(List<string> PayoutIds);
+        Task<List<Payout>> GetPayoutsByIdsAsync(List<string> payoutIds);
+        
+        /// <summary>
+        /// Updates multiple Payout entities at once
+        /// </summary>
+        /// <param name="payouts">The Payout entities to update</param>
+        /// <returns>A Task representing the asynchronous operation</returns>
+        Task UpdateRangeAsync(List<Payout> payouts);
     }
 }

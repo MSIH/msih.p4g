@@ -1,4 +1,10 @@
-namespace msih.p4g.Server.Features.Base.PaypalPayoutService.Models.Configuration
+/**
+ * Copyright (c) 2025 MSIH LLC. All rights reserved.
+ * This file is developed for Make Sure It Happens Inc.
+ * Unauthorized copying, modification, distribution, or use is prohibited.
+ */
+
+namespace msih.p4g.Server.Features.Base.PayoutService.Models.Configuration
 {
     /// <summary>
     /// PayPal API configuration options
@@ -10,17 +16,17 @@ namespace msih.p4g.Server.Features.Base.PaypalPayoutService.Models.Configuration
         /// <summary>
         /// PayPal Client ID
         /// </summary>
-        public string ClientId { get; set; }
+        public string ClientId { get; set; } = null!;
 
         /// <summary>
         /// PayPal Secret
         /// </summary>
-        public string Secret { get; set; }
+        public string Secret { get; set; } = null!;
 
         /// <summary>
         /// PayPal Environment (sandbox or live)
         /// </summary>
-        public string Environment { get; set; }
+        public string Environment { get; set; } = null!;
 
         /// <summary>
         /// PayPal API URL (changes based on environment)

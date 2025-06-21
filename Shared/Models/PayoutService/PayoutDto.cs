@@ -4,18 +4,22 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using System;
-using msih.p4g.Shared.Models.PaymentService;
-using msih.p4g.Server.Common.Models;
+using msih.p4g.Shared.Models;
 
-namespace msih.p4g.Server.Features.Base.PaypalPayoutService.Models
+namespace msih.p4g.Shared.Models.PayoutService
 {
     /// <summary>
-    /// Represents a payment/payout to a fundraiser
+    /// DTO for Payout information
     /// </summary>
-    public class Payouts : BaseEntity
+    public class PayoutDto
     {
         /// <summary>
-        /// The ID of the fundraiser receiving the payment
+        /// The unique identifier for the payout
+        /// </summary>
+        public string Id { get; set; } = null!;
+        
+        /// <summary>
+        /// The ID of the fundraiser receiving the payout
         /// </summary>
         public string FundraiserId { get; set; } = null!;
         
@@ -35,9 +39,9 @@ namespace msih.p4g.Server.Features.Base.PaypalPayoutService.Models
         public string Currency { get; set; } = "USD";
         
         /// <summary>
-        /// The current status of the payment
+        /// The current status of the payout
         /// </summary>
-        public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
+        public PayoutStatus Status { get; set; }
         
         /// <summary>
         /// The PayPal batch ID for batch payouts
@@ -55,28 +59,18 @@ namespace msih.p4g.Server.Features.Base.PaypalPayoutService.Models
         public string? PaypalTransactionId { get; set; }
         
         /// <summary>
-        /// When the payment record was created
+        /// When the payout record was created
         /// </summary>
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
         
         /// <summary>
-        /// When the payment was processed with PayPal
+        /// When the payout was processed with PayPal
         /// </summary>
         public DateTime? ProcessedAt { get; set; }
         
         /// <summary>
-        /// Optional notes about the payment
+        /// Optional notes about the payout
         /// </summary>
         public string? Notes { get; set; }
-        
-        /// <summary>
-        /// Error message if payment processing failed
-        /// </summary>
-        public string? ErrorMessage { get; set; }
-        
-        /// <summary>
-        /// Indicates whether this payment is part of a batch
-        /// </summary>
-        public bool IsBatchPayment { get; set; } = false;
     }
 }
