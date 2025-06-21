@@ -151,11 +151,13 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
     
     <p>Thank you for your continued efforts in raising funds for this important cause!</p>
     
+    <p>Share your unique referral link to get more supporters: <a href=""{{referralUrl}}"">{{referralUrl}}</a></p>
+    
     <p>Best regards,<br>The {{organizationName}} Team</p>
 </body>
 </html>",
                         IsHtml = true,
-                        AvailablePlaceholders = "fundraiserName, reportPeriod, reportEndDate, campaignName, totalDonationCount, totalAmountRaised, averageDonationAmount, recentDonationsTable, organizationName",
+                        AvailablePlaceholders = "fundraiserName, reportPeriod, reportEndDate, campaignName, totalDonationCount, totalAmountRaised, averageDonationAmount, recentDonationsTable, organizationName,  referralUrl",
                         IsDefault = true,
                         IsActive = true,
                         CreatedOn = DateTime.UtcNow,
@@ -299,13 +301,15 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
     
     <p>You can view all your campaign details and donations by logging into your account.</p>
     
+    <p>Share your unique referral link to get more supporters: <a href=""{{referralUrl}}"">{{referralUrl}}</a></p>   
+    
     <p>Thank you for your continued efforts in raising funds for this important cause!</p>
     
     <p>Best regards,<br>The {{organizationName}} Team</p>
 </body>
 </html>",
                         IsHtml = true,
-                        AvailablePlaceholders = "fundraiserName, campaignName, donorFirstName, donationAmount, donationDate, donorMessage, totalRaised, organizationName",
+                        AvailablePlaceholders = "fundraiserName, campaignName, donorFirstName, donationAmount, donationDate, donorMessage, totalRaised, organizationName,  referralUrl",
                         IsDefault = true,
                         IsActive = true,
                         CreatedOn = DateTime.UtcNow,
@@ -334,9 +338,9 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                         Description = "SMS notification to fundraisers when a donation is made",
                         MessageType = "SMS",
                         Category = "DonationNotification",
-                        TemplateContent = "Great news {{fundraiserName}}! {{donorFirstName}} just donated {{donationAmount}} to your {{campaignName}} campaign. Your total raised is now {{totalRaised}}!",
+                        TemplateContent = "Great news {{fundraiserName}}! {{donorFirstName}} just donated {{donationAmount}} to your {{campaignName}} campaign. Your total raised is now {{totalRaised}}! Share your campaign with referral link {{referralUrl}}",
                         IsHtml = false,
-                        AvailablePlaceholders = "fundraiserName, donorFirstName, donationAmount, campaignName, totalRaised",
+                        AvailablePlaceholders = "fundraiserName, donorFirstName, donationAmount, campaignName, totalRaised, referralUrl",
                         IsDefault = true,
                         IsActive = true,
                         CreatedOn = DateTime.UtcNow,
