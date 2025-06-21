@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -36,24 +42,27 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
                 // Check if we need to seed templates
-                if (!await dbContext.Set<MessageTemplate>().AnyAsync(t => 
-                    t.Category == "ThankYou" || 
-                    t.Category == "FundraiserReport" || 
-                    t.Category == "TaxReceipt" || 
+                if (!await dbContext.Set<MessageTemplate>().AnyAsync(t =>
+                    t.Category == "ThankYou" ||
+                    t.Category == "FundraiserReport" ||
+                    t.Category == "TaxReceipt" ||
                     t.Category == "DonationNotification"))
                 {
                     _logger.LogInformation("Seeding message template data...");
 
-                    // 1. Donor Thank You Email Template
-                    var donorThanksTemplate = new MessageTemplate
+                    // Create an array of message templates
+                    var messageTemplates = new[]
                     {
-                        Name = "Donor Thank You Email",
-                        Description = "Email sent to donors after they make a donation",
-                        MessageType = "Email",
-                        Category = "ThankYou",
-                        DefaultSubject = "Thank You for Your Donation to {{organizationName}}",
-                        DefaultSender = "donations@msih.org",
-                        TemplateContent = @"<!DOCTYPE html>
+                        // 1. Donor Thank You Email Template
+                        new MessageTemplate
+                        {
+                            Name = "Donor Thank You Email",
+                            Description = "Email sent to donors after they make a donation",
+                            MessageType = "Email",
+                            Category = "ThankYou",
+                            DefaultSubject = "Thank You for Your Donation to {{organizationName}}",
+                            DefaultSender = "donations@msih.org",
+                            TemplateContent = @"<!DOCTYPE html>
 <html>
 <head>
     <meta charset=""utf-8"">
@@ -72,7 +81,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
     
     <p>Dear {{donorName}},</p>
     
-    <p>Thank you for making a tax-deductible donation today in the amount of {{donationAmountInDollars}} to {{organizationName}}, a tax-exempt organization under Section 501(c)(3) of the Internal Revenue Code, EIN {{ein}}. No goods or services were provided in exchange for this donation.</p>
+    <p>Thank you for making a tax-deductible donation today in the amount of {{donationAmountInDollars}} to {{organizationName}}  ({{organizationURL}}), a tax-exempt organization under Section 501(c)(3) of the Internal Revenue Code, EIN {{ein}}. No goods or services were provided in exchange for this donation.</p>
+
+    <div class=""tax-info"">
+        <p>Please retain this receipt for your tax records.</p>
+    </div>
     
     <div class=""description"">
         <p>{{organizationShortDescription}}</p>
@@ -83,10 +96,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
         <p>Sincerely,</p>
         <p>{{fundraiserName}}<br>{{fundraiserTitle}}</p>
     </div>
-    
-    <div class=""tax-info"">
-        <p>Please retain this receipt for your tax records.</p>
-    </div>
+
 
     <div class=""social-sharing"" style=""margin-top: 25px; padding: 15px; background-color: #f0f4f8; border-radius: 8px;"">
         <p><strong>Support our mission - share with your network!</strong></p>
@@ -109,24 +119,96 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
     
 </body>
 </html>",
-                        IsHtml = true,
-                        AvailablePlaceholders = "donorName, donationAmountInDollars, organizationName, ein, organizationShortDescription, projectShortDescription, fundraiserName, fundraiserTitle",
-                        IsDefault = true,
-                        IsActive = true,
-                        CreatedOn = DateTime.UtcNow,
-                        CreatedBy = "System"
-                    };
+                            IsHtml = true,
+                            AvailablePlaceholders = "donorName, donationAmountInDollars, organizationName, ein, organizationShortDescription, projectShortDescription, fundraiserName, fundraiserTitle, donationUrl, organizationMission",
+                            IsDefault = true,
+                            IsActive = true,
+                            CreatedOn = DateTime.UtcNow,
+                            CreatedBy = "System"
+                        },
 
-                    // 2. Fundraiser Report Email Template
-                    var fundraiserReportTemplate = new MessageTemplate
-                    {
-                        Name = "Fundraiser Status Report",
-                        Description = "Weekly or monthly email providing status update to fundraisers",
-                        MessageType = "Email",
-                        Category = "FundraiserReport",
-                        DefaultSubject = "Your Fundraising Campaign Status Report",
-                        DefaultSender = "reports@msih.org",
-                        TemplateContent = @"<!DOCTYPE html>
+                          // 1. Donor Thank You Email Template
+                        new MessageTemplate
+                        {
+                            Name = "MVP Donor Thank You Email",
+                            Description = "Email sent to donors after they make a donation",
+                            MessageType = "Email",
+                            Category = "ThankYou",
+                            DefaultSubject = "Thank You for Your Donation to Make Sure It Happens Inc",
+                            DefaultSender = "donations@msih.org",
+                            TemplateContent = @"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=""utf-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
+    <title>Thank You for Your Donation</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c5282; }
+        .signature { margin-top: 30px; }
+        .tax-info { margin-top: 20px; font-style: italic; }
+        .description { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Thank You for Your Donation</h1>
+    
+    <p>Dear {{donorName}},</p>
+    
+    <p>Thank you for making a tax-deductible donation today in the amount of {{donationAmountInDollars}} to Make Sure It Happens Inc (https://msih.org), a tax-exempt organization under Section 501(c)(3) of the Internal Revenue Code, EIN 5-3536160. No goods or services were provided in exchange for this donation.</p>
+
+    <div class=""tax-info"">
+        <p>Please retain this receipt for your tax records.</p>
+    </div>
+            
+    <div class=""signature"">
+        <p>Sincerely,</p>
+        <p>Barry Schenider<br>President and Chairman of the Board</p>
+    </div>
+
+    <div class=""org-info"">
+        <p>Make Sure It Happens Inc. | 5013 Russsett Road, Rockville, Maryland | EIN: EIN 5-3536160</p>
+    </div>  
+
+    <div class=""social-sharing"" style=""margin-top: 25px; padding: 15px; background-color: #f0f4f8; border-radius: 8px;"">
+        <p><strong>Support our mission - share with your network!</strong></p>
+        <p>Your donation makes a difference. Help us reach more people by sharing our donation page:</p>
+        <p><a href=""https://4dg.org/donate"">https://4dg.org/donate</a></p>
+        
+        <div style=""margin-top: 15px;"">
+            <p><strong>Sample messages to share:</strong></p>
+            <div style=""background-color: #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;"">
+                <p><strong>Email:</strong> I just donated to Make Sure It Happens Inc. They're doing amazing work. Join me in making a difference: https://4dg.org/donate</p>
+            </div>
+            <div style=""background-color: #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;"">
+                <p><strong>Facebook:</strong> Proud to support Make Sure It Happens Inc. They're doing amazing work. Every donation counts! https://4dg.org/donate</p>
+            </div>
+            <div style=""background-color: #e2e8f0; padding: 10px; border-radius: 4px;"">
+                <p><strong>Twitter:</strong> Just supported Make Sure It Happens Inc! They're doing amazing work. Join me! https://4dg.org/donate #MakeADifference</p>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>",
+                            IsHtml = true,
+                            AvailablePlaceholders = "donorName, donationAmountInDollars, organizationName, ein, organizationShortDescription, projectShortDescription, fundraiserName, fundraiserTitle, donationUrl, organizationMission",
+                            IsDefault = true,
+                            IsActive = true,
+                            CreatedOn = DateTime.UtcNow,
+                            CreatedBy = "System"
+                        },
+
+                        // 2. Fundraiser Report Email Template
+                        new MessageTemplate
+                        {
+                            Name = "Fundraiser Status Report",
+                            Description = "Weekly or monthly email providing status update to fundraisers",
+                            MessageType = "Email",
+                            Category = "FundraiserReport",
+                            DefaultSubject = "Your Fundraising Campaign Status Report",
+                            DefaultSender = "reports@msih.org",
+                            TemplateContent = @"<!DOCTYPE html>
 <html>
 <head>
     <meta charset=""utf-8"">
@@ -180,24 +262,25 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
 
 </body>
 </html>",
-                        IsHtml = true,
-                        AvailablePlaceholders = "fundraiserName, reportPeriod, reportEndDate, campaignName, totalDonationCount, totalAmountRaised, averageDonationAmount, recentDonationsTable, organizationName,  referralUrl",
-                        IsDefault = true,
-                        IsActive = true,
-                        CreatedOn = DateTime.UtcNow,
-                        CreatedBy = "System"
-                    };
+                            IsHtml = true,
+                            AvailablePlaceholders = "fundraiserName, reportPeriod, reportEndDate, campaignName, totalDonationCount, totalAmountRaised, averageDonationAmount, recentDonationsTable, organizationName, referralUrl, fundraiserUrl",
+                            IsDefault = true,
+                            IsActive = true,
+                            CreatedOn = DateTime.UtcNow,
+                            CreatedBy = "System"
+                        },
 
-                    // 3. End of Year Tax Letter to Donor
-                    var taxLetterTemplate = new MessageTemplate
-                    {
-                        Name = "End of Year Tax Receipt",
-                        Description = "Annual tax receipt sent to donors at the end of the year",
-                        MessageType = "Email",
-                        Category = "TaxReceipt",
-                        DefaultSubject = "Your {{year}} Tax Receipt from {{organizationName}}",
-                        DefaultSender = "tax@msih.org",
-                        TemplateContent = @"<!DOCTYPE html>
+
+                        // 3. End of Year Tax Letter to Donor
+                        new MessageTemplate
+                        {
+                            Name = "End of Year Tax Receipt",
+                            Description = "Annual tax receipt sent to donors at the end of the year",
+                            MessageType = "Email",
+                            Category = "TaxReceipt",
+                            DefaultSubject = "Your {{year}} Tax Receipt from {{organizationName}}",
+                            DefaultSender = "tax@msih.org",
+                            TemplateContent = @"<!DOCTYPE html>
 <html>
 <head>
     <meta charset=""utf-8"">
@@ -287,24 +370,24 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
     </div>
 </body>
 </html>",
-                        IsHtml = true,
-                        AvailablePlaceholders = "currentDate, donorName, donorFirstName, donorAddress, year, organizationName, organizationMission, ein, donationsList, totalYearlyDonations, organizationEmail, organizationPhone, organizationLeaderName, organizationLeaderTitle, organizationAddress",
-                        IsDefault = true,
-                        IsActive = true,
-                        CreatedOn = DateTime.UtcNow,
-                        CreatedBy = "System"
-                    };
+                            IsHtml = true,
+                            AvailablePlaceholders = "currentDate, donorName, donorFirstName, donorAddress, year, organizationName, organizationMission, ein, donationsList, totalYearlyDonations, organizationEmail, organizationPhone, organizationLeaderName, organizationLeaderTitle, organizationAddress, donationUrl, projectShortDescription",
+                            IsDefault = true,
+                            IsActive = true,
+                            CreatedOn = DateTime.UtcNow,
+                            CreatedBy = "System"
+                        },
 
-                    // 4. Fundraiser Notice of Donation
-                    var donationNoticeTemplate = new MessageTemplate
-                    {
-                        Name = "Fundraiser Donation Notification",
-                        Description = "Notification to fundraisers when a donation is made to their campaign",
-                        MessageType = "Email",
-                        Category = "DonationNotification",
-                        DefaultSubject = "New Donation to Your Fundraising Campaign",
-                        DefaultSender = "notifications@msih.org",
-                        TemplateContent = @"<!DOCTYPE html>
+                        // 4. Fundraiser Notice of Donation
+                        new MessageTemplate
+                        {
+                            Name = "Fundraiser Donation Notification",
+                            Description = "Notification to fundraisers when a donation is made to their campaign",
+                            MessageType = "Email",
+                            Category = "DonationNotification",
+                            DefaultSubject = "New Donation to Your Fundraising Campaign",
+                            DefaultSender = "notifications@msih.org",
+                            TemplateContent = @"<!DOCTYPE html>
 <html>
 <head>
     <meta charset=""utf-8"">
@@ -364,52 +447,52 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
     <p>Best regards,<br>The {{organizationName}} Team</p>
 </body>
 </html>",
-                        IsHtml = true,
-                        AvailablePlaceholders = "fundraiserName, campaignName, donorFirstName, donationAmount, donationDate, donorMessage, totalRaised, organizationName, donationUrl",
-                        IsDefault = true,
-                        IsActive = true,
-                        CreatedOn = DateTime.UtcNow,
-                        CreatedBy = "System"
-                    };
+                            IsHtml = true,
+                            AvailablePlaceholders = "fundraiserName, campaignName, donorFirstName, donationAmount, donationDate, donorMessage, totalRaised, organizationName, donationUrl, fundraiserUrl",
+                            IsDefault = true,
+                            IsActive = true,
+                            CreatedOn = DateTime.UtcNow,
+                            CreatedBy = "System"
+                        },
 
-                    // Add SMS versions of templates
-                    var donorThanksSmsTemplate = new MessageTemplate
-                    {
-                        Name = "Donor Thank You SMS",
-                        Description = "SMS sent to donors after they make a donation",
-                        MessageType = "SMS",
-                        Category = "ThankYou",
-                        TemplateContent = "Thank you {{donorFirstName}} for your generous donation of {{donationAmountInDollars}} to {{organizationName}}! Your contribution helps us {{organizationMission}}. A tax receipt has been emailed to you. Support our cause by sharing our donation page: {{donationUrl}}",
-                        IsHtml = false,
-                        AvailablePlaceholders = "donorFirstName, donationAmountInDollars, organizationName, organizationMission, donationUrl",
-                        IsDefault = true,
-                        IsActive = true,
-                        CreatedOn = DateTime.UtcNow,
-                        CreatedBy = "System"
-                    };
+                        // 5. Donor Thank You SMS
+                        new MessageTemplate
+                        {
+                            Name = "Donor Thank You SMS",
+                            Description = "SMS sent to donors after they make a donation",
+                            MessageType = "SMS",
+                            Category = "ThankYou",
+                            TemplateContent = "Thank you {{donorFirstName}} for your generous donation of {{donationAmountInDollars}} to {{organizationName}}! Your contribution helps us {{organizationMission}}. A tax receipt has been emailed to you. Support our cause by sharing our donation page: {{donationUrl}}",
+                            IsHtml = false,
+                            AvailablePlaceholders = "donorFirstName, donationAmountInDollars, organizationName, organizationMission, donationUrl",
+                            IsDefault = true,
+                            IsActive = true,
+                            CreatedOn = DateTime.UtcNow,
+                            CreatedBy = "System"
+                        },
 
-                    var fundraiserNotificationSmsTemplate = new MessageTemplate
-                    {
-                        Name = "Fundraiser Donation Notification SMS",
-                        Description = "SMS notification to fundraisers when a donation is made",
-                        MessageType = "SMS",
-                        Category = "DonationNotification",
-                        TemplateContent = "Great news {{fundraiserName}}! {{donorFirstName}} just donated {{donationAmount}} to your {{campaignName}} campaign. Your total raised is now {{totalRaised}}! Share our donation page to get more supporters: {{donationUrl}}",
-                        IsHtml = false,
-                        AvailablePlaceholders = "fundraiserName, donorFirstName, donationAmount, campaignName, totalRaised, donationUrl",
-                        IsDefault = true,
-                        IsActive = true,
-                        CreatedOn = DateTime.UtcNow,
-                        CreatedBy = "System"
+                        // 6. Fundraiser Donation Notification SMS
+                        new MessageTemplate
+                        {
+                            Name = "Fundraiser Donation Notification SMS",
+                            Description = "SMS notification to fundraisers when a donation is made",
+                            MessageType = "SMS",
+                            Category = "DonationNotification",
+                            TemplateContent = "Great news {{fundraiserName}}! {{donorFirstName}} just donated {{donationAmount}} to your {{campaignName}} campaign. Your total raised is now {{totalRaised}}! Share our donation page to get more supporters: {{donationUrl}}",
+                            IsHtml = false,
+                            AvailablePlaceholders = "fundraiserName, donorFirstName, donationAmount, campaignName, totalRaised, donationUrl",
+                            IsDefault = true,
+                            IsActive = true,
+                            CreatedOn = DateTime.UtcNow,
+                            CreatedBy = "System"
+                        }
                     };
 
                     // Add all templates to the database
-                    dbContext.Set<MessageTemplate>().Add(donorThanksTemplate);
-                    dbContext.Set<MessageTemplate>().Add(fundraiserReportTemplate);
-                    dbContext.Set<MessageTemplate>().Add(taxLetterTemplate);
-                    dbContext.Set<MessageTemplate>().Add(donationNoticeTemplate);
-                    dbContext.Set<MessageTemplate>().Add(donorThanksSmsTemplate);
-                    dbContext.Set<MessageTemplate>().Add(fundraiserNotificationSmsTemplate);
+                    foreach (var template in messageTemplates)
+                    {
+                        dbContext.Set<MessageTemplate>().Add(template);
+                    }
 
                     await dbContext.SaveChangesAsync();
 

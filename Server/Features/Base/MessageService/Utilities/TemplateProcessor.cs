@@ -1,10 +1,14 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
-using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace msih.p4g.Server.Features.Base.MessageService.Utilities
@@ -15,7 +19,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Utilities
     public static class TemplateProcessor
     {
         // Regular expression to match placeholders in the format {{PlaceholderName}}
-        private static readonly Regex PlaceholderRegex = new Regex(@"\{\{([^{}]+)\}\}", RegexOptions.Compiled);
+        private static readonly Regex _placeholderRegex = new Regex(@"\{\{([^{}]+)\}\}", RegexOptions.Compiled);
 
         /// <summary>
         /// Processes a template by replacing placeholders with values
@@ -35,11 +39,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Utilities
                 return templateContent;
             }
 
-            return PlaceholderRegex.Replace(templateContent, match =>
+            return _placeholderRegex.Replace(templateContent, match =>
             {
                 string placeholderName = match.Groups[1].Value.Trim();
-                return placeholderValues.TryGetValue(placeholderName, out string value) 
-                    ? value 
+                return placeholderValues.TryGetValue(placeholderName, out string value)
+                    ? value
                     : match.Value; // Keep the placeholder if no value is provided
             });
         }
@@ -57,8 +61,8 @@ namespace msih.p4g.Server.Features.Base.MessageService.Utilities
             }
 
             var placeholders = new List<string>();
-            var matches = PlaceholderRegex.Matches(templateContent);
-            
+            var matches = _placeholderRegex.Matches(templateContent);
+
             foreach (Match match in matches)
             {
                 string placeholderName = match.Groups[1].Value.Trim();
@@ -79,19 +83,19 @@ namespace msih.p4g.Server.Features.Base.MessageService.Utilities
         /// <param name="missingPlaceholders">Output list of missing placeholder names</param>
         /// <returns>True if all required placeholders have values, false otherwise</returns>
         public static bool ValidatePlaceholders(
-            string templateContent, 
-            Dictionary<string, string> placeholderValues, 
+            string templateContent,
+            Dictionary<string, string> placeholderValues,
             out List<string> missingPlaceholders)
         {
             missingPlaceholders = new List<string>();
-            
+
             if (string.IsNullOrEmpty(templateContent) || placeholderValues == null)
             {
                 return true;
             }
 
             var requiredPlaceholders = ExtractPlaceholders(templateContent);
-            
+
             foreach (var placeholder in requiredPlaceholders)
             {
                 if (!placeholderValues.ContainsKey(placeholder) || string.IsNullOrEmpty(placeholderValues[placeholder]))
