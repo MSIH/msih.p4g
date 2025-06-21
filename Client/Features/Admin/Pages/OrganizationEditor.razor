@@ -25,7 +25,7 @@
 }
 else
 {
-    <EditForm Model="@OrganizationDto" OnValidSubmit="SaveOrganization">
+    <EditForm Model="@Organization" OnValidSubmit="SaveOrganization">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
@@ -33,82 +33,82 @@ else
             <div class="col-md-6">
                 <div class="form-group mb-3">
                     <label for="legalName">Legal Name:</label>
-                    <InputText id="legalName" @bind-Value="OrganizationDto.LegalName" class="form-control" />
-                    <ValidationMessage For="@(() => OrganizationDto.LegalName)" />
+                    <InputText id="legalName" @bind-Value="Organization.LegalName" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.LegalName)" />
                 </div>
                 
                 <div class="form-group mb-3">
                     <label for="taxId">Tax ID (EIN):</label>
-                    <InputText id="taxId" @bind-Value="OrganizationDto.TaxId" class="form-control" />
-                    <ValidationMessage For="@(() => OrganizationDto.TaxId)" />
+                    <InputText id="taxId" @bind-Value="Organization.TaxId" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.TaxId)" />
                 </div>
                 
                 <div class="form-group mb-3">
                     <label for="orgType">Organization Type:</label>
-                    <InputText id="orgType" @bind-Value="OrganizationDto.OrganizationType" class="form-control" />
-                    <ValidationMessage For="@(() => OrganizationDto.OrganizationType)" />
+                    <InputText id="orgType" @bind-Value="Organization.OrganizationType" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.OrganizationType)" />
                 </div>
                 
                 <div class="form-group mb-3">
                     <label for="email">Email Address:</label>
-                    <InputText id="email" @bind-Value="OrganizationDto.EmailAddress" class="form-control" />
-                    <ValidationMessage For="@(() => OrganizationDto.EmailAddress)" />
+                    <InputText id="email" @bind-Value="Organization.EmailAddress" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.EmailAddress)" />
                 </div>
                 
                 <div class="form-group mb-3">
                     <label for="phone">Phone Number:</label>
-                    <InputText id="phone" @bind-Value="OrganizationDto.Phone" class="form-control" />
-                    <ValidationMessage For="@(() => OrganizationDto.Phone)" />
+                    <InputText id="phone" @bind-Value="Organization.Phone" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.Phone)" />
                 </div>
                 
                 <div class="form-group mb-3">
                     <label for="website">Website:</label>
-                    <InputText id="website" @bind-Value="OrganizationDto.Website" class="form-control" />
-                    <ValidationMessage For="@(() => OrganizationDto.Website)" />
+                    <InputText id="website" @bind-Value="Organization.Website" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.Website)" />
                 </div>
                 
                 <div class="form-group mb-3">
                     <label for="logoUrl">Logo URL:</label>
-                    <InputText id="logoUrl" @bind-Value="OrganizationDto.LogoUrl" class="form-control" />
-                    <ValidationMessage For="@(() => OrganizationDto.LogoUrl)" />
+                    <InputText id="logoUrl" @bind-Value="Organization.LogoUrl" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.LogoUrl)" />
                 </div>
             </div>
             
             <div class="col-md-6">
                 <div class="form-group mb-3">
                     <label for="street">Street:</label>
-                    <InputText id="street" @bind-Value="OrganizationDto.Street" class="form-control" />
-                    <ValidationMessage For="@(() => OrganizationDto.Street)" />
+                    <InputText id="street" @bind-Value="Organization.Street" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.Street)" />
                 </div>
                 
                 <div class="form-group mb-3">
                     <label for="city">City:</label>
-                    <InputText id="city" @bind-Value="OrganizationDto.City" class="form-control" />
-                    <ValidationMessage For="@(() => OrganizationDto.City)" />
+                    <InputText id="city" @bind-Value="Organization.City" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.City)" />
                 </div>
                 
                 <div class="form-group mb-3">
                     <label for="state">State/Province:</label>
-                    <InputText id="state" @bind-Value="OrganizationDto.State" class="form-control" />
-                    <ValidationMessage For="@(() => OrganizationDto.State)" />
+                    <InputText id="state" @bind-Value="Organization.State" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.State)" />
                 </div>
                 
                 <div class="form-group mb-3">
                     <label for="postalCode">Postal/Zip Code:</label>
-                    <InputText id="postalCode" @bind-Value="OrganizationDto.PostalCode" class="form-control" />
-                    <ValidationMessage For="@(() => OrganizationDto.PostalCode)" />
+                    <InputText id="postalCode" @bind-Value="Organization.PostalCode" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.PostalCode)" />
                 </div>
                 
                 <div class="form-group mb-3">
                     <label for="country">Country:</label>
-                    <InputText id="country" @bind-Value="OrganizationDto.Country" class="form-control" />
-                    <ValidationMessage For="@(() => OrganizationDto.Country)" />
+                    <InputText id="country" @bind-Value="Organization.Country" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.Country)" />
                 </div>
-                
+
                 <div class="form-group mb-3">
                     <label for="isActive">Status:</label>
                     <div class="form-check">
-                        <InputCheckbox id="isActive" @bind-Value="OrganizationDto.IsActive" class="form-check-input" />
+                        <InputCheckbox id="isActive" @bind-Value="Organization.IsActive" class="form-check-input" />
                         <label class="form-check-label" for="isActive">
                             Active
                         </label>
@@ -116,23 +116,23 @@ else
                 </div>
             </div>
         </div>
-        
+
         <div class="row mb-3">
             <div class="col-12">
                 <div class="form-group mb-3">
                     <label for="shortDescription">Short Description:</label>
-                    <InputTextArea id="shortDescription" @bind-Value="OrganizationDto.ShortDescription" class="form-control" rows="3" />
-                    <ValidationMessage For="@(() => OrganizationDto.ShortDescription)" />
+                    <InputTextArea id="shortDescription" @bind-Value="Organization.ShortDescription" class="form-control" rows="3" />
+                    <ValidationMessage For="@(() => Organization.ShortDescription)" />
                 </div>
-                
+
                 <div class="form-group mb-3">
                     <label for="missionStatement">Mission Statement:</label>
-                    <InputTextArea id="missionStatement" @bind-Value="OrganizationDto.MissionStatement" class="form-control" rows="5" />
-                    <ValidationMessage For="@(() => OrganizationDto.MissionStatement)" />
+                    <InputTextArea id="missionStatement" @bind-Value="Organization.MissionStatement" class="form-control" rows="5" />
+                    <ValidationMessage For="@(() => Organization.MissionStatement)" />
                 </div>
             </div>
         </div>
-        
+
         <div class="row">
             <div class="col">
                 <button type="submit" class="btn btn-primary">Save</button>
@@ -140,4 +140,4 @@ else
             </div>
         </div>
     </EditForm>
-}
+    }

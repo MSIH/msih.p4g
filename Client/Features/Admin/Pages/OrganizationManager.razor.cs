@@ -6,7 +6,6 @@
 using Microsoft.AspNetCore.Components;
 using msih.p4g.Server.Features.OrganizationService.Interfaces;
 using msih.p4g.Server.Features.OrganizationService.Models;
-using msih.p4g.Shared.OrganizationService.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +24,7 @@ namespace msih.p4g.Client.Features.Admin.Pages
         [Inject]
         private NavigationManager NavigationManager { get; set; }
         
-        private List<OrganizationDto> Organizations { get; set; } = new List<OrganizationDto>();
+        private List<Organization> Organizations { get; set; } = new List<Organization>();
         private bool IsLoading { get; set; } = true;
         private string ErrorMessage { get; set; }
         
@@ -38,7 +37,7 @@ namespace msih.p4g.Client.Features.Admin.Pages
             {
                 IsLoading = true;
                 var organizations = await OrganizationService.GetAllAsync();
-                Organizations = organizations.Select(OrganizationDto.FromEntity).ToList();
+                Organizations = organizations.ToList();
             }
             catch (Exception ex)
             {

@@ -6,7 +6,6 @@
 using Microsoft.AspNetCore.Components;
 using msih.p4g.Server.Features.OrganizationService.Interfaces;
 using msih.p4g.Server.Features.OrganizationService.Models;
-using msih.p4g.Shared.OrganizationService.Dtos;
 using System;
 using System.Threading.Tasks;
 
@@ -18,19 +17,19 @@ namespace msih.p4g.Client.Features.Admin.Pages
     public partial class OrganizationEditor
     {
         [Parameter]
-        public string Id { get; set; }
+        public string? Id { get; set; }
         
         [Inject]
-        private IOrganizationService OrganizationService { get; set; }
+        private IOrganizationService OrganizationService { get; set; } = default!;
         
         [Inject]
-        private NavigationManager NavigationManager { get; set; }
+        private NavigationManager NavigationManager { get; set; } = default!;
         
-        private OrganizationDto OrganizationDto { get; set; } = new();
+        private Organization Organization { get; set; } = new();
         private bool IsLoading { get; set; } = true;
         private bool IsNewOrganization => string.IsNullOrEmpty(Id) || Id.ToLower() == "new";
-        private string ErrorMessage { get; set; }
-        private string SuccessMessage { get; set; }
+        private string? ErrorMessage { get; set; }
+        private string? SuccessMessage { get; set; }
         
         /// <summary>
         /// Initializes the component
@@ -46,7 +45,7 @@ namespace msih.p4g.Client.Features.Admin.Pages
                     var organization = await OrganizationService.GetByIdAsync(orgId);
                     if (organization != null)
                     {
-                        OrganizationDto = OrganizationDto.FromEntity(organization);
+                        Organization = organization;
                     }
                     else
                     {
@@ -57,7 +56,7 @@ namespace msih.p4g.Client.Features.Admin.Pages
                 else
                 {
                     // Initialize a new organization
-                    OrganizationDto = new OrganizationDto
+                    Organization = new Organization
                     {
                         IsActive = true,
                         OrganizationType = "501(c)(3)"
@@ -84,26 +83,27 @@ namespace msih.p4g.Client.Features.Admin.Pages
                 ErrorMessage = null;
                 SuccessMessage = null;
                 
-                var organization = OrganizationDto.ToEntity();
-                
+                Organization result;
                 if (IsNewOrganization)
                 {
-                    await OrganizationService.AddAsync(organization);
+                    // Add new organization
+                    result = await OrganizationService.AddAsync(Organization);
                     SuccessMessage = "Organization created successfully.";
+                    
+                    // Update the model with the new ID
+                    Organization = result;
+                    
+                    // Redirect to the edit page for the new ID
+                    NavigationManager.NavigateTo($"admin/organizations/edit/{result.Id}");
                 }
                 else
                 {
-                    await OrganizationService.UpdateAsync(organization);
+                    // Update existing organization
+                    result = await OrganizationService.UpdateAsync(Organization);
                     SuccessMessage = "Organization updated successfully.";
-                }
-                
-                // Update the DTO with the updated entity
-                OrganizationDto = OrganizationDto.FromEntity(organization);
-                
-                // If it's a new organization, redirect to the edit page for the new ID
-                if (IsNewOrganization)
-                {
-                    NavigationManager.NavigateTo($"admin/organizations/edit/{organization.Id}");
+                    
+                    // Update the model with any changes from the service
+                    Organization = result;
                 }
             }
             catch (Exception ex)
