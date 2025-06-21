@@ -1,6 +1,6 @@
 using System;
 
-namespace msih.p4g.Shared.Models.PaymentService
+namespace msih.p4g.Shared.Models.PayoutService
 {
     public enum PaymentStatus
     {
