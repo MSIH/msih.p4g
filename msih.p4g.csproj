@@ -7,9 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Server\Features\OrganizationService\Tests\**" />
     <Compile Remove="Tests\**" />
+    <Content Remove="Server\Features\OrganizationService\Tests\**" />
     <Content Remove="Tests\**" />
+    <EmbeddedResource Remove="Server\Features\OrganizationService\Tests\**" />
     <EmbeddedResource Remove="Tests\**" />
+    <None Remove="Server\Features\OrganizationService\Tests\**" />
     <None Remove="Tests\**" />
   </ItemGroup>
 

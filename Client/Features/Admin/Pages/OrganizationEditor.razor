@@ -1,0 +1,143 @@
+@page "/admin/organizations/new"
+@page "/admin/organizations/edit/{Id}"
+
+<PageTitle>@(IsNewOrganization ? "Add Organization" : "Edit Organization")</PageTitle>
+
+<h1>@(IsNewOrganization ? "Add Organization" : "Edit Organization")</h1>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+
+@if (!string.IsNullOrEmpty(SuccessMessage))
+{
+    <div class="alert alert-success">@SuccessMessage</div>
+}
+
+@if (IsLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <EditForm Model="@Organization" OnValidSubmit="SaveOrganization">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="legalName">Legal Name:</label>
+                    <InputText id="legalName" @bind-Value="Organization.LegalName" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.LegalName)" />
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="taxId">Tax ID (EIN):</label>
+                    <InputText id="taxId" @bind-Value="Organization.TaxId" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.TaxId)" />
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="orgType">Organization Type:</label>
+                    <InputText id="orgType" @bind-Value="Organization.OrganizationType" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.OrganizationType)" />
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="email">Email Address:</label>
+                    <InputText id="email" @bind-Value="Organization.EmailAddress" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.EmailAddress)" />
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="phone">Phone Number:</label>
+                    <InputText id="phone" @bind-Value="Organization.Phone" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.Phone)" />
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="website">Website:</label>
+                    <InputText id="website" @bind-Value="Organization.Website" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.Website)" />
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="logoUrl">Logo URL:</label>
+                    <InputText id="logoUrl" @bind-Value="Organization.LogoUrl" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.LogoUrl)" />
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="street">Street:</label>
+                    <InputText id="street" @bind-Value="Organization.Street" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.Street)" />
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="city">City:</label>
+                    <InputText id="city" @bind-Value="Organization.City" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.City)" />
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="state">State/Province:</label>
+                    <InputText id="state" @bind-Value="Organization.State" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.State)" />
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="postalCode">Postal/Zip Code:</label>
+                    <InputText id="postalCode" @bind-Value="Organization.PostalCode" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.PostalCode)" />
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="country">Country:</label>
+                    <InputText id="country" @bind-Value="Organization.Country" class="form-control" />
+                    <ValidationMessage For="@(() => Organization.Country)" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="isActive">Status:</label>
+                    <div class="form-check">
+                        <InputCheckbox id="isActive" @bind-Value="Organization.IsActive" class="form-check-input" />
+                        <label class="form-check-label" for="isActive">
+                            Active
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="form-group mb-3">
+                    <label for="shortDescription">Short Description:</label>
+                    <InputTextArea id="shortDescription" @bind-Value="Organization.ShortDescription" class="form-control" rows="3" />
+                    <ValidationMessage For="@(() => Organization.ShortDescription)" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="missionStatement">Mission Statement:</label>
+                    <InputTextArea id="missionStatement" @bind-Value="Organization.MissionStatement" class="form-control" rows="5" />
+                    <ValidationMessage For="@(() => Organization.MissionStatement)" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+            </div>
+        </div>
+    </EditForm>
+    }
