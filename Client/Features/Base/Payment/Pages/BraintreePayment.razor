@@ -1,4 +1,4 @@
-@* 
+@*
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
@@ -20,6 +20,9 @@
 @using msih.p4g.Server.Features.DonationService.Models
 @using msih.p4g.Server.Features.DonationService.Interfaces
 @using Microsoft.AspNetCore.Components.Forms
+@using msih.p4g.Server.Features.OrganizationService.Interfaces
+@using msih.p4g.Server.Features.OrganizationService.Models
+@using msih.p4g.Server.Features.OrganizationService.Services
 
 @inject IPaymentServiceFactory PaymentServiceFactory
 @inject ICampaignService CampaignService
@@ -27,6 +30,7 @@
 @inject IDonationService DonationService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject IOrganizationService OrganizationService
 
 <div class="container">
     @if (isLoading)
@@ -40,7 +44,7 @@
     else
     {
         <h2>Donation</h2>
-        
+
         <div class="row">
             <div class="col-md-8 mx-auto">
                 @if (referrer != null)
@@ -49,16 +53,18 @@
                         <p class="mb-0">You were referred by: <strong>@referrer.FirstName @(referrer.LastName?.Substring(0, 1)).</strong></p>
                     </div>
                 }
-                
+
                 @if (campaign != null)
                 {
                     <div class="card mb-4">
                         <div class="card-header">
                             <h5>Campaign Information</h5>
+                            <p class="mb-0"> @organization.LegalName | Tax Type @organization.OrganizationType | TaxID @organization.TaxId | @organization.Website</p>
                         </div>
                         <div class="card-body">
                             <h4>@campaign.Title</h4>
                             <p class="mb-0">@campaign.Description</p>
+                           
                         </div>
                     </div>
                 }
@@ -100,7 +106,7 @@
                                     <label for="mobile" class="form-label">Mobile</label>
                                     <InputText id="mobile" class="form-control" @bind-Value="donationRequest.Mobile" />
                                     <ValidationMessage For="@(() => donationRequest.Mobile)" />
-                                </div>                      
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="street" class="form-label">Street</label>
@@ -126,12 +132,12 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="card mb-4">
                         <div class="card-header">
                             <h5>Donation Information</h5>
                         </div>
-                        <div class="card-body">                           
+                        <div class="card-body">
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label>Amount You Want To Donate:</label>
@@ -152,16 +158,16 @@
                                     <label>Amount we receive:</label>
                                     <div class="input-group">
                                         <span class="input-group-text">$</span>
-                                        <input type="text" class="form-control" 
-                                               value="@((donationRequest.PayTransactionFee ? donationRequest.DonationAmount : (donationRequest.DonationAmount - CalculateTransactionFee())).ToString("F2"))" 
-                                               style="@(donationRequest.PayTransactionFee ? "color: green;" : "color: red;")" 
+                                        <input type="text" class="form-control"
+                                               value="@((donationRequest.PayTransactionFee ? donationRequest.DonationAmount : (donationRequest.DonationAmount - CalculateTransactionFee())).ToString("F2"))"
+                                               style="@(donationRequest.PayTransactionFee ? "color: green;" : "color: red;")"
                                                disabled />
                                     </div>
                                 </div>
                             </div>
-                            
 
-                            
+
+
                             <div class="mb-3 form-check">
                                 <InputCheckbox id="payTransactionFee" class="form-check-input" @bind-Value="donationRequest.PayTransactionFee" />
                                 <label class="form-check-label" for="payTransactionFee">
@@ -180,13 +186,13 @@
                                 <label for="donationMessage" class="form-label">Message (Optional)</label>
                                 <InputTextArea id="donationMessage" class="form-control" @bind-Value="donationRequest.DonationMessage" rows="3" />
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label class="form-label">Payment Method</label>
                                 <div id="dropin-container"></div>
                                 <div class="text-danger">@paymentError</div>
                             </div>
-                            
+
                             <div class="mt-4">
                                 <button type="submit" class="btn btn-primary" disabled="@(!isPaymentFormReady || isProcessing)">
                                     @if (isProcessing)
@@ -211,19 +217,21 @@
 @code {
     [Parameter]
     public int? CampaignId { get; set; }
-    
+
     [Parameter]
     public string? ReferralCode { get; set; }
-    
+
     private Campaign? campaign;
     private Profile? referrer;
+    private Organization? organization;
     private string campaignError = "";
     private string referrerError = "";
+    private string organizationError = "";
     private bool isLoading = true;
     private string paymentError = "";
     private bool isProcessing = false;
     private bool isPaymentFormReady = false;
-    
+
     private DonationRequestDto donationRequest = new DonationRequestDto
     {
         DonationAmount = 10.00m,
@@ -240,10 +248,36 @@
     {
         await Task.WhenAll(
             LoadCampaignAsync(),
+            LoadOrganizationAsync(),
             LoadReferrerAsync()
         );
     }
-    
+
+
+    private async Task LoadOrganizationAsync()
+    {
+        try
+        {
+            // Assuming OrganizationService is injected as a dependency, use it as an instance.
+            organization = await OrganizationService.GetByIdAsync(1);
+
+            // If no organization is found, set an error message
+            if (organization == null)
+            {
+                organizationError = "Organization not found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            organizationError = $"Error loading organization: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+
     private async Task LoadCampaignAsync()
     {
         try
@@ -252,7 +286,7 @@
             if (CampaignId.HasValue)
             {
                 campaign = await CampaignService.GetByIdAsync(CampaignId.Value);
-                
+
                 if (campaign == null)
                 {
                     campaign = await CampaignService.GetDefaultCampaignAsync();
@@ -272,13 +306,13 @@
             else
             {
                 campaign = await CampaignService.GetDefaultCampaignAsync();
-                
+
                 if (campaign == null)
                 {
                     campaignError = "No default campaign is available.";
                 }
             }
-            
+
             // Update donation info with campaign details if available
             if (campaign != null)
             {
@@ -294,7 +328,7 @@
             isLoading = false;
         }
     }
-    
+
     private async Task LoadReferrerAsync()
     {
         try
@@ -303,7 +337,7 @@
             {
                 // Try to find a profile with this referral code
                 referrer = await ProfileService.GetByReferralCodeAsync(ReferralCode);
-                
+
                 if (referrer == null)
                 {
                     referrerError = $"Referral code '{ReferralCode}' not found.";
@@ -320,7 +354,7 @@
             referrerError = $"Error loading referrer information: {ex.Message}";
         }
     }
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -328,14 +362,14 @@
             await InitializeBraintreeAsync();
         }
     }
-    
+
     private async Task InitializeBraintreeAsync()
     {
         try
         {
             var braintreeService = PaymentServiceFactory.GetPaymentService("Braintree");
             var tokenResponse = await braintreeService.GenerateClientTokenAsync(new ClientTokenRequest());
-            
+
             if (tokenResponse.Success)
             {
                 await JSRuntime.InvokeVoidAsync("initializeBraintree", tokenResponse.ClientToken, DotNetObjectReference.Create(this));
@@ -350,29 +384,29 @@
             paymentError = $"Failed to initialize payment form: {ex.Message}";
         }
     }
-    
+
     [JSInvokable]
     public void SetPaymentFormReady(bool isReady)
     {
         isPaymentFormReady = isReady;
         StateHasChanged();
     }
-    
+
     [JSInvokable]
     public void SetPaymentNonce(string nonce, string deviceData)
     {
         donationRequest.PaymentToken = nonce;
     }
-    
+
     private decimal CalculateTransactionFee()
     {
         // Using standard fee calculation from DonationService
         const decimal transactionFeePercentage = 0.0219m; // 2.19%
         const decimal transactionFeeFlat = 0.29m; // $0.29 flat fee
-        
+
         return Math.Round(donationRequest.DonationAmount * transactionFeePercentage + transactionFeeFlat, 2);
     }
-    
+
     private async Task HandleValidSubmit()
     {
         if (string.IsNullOrEmpty(donationRequest.PaymentToken))
@@ -380,10 +414,10 @@
             paymentError = "Please complete the payment form";
             return;
         }
-        
+
         isProcessing = true;
         paymentError = "";
-        
+
         try
         {
             // Set the transaction fee based on calculation
@@ -391,16 +425,16 @@
             {
                 donationRequest.PayTransactionFeeAmount = CalculateTransactionFee();
                 donationRequest.DonationAmount += donationRequest.PayTransactionFeeAmount; // Adding the fee to the donation amount
-            }            
-            
+            }
+
             // Process the donation
             var donation = await DonationService.ProcessDonationAsync(donationRequest);
-            
+
             if (donation != null && donation.Id > 0)
             {
-                await JSRuntime.InvokeVoidAsync("showAlert", "Donation Successful", 
+                await JSRuntime.InvokeVoidAsync("showAlert", "Donation Successful",
                     $"Thank you for your donation of {donation.DonationAmount.ToString("C2")}!");
-                
+
                 // Reset form
                 donationRequest = new DonationRequestDto
                 {
@@ -413,7 +447,7 @@
                         PostalCode = string.Empty
                     }
                 };
-                
+
                 // Reset Braintree form
                 await JSRuntime.InvokeVoidAsync("resetBraintree");
             }
