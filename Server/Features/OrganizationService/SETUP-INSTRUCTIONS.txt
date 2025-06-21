@@ -1,0 +1,17 @@
+using Microsoft.EntityFrameworkCore;
+using msih.p4g.Server.Common.Data;
+using msih.p4g.Server.Features.OrganizationService;
+
+// Add organization service configuration to Program.cs
+// Add this line after other service registrations
+
+// Register OrganizationRepository and OrganizationService for DI
+builder.Services.AddOrganizationService();
+
+// Add Organization DbContext to the ApplicationDbContext
+// Add this in ApplicationDbContext.cs partial class methods:
+partial void ConfigureOrganizationModel(ModelBuilder modelBuilder);
+
+// Update ApplicationDbContext.cs to call ConfigureOrganizationModel:
+// Add this to the OnModelCreating method:
+ConfigureOrganizationModel(modelBuilder);

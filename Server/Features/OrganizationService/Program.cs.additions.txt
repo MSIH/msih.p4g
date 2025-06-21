@@ -1,0 +1,9 @@
+// Register OrganizationRepository and OrganizationService for DI
+// Add this code to Program.cs after the other service registrations
+builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+
+// Then add this to the database migration section
+// After the line: await settingsInitializer.InitializeSettingsAsync();
+var organizationSeeder = scope.ServiceProvider.GetRequiredService<OrganizationDataSeeder>();
+await organizationSeeder.SeedAsync();

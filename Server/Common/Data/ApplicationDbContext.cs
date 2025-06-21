@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -5,10 +11,6 @@
  */
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Models;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Common.Data
 {
@@ -27,7 +29,7 @@ namespace msih.p4g.Server.Common.Data
             ApplyAuditInfo();
             return base.SaveChanges();
         }
-        
+
         /// <summary>
         /// Override SaveChangesAsync to handle auditable entities
         /// </summary>
@@ -36,7 +38,7 @@ namespace msih.p4g.Server.Common.Data
             ApplyAuditInfo();
             return base.SaveChangesAsync(cancellationToken);
         }
-        
+
         /// <summary>
         /// Applies audit information to IAuditableEntity entities before saving
         /// </summary>
@@ -44,7 +46,7 @@ namespace msih.p4g.Server.Common.Data
         {
             var entries = ChangeTracker
                 .Entries()
-                .Where(e => e.Entity is IAuditableEntity && 
+                .Where(e => e.Entity is IAuditableEntity &&
                            (e.State == EntityState.Added || e.State == EntityState.Modified));
 
             foreach (var entityEntry in entries)
@@ -60,7 +62,7 @@ namespace msih.p4g.Server.Common.Data
                     // Don't modify CreatedOn and CreatedBy for existing entities
                     entityEntry.Property("CreatedOn").IsModified = false;
                     entityEntry.Property("CreatedBy").IsModified = false;
-                    
+
                     // Set ModifiedOn automatically
                     ((IAuditableEntity)entityEntry.Entity).ModifiedOn = DateTime.UtcNow;
                 }
@@ -70,7 +72,7 @@ namespace msih.p4g.Server.Common.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
+
             // Each feature's OnModelCreating is implemented in its own partial class
             ConfigureCampaignModel(modelBuilder);
             ConfigureDonorModel(modelBuilder);
@@ -82,8 +84,10 @@ namespace msih.p4g.Server.Common.Data
             ConfigureSettingsModel(modelBuilder);
             ConfigureMessageModel(modelBuilder);
             ConfigureFundraiserModel(modelBuilder);
+            ConfigureOrganizationModel(modelBuilder);
+
         }
-        
+
         // These methods are implemented in each feature's partial class
         partial void ConfigureCampaignModel(ModelBuilder modelBuilder);
         partial void ConfigureDonorModel(ModelBuilder modelBuilder);
@@ -95,5 +99,6 @@ namespace msih.p4g.Server.Common.Data
         partial void ConfigureSettingsModel(ModelBuilder modelBuilder);
         partial void ConfigureMessageModel(ModelBuilder modelBuilder);
         partial void ConfigureFundraiserModel(ModelBuilder modelBuilder);
+        partial void ConfigureOrganizationModel(ModelBuilder modelBuilder);
     }
 }

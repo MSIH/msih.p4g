@@ -1,0 +1,132 @@
+@using msih.p4g.Server.Features.OrganizationService.Models
+
+<div class="card">
+    @if (IsLoading)
+    {
+        <div class="card-body">
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="card-body">
+            <div class="alert alert-danger">@ErrorMessage</div>
+        </div>
+    }
+    else if (Organization != null)
+    {
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">@Organization.LegalName</h5>
+            <span class="badge @(Organization.IsActive ? "bg-success" : "bg-danger")">
+                @(Organization.IsActive ? "Active" : "Inactive")
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <dl class="row">
+                        <dt class="col-sm-4">Tax ID (EIN):</dt>
+                        <dd class="col-sm-8">@Organization.TaxId</dd>
+                        
+                        <dt class="col-sm-4">Organization Type:</dt>
+                        <dd class="col-sm-8">@Organization.OrganizationType</dd>
+                        
+                        <dt class="col-sm-4">Email:</dt>
+                        <dd class="col-sm-8"><a href="mailto:@Organization.EmailAddress">@Organization.EmailAddress</a></dd>
+                        
+                        <dt class="col-sm-4">Phone:</dt>
+                        <dd class="col-sm-8">@Organization.Phone</dd>
+                        
+                        <dt class="col-sm-4">Website:</dt>
+                        <dd class="col-sm-8">
+                            @if (!string.IsNullOrEmpty(Organization.Website))
+                            {
+                                <button class="btn btn-link p-0" @onclick="OpenWebsite">@Organization.Website</button>
+                            }
+                        </dd>
+                        
+                        <dt class="col-sm-4">Address:</dt>
+                        <dd class="col-sm-8">
+                            @Organization.Street<br />
+                            @Organization.City, @Organization.State @Organization.PostalCode<br />
+                            @Organization.Country
+                        </dd>
+                    </dl>
+                </div>
+                <div class="col-md-4 text-center">
+                    @if (!string.IsNullOrEmpty(Organization.LogoUrl))
+                    {
+                        <img src="@Organization.LogoUrl" alt="@Organization.LegalName logo" class="img-fluid" style="max-height: 150px;" />
+                    }
+                </div>
+            </div>
+            
+            @if (!string.IsNullOrEmpty(Organization.ShortDescription))
+            {
+                <div class="row mt-3">
+                    <div class="col">
+                        <h6>Short Description:</h6>
+                        <p>@Organization.ShortDescription</p>
+                    </div>
+                </div>
+            }
+            
+            @if (!string.IsNullOrEmpty(Organization.MissionStatement))
+            {
+                <div class="row mt-3">
+                    <div class="col">
+                        <h6>Mission Statement:</h6>
+                        <p>@Organization.MissionStatement</p>
+                    </div>
+                </div>
+            }
+            
+            <div class="row mt-3">
+                <div class="col">
+                    <h6>Campaigns (@Organization.Campaigns.Count):</h6>
+                    @if (Organization.Campaigns.Any())
+                    {
+                        <ul class="list-group">
+                            @foreach (var campaign in Organization.Campaigns.Take(5))
+                            {
+                                <li class="list-group-item">@campaign.Title</li>
+                            }
+                            @if (Organization.Campaigns.Count > 5)
+                            {
+                                <li class="list-group-item">...and @(Organization.Campaigns.Count - 5) more</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>No campaigns found.</p>
+                    }
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col">
+                    <h6>Donations (@Organization.Donations.Count):</h6>
+                    @if (Organization.Donations.Any())
+                    {
+                        <p>Total donations: @Organization.Donations.Sum(d => d.DonationAmount).ToString("C")</p>
+                    }
+                    else
+                    {
+                        <p>No donations found.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <p>No organization found.</p>
+        </div>
+    }
+</div>
