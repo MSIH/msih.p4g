@@ -87,6 +87,26 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
     <div class=""tax-info"">
         <p>Please retain this receipt for your tax records.</p>
     </div>
+
+    <div class=""social-sharing"" style=""margin-top: 25px; padding: 15px; background-color: #f0f4f8; border-radius: 8px;"">
+        <p><strong>Support our mission - share with your network!</strong></p>
+        <p>Your donation makes a difference. Help us reach more people by sharing our donation page:</p>
+        <p><a href=""{{donationUrl}}"">{{donationUrl}}</a></p>
+        
+        <div style=""margin-top: 15px;"">
+            <p><strong>Sample messages to share:</strong></p>
+            <div style=""background-color: #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;"">
+                <p><strong>Email:</strong> I just donated to {{organizationName}} to support {{projectShortDescription}}. Join me in making a difference: {{donationUrl}}</p>
+            </div>
+            <div style=""background-color: #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;"">
+                <p><strong>Facebook:</strong> Proud to support {{organizationName}} and their mission to {{organizationMission}}. Every donation counts! {{donationUrl}}</p>
+            </div>
+            <div style=""background-color: #e2e8f0; padding: 10px; border-radius: 4px;"">
+                <p><strong>Twitter:</strong> Just supported {{organizationName}}! They're doing amazing work with {{projectShortDescription}}. Join me! {{donationUrl}} #MakeADifference</p>
+            </div>
+        </div>
+    </div>
+    
 </body>
 </html>",
                         IsHtml = true,
@@ -134,6 +154,14 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
     <p>Total Donations: <span class=""highlight"">{{totalDonationCount}}</span></p>
     <p>Total Amount Raised: <span class=""highlight"">{{totalAmountRaised}}</span></p>
     <p>Average Donation: {{averageDonationAmount}}</p>
+
+    <p>Thank you for your continued efforts in raising funds for this important cause!</p>
+    
+    <p>Share your unique referral link to get more supporters: <a href=""{{referralUrl}}"">{{referralUrl}}</a></p>
+
+    <p>You can view all your campaign details and donations from <a href=""{{fundraiserUrl}}"">{{fundraiserUrl}}</a></p>
+    
+    <p>Best regards,<br>The {{organizationName}} Team</p>
     
     <h2>Recent Donations</h2>
     <table>
@@ -149,11 +177,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
         </tbody>
     </table>
     
-    <p>Thank you for your continued efforts in raising funds for this important cause!</p>
-    
-    <p>Share your unique referral link to get more supporters: <a href=""{{referralUrl}}"">{{referralUrl}}</a></p>
-    
-    <p>Best regards,<br>The {{organizationName}} Team</p>
+
 </body>
 </html>",
                         IsHtml = true,
@@ -233,6 +257,25 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
     </div>
     
     <p>Thank you again for your generous support.</p>
+
+     <div class=""social-sharing"" style=""margin-top: 25px; padding: 15px; background-color: #f0f4f8; border-radius: 8px;"">
+        <p><strong>Support our mission - share with your network!</strong></p>
+        <p>Your donation makes a difference. Help us reach more people by sharing our donation page:</p>
+        <p><a href=""{{donationUrl}}"">{{donationUrl}}</a></p>
+        
+        <div style=""margin-top: 15px;"">
+            <p><strong>Sample messages to share:</strong></p>
+            <div style=""background-color: #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;"">
+                <p><strong>Email:</strong> I just donated to {{organizationName}} to support {{projectShortDescription}}. Join me in making a difference: {{donationUrl}}</p>
+            </div>
+            <div style=""background-color: #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;"">
+                <p><strong>Facebook:</strong> Proud to support {{organizationName}} and their mission to {{organizationMission}}. Every donation counts! {{donationUrl}}</p>
+            </div>
+            <div style=""background-color: #e2e8f0; padding: 10px; border-radius: 4px;"">
+                <p><strong>Twitter:</strong> Just supported {{organizationName}}! They're doing amazing work with {{projectShortDescription}}. Join me! {{donationUrl}} #MakeADifference</p>
+            </div>
+        </div>
+    </div>
     
     <p>Sincerely,</p>
     <p>{{organizationLeaderName}}<br>{{organizationLeaderTitle}}<br>{{organizationName}}</p>
@@ -299,17 +342,30 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
     
     <p>This brings your total raised to {{totalRaised}}. Keep up the great work!</p>
     
-    <p>You can view all your campaign details and donations by logging into your account.</p>
+    <p>You can view all your campaign details and donations from <a href=""{{fundraiserUrl}}"">{{fundraiserUrl}}</a></p>
     
-    <p>Share your unique referral link to get more supporters: <a href=""{{referralUrl}}"">{{referralUrl}}</a></p>   
+    <p>Share our donation page to get more supporters: <a href=""{{donationUrl}}"">{{donationUrl}}</a></p>   
     
     <p>Thank you for your continued efforts in raising funds for this important cause!</p>
+    
+    <div class=""social-sharing"" style=""margin-top: 20px; padding: 15px; background-color: #f0f4f8; border-radius: 8px;"">
+        <p><strong>Sample messages to share with your network:</strong></p>
+        <div style=""background-color: #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;"">
+            <p><strong>Email:</strong> I'm fundraising for {{organizationName}} and just received a new donation! Join in supporting this important cause: {{donationUrl}}</p>
+        </div>
+        <div style=""background-color: #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;"">
+            <p><strong>Facebook:</strong> Excited to share that my fundraising campaign for {{organizationName}} just received another donation! We're at {{totalRaised}} and counting. Support our campaign: {{donationUrl}}</p>
+        </div>
+        <div style=""background-color: #e2e8f0; padding: 10px; border-radius: 4px;"">
+            <p><strong>Twitter:</strong> Every donation counts! My {{campaignName}} campaign just hit {{totalRaised}}. Help us reach our goal: {{donationUrl}} #Fundraising</p>
+        </div>
+    </div>
     
     <p>Best regards,<br>The {{organizationName}} Team</p>
 </body>
 </html>",
                         IsHtml = true,
-                        AvailablePlaceholders = "fundraiserName, campaignName, donorFirstName, donationAmount, donationDate, donorMessage, totalRaised, organizationName,  referralUrl",
+                        AvailablePlaceholders = "fundraiserName, campaignName, donorFirstName, donationAmount, donationDate, donorMessage, totalRaised, organizationName, donationUrl",
                         IsDefault = true,
                         IsActive = true,
                         CreatedOn = DateTime.UtcNow,
@@ -323,9 +379,9 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                         Description = "SMS sent to donors after they make a donation",
                         MessageType = "SMS",
                         Category = "ThankYou",
-                        TemplateContent = "Thank you {{donorFirstName}} for your generous donation of {{donationAmountInDollars}} to {{organizationName}}! Your contribution helps us {{organizationMission}}. A tax receipt has been emailed to you.",
+                        TemplateContent = "Thank you {{donorFirstName}} for your generous donation of {{donationAmountInDollars}} to {{organizationName}}! Your contribution helps us {{organizationMission}}. A tax receipt has been emailed to you. Support our cause by sharing our donation page: {{donationUrl}}",
                         IsHtml = false,
-                        AvailablePlaceholders = "donorFirstName, donationAmountInDollars, organizationName, organizationMission",
+                        AvailablePlaceholders = "donorFirstName, donationAmountInDollars, organizationName, organizationMission, donationUrl",
                         IsDefault = true,
                         IsActive = true,
                         CreatedOn = DateTime.UtcNow,
@@ -338,9 +394,9 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                         Description = "SMS notification to fundraisers when a donation is made",
                         MessageType = "SMS",
                         Category = "DonationNotification",
-                        TemplateContent = "Great news {{fundraiserName}}! {{donorFirstName}} just donated {{donationAmount}} to your {{campaignName}} campaign. Your total raised is now {{totalRaised}}! Share your campaign with referral link {{referralUrl}}",
+                        TemplateContent = "Great news {{fundraiserName}}! {{donorFirstName}} just donated {{donationAmount}} to your {{campaignName}} campaign. Your total raised is now {{totalRaised}}! Share our donation page to get more supporters: {{donationUrl}}",
                         IsHtml = false,
-                        AvailablePlaceholders = "fundraiserName, donorFirstName, donationAmount, campaignName, totalRaised, referralUrl",
+                        AvailablePlaceholders = "fundraiserName, donorFirstName, donationAmount, campaignName, totalRaised, donationUrl",
                         IsDefault = true,
                         IsActive = true,
                         CreatedOn = DateTime.UtcNow,
