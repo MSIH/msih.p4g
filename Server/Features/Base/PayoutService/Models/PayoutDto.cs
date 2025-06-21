@@ -4,9 +4,9 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using System;
-using msih.p4g.Shared.Models;
+using msih.p4g.Shared.Models.PayoutService;
 
-namespace msih.p4g.Shared.Models.PayoutService
+namespace msih.p4g.Server.Features.Base.PayoutService.Models
 {
     /// <summary>
     /// DTO for Payout information

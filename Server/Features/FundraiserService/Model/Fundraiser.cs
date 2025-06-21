@@ -18,6 +18,10 @@ namespace msih.p4g.Server.Features.FundraiserService.Model
         [MaxLength(200)]
         public string? PayPalAccount { get; set; }
 
+        public AccountType? AccountType { get; set; }
+
+        public AccountForm? AccountForm { get; set; }
+
         /// <summary>
         /// Path or identifier for the document (e.g., PDF, image).
         /// </summary>
@@ -26,5 +30,18 @@ namespace msih.p4g.Server.Features.FundraiserService.Model
 
         public int UserId { get; set; }
         public virtual Base.UserService.Models.User User { get; set; }
+    }
+
+    public enum AccountType
+    {
+        PayPal,
+        Venmo
+    }
+
+    public enum AccountForm
+    {
+        Email,
+        Mobile,
+        Handle
     }
 }
