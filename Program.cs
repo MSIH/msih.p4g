@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -17,6 +11,7 @@ using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.EmailService.Services;
+using msih.p4g.Server.Features.Base.MessageService.Data;
 using msih.p4g.Server.Features.Base.MessageService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
@@ -88,6 +83,9 @@ builder.Services.AddSmsServices(builder.Configuration, builder.Environment);
 // Register Message Service (for both email and SMS) and related dependencies
 builder.Services.AddMessageServices(builder.Configuration, builder.Environment);
 
+// Register the message template data seeder
+builder.Services.AddScoped<MessageTemplateDataSeeder>();
+
 // Register Payment Service and related dependencies
 builder.Services.AddPaymentServices(builder.Configuration, builder.Environment);
 
@@ -150,8 +148,13 @@ using (var scope = app.Services.CreateScope())
     var settingsInitializer = scope.ServiceProvider.GetRequiredService<SettingsInitializer>();
     await settingsInitializer.InitializeSettingsAsync();
 
+    // Seed organization data
     var organizationSeeder = scope.ServiceProvider.GetRequiredService<OrganizationDataSeeder>();
     await organizationSeeder.SeedAsync();
+    
+    // Seed message templates
+    var messageTemplateSeeder = scope.ServiceProvider.GetRequiredService<MessageTemplateDataSeeder>();
+    await messageTemplateSeeder.SeedAsync();
 }
 
 // Configure the HTTP request pipeline.
