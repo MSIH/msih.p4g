@@ -11,11 +11,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Repositories;
-using msih.p4g.Server.Features.Base.PaypalPayoutService.Interfaces;
-using msih.p4g.Server.Features.Base.PaypalPayoutService.Models;
+using msih.p4g.Server.Features.Base.PayoutService.Interfaces;
+using msih.p4g.Server.Features.Base.PayoutService.Models;
 using msih.p4g.Shared.Models.PayoutService;
 
-namespace msih.p4g.Server.Features.Base.PaypalPayoutService.Repositories
+namespace msih.p4g.Server.Features.Base.PayoutService.Repositories
 {
     /// <summary>
     /// Repository implementation for PayPal Payouts
