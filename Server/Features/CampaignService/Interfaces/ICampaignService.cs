@@ -62,5 +62,12 @@ namespace msih.p4g.Server.Features.CampaignService.Interfaces
         /// <param name="campaignId">The ID of the campaign to set as default</param>
         /// <returns>True if the operation was successful, false otherwise</returns>
         Task<bool> SetDefaultCampaignAsync(int campaignId);
+
+        /// <summary>
+        /// Gets all campaigns for a specific organization
+        /// </summary>
+        /// <param name="organizationId">The organization ID</param>
+        /// <returns>List of campaigns for the specified organization</returns>
+        Task<IEnumerable<Campaign>> GetCampaignsByOrganizationIdAsync(int organizationId);
     }
 }

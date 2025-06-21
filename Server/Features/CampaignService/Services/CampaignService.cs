@@ -76,5 +76,11 @@ namespace msih.p4g.Server.Features.CampaignService.Services
         {
             return await _repository.SetActiveStatusAsync(id, isActive, modifiedBy);
         }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<Campaign>> GetCampaignsByOrganizationIdAsync(int organizationId)
+        {
+            return await _repository.GetCampaignsByOrganizationIdAsync(organizationId);
+        }
     }
 }
