@@ -53,9 +53,13 @@ builder.Services.AddRazorPages(options =>
 });
 //builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddControllers(); // Add this line to enable API controllers
 
 // Register the AuthService as a scoped service so it's created per user session
 builder.Services.AddScoped<AuthService>();
+
+// Add client-side services
+builder.Services.AddScoped<Client.Features.Base.Payment.Services.PayPalPayoutService>();
 
 // Add Entity Framework with the unified ApplicationDbContext
 DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
@@ -171,6 +175,7 @@ app.UseRouting();
 
 app.MapRazorPages();
 app.MapBlazorHub();
+app.MapControllers(); // Add this line to map API controllers
 // Update the fallback route to point to your new location
 app.MapFallbackToPage("/_Host");
 
