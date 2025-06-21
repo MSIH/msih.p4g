@@ -55,7 +55,17 @@ function createDropInUI(clientToken) {
           amount: Number(parseFloat(document.getElementById('amount')?.value || '0').toFixed(2))
         }
       }
-    },
+    },// Try disabling postal code requirement
+    card: {
+      overrides: {
+        fields: {
+          postalCode: {
+            minlength: 5, // Set minimum length
+            maxlength: 10  // Set maximum length
+          }
+        }
+      }
+    }
   }, (err, instance) => {
     if (err) {
       console.error('Error creating Drop-in:', err);
