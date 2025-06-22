@@ -1,19 +1,20 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.PayoutService.Interfaces;
 using msih.p4g.Server.Features.Base.PayoutService.Models;
-using msih.p4g.Shared.Models.PayoutService;
+using msih.p4g.Server.Features.Base.PayoutService.Models.PayPal;
 
 namespace msih.p4g.Server.Features.Base.PayoutService.Repositories
 {
@@ -38,12 +39,12 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Repositories
         /// <summary>
         /// Get Payouts by status
         /// </summary>
-        public async Task<List<Payout>> GetPayoutsByStatusAsync(PayoutStatus status, int page = 1, int pageSize = 20)
+        public async Task<List<Payout>> GetPayoutsByStatusAsync(PayPalTransactionStatusEnum status, int page = 1, int pageSize = 20)
         {
             try
             {
                 return await _dbSet
-                    .Where(p => p.Status == status)
+                    .Where(p => p.TransactionStatus == status)
                     .OrderByDescending(p => p.CreatedAt)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
@@ -108,7 +109,7 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Repositories
                     .Select(id => int.TryParse(id, out int result) ? result : -1)
                     .Where(id => id != -1)
                     .ToList();
-                
+
                 return await _dbSet
                     .Where(p => ids.Contains(p.Id))
                     .ToListAsync();

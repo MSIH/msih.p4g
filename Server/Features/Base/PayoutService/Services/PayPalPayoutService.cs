@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -13,6 +7,7 @@ using Microsoft.Extensions.Options;
 using msih.p4g.Server.Features.Base.PayoutService.Interfaces;
 using msih.p4g.Server.Features.Base.PayoutService.Models;
 using msih.p4g.Server.Features.Base.PayoutService.Models.Configuration;
+using msih.p4g.Server.Features.Base.PayoutService.Models.PayPal;
 using msih.p4g.Shared.Models.PayoutService;
 using System.Text;
 using System.Text.Json;
@@ -90,63 +85,6 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
         }
 
         /// <summary>
-        /// Process a pending Payout through PayPal
-        /// </summary>
-        //public async Task<Payout> ProcessPayoutAsync(string payoutId)
-        //{
-        //    // Convert string ID to int
-        //    if (!int.TryParse(payoutId, out int id))
-        //    {
-        //        throw new ArgumentException($"Invalid payout ID format: {payoutId}", nameof(payoutId));
-        //    }
-
-        //    var payout = await _payoutRepository.GetByIdAsync(id);
-
-        //    if (payout == null)
-        //        throw new KeyNotFoundException($"Payout with ID {payoutId} not found");
-
-        //    if (payout.BatchStatus != Models.PayPal.PayPalBatchStatusEnum.PENDING)
-        //        throw new InvalidOperationException($"Payout {payoutId} has already been processed with status {payout.BatchStatus}");
-
-        //    try
-        //    {
-        //        _logger.LogInformation("Processing Payout {PayoutId} for fundraiser {FundraiserId}", payout.Id, payout.FundraiserId);
-
-        //        // Update Payout status to processing
-        //        payout.Status = PayoutStatus.Processing;
-        //        await _payoutRepository.UpdateAsync(payout);
-
-        //        // Ensure we have a valid access token
-        //        await EnsureAccessTokenAsync();
-
-        //        // Create the payout
-        //        var payoutResponse = await CreatePayPalPayoutAsync(payout);
-
-        //        // Update Payout with PayPal response data
-        //        payout.PaypalBatchId = payoutResponse.BatchId;
-        //        payout.Status = PayoutStatus.Completed;
-        //        payout.ProcessedAt = DateTime.UtcNow;
-
-        //        await _payoutRepository.UpdateAsync(payout);
-
-        //        _logger.LogInformation("Successfully processed Payout {PayoutId} with PayPal batch ID {BatchId}", payout.Id, payout.PaypalBatchId);
-
-        //        return payout;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error processing Payout {PayoutId}: {ErrorMessage}", payout.Id, ex.Message);
-
-        //        // Update Payout with error
-        //        payout.Status = PayoutStatus.Failed;
-        //        payout.ErrorMessage = ex.Message;
-        //        await _payoutRepository.UpdateAsync(payout);
-
-        //        return payout;
-        //    }
-        //}
-
-        /// <summary>
         /// Process multiple Payouts as a batch payout
         /// </summary>
         public async Task<List<Payout>> ProcessBatchPayoutsAsync(List<string> payoutIds)
@@ -157,18 +95,23 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
             if (payoutIds.Count > _maxBatchSize)
                 throw new ArgumentException($"Batch size exceeds maximum allowed ({_maxBatchSize})", nameof(payoutIds));
 
+            // 1. Get Payouts from list of Ids
             var payouts = await _payoutRepository.GetPayoutsByIdsAsync(payoutIds);
 
             if (payouts.Count == 0)
                 throw new KeyNotFoundException("None of the specified Payout IDs were found");
 
-            // Validate all Payouts
-            var invalidPayouts = payouts.Where(p => p.BatchStatus != Models.PayPal.PayPalBatchStatusEnum.PENDING).ToList();
+            // 2. Validate all Payouts do not have senderid, should be null - todo getpayouts method should return payment with null batch status
+            var invalidPayouts = payouts.Where(p => p.PaypalSenderId != null).ToList();
             if (invalidPayouts.Any())
             {
                 var invalidIds = string.Join(", ", invalidPayouts.Select(p => p.Id));
                 throw new InvalidOperationException($"Some Payouts have already been processed: {invalidIds}");
             }
+
+            // Declare payoutResponse outside the try-catch blocks so it's available in both
+            PayPalPayoutResponse payoutResponse = null;
+
 
             try
             {
@@ -177,16 +120,17 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
                 // Ensure we have a valid access token
                 await EnsureAccessTokenAsync();
 
-                // Create the batch payout
-                var payoutResponse = await CreatePayPalBatchPayoutAsync(payouts);
+                // 3. Create the batch payout
+                payoutResponse = await CreatePayPalBatchPayoutAsync(payouts);
 
-                // Update Payouts with PayPal response data
+                // 4. Update Payouts with PayPal response data
                 foreach (var payout in payouts)
                 {
                     payout.PaypalBatchId = payoutResponse.BatchId;
                     payout.ProcessedAt = DateTime.UtcNow;
-                    payout.BatchStatus = Models.PayPal.PayPalBatchStatusEnum.PENDING; // TODO let get this from the response
+                    payout.BatchStatus = payoutResponse.BatchStatus; // Updated to get this from the response
                     payout.IsBatchPayout = true;
+                    payout.PaypalSenderId = payoutResponse.SenderBatchId; // Use the sender batch ID for tracking
                 }
 
                 await _payoutRepository.UpdateRangeAsync(payouts);
@@ -200,14 +144,19 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
             {
                 _logger.LogError(ex, "Error processing batch of {Count} Payouts: {ErrorMessage}", payouts.Count, ex.Message);
 
-                //// Update Payouts with error
-                //foreach (var payout in payouts)
-                //{
-                //    payout.Status = PayoutStatus.Failed;
-                //    payout.ErrorMessage = ex.Message;
-                //}
+                // Update Payouts with error
+                foreach (var payout in payouts)
+                {
 
-                //await _payoutRepository.UpdateRangeAsync(payouts);
+                    payout.ErrorMessage = ex.Message;
+                    payout.PaypalBatchId = payoutResponse.BatchId;
+                    payout.ProcessedAt = DateTime.UtcNow;
+                    payout.BatchStatus = PayPalBatchStatusEnum.ERROR; // Updated to get this from the response
+                    payout.IsBatchPayout = true;
+                    payout.PaypalSenderId = payoutResponse.SenderBatchId; // Use the sender batch ID for tracking
+                }
+
+                await _payoutRepository.UpdateRangeAsync(payouts);
 
                 return payouts;
             }
@@ -243,7 +192,7 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
         /// <summary>
         /// Get all Payouts with a specific status
         /// </summary>
-        public async Task<List<Payout>> GetPayoutsByStatusAsync(PayoutStatus status, int page = 1, int pageSize = 20)
+        public async Task<List<Payout>> GetPayoutsByStatusAsync(PayPalTransactionStatusEnum status, int page = 1, int pageSize = 20)
         {
             return await _payoutRepository.GetPayoutsByStatusAsync(status, page, pageSize);
         }
@@ -282,12 +231,92 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
                     throw new Exception($"PayPal API error: {response.StatusCode} - {content}");
                 }
 
-                var batchResponse = JsonSerializer.Deserialize<JsonElement>(content);
-                return ParseBatchStatus(batchResponse);
+                // https://developer.paypal.com/docs/api/payments.payouts-batch/v1/#definition-payout_batch
+                var batchResponse = JsonSerializer.Deserialize<PayPalBatchStatus>(content);
+                return batchResponse;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting batch status for {BatchId}: {ErrorMessage}", batchId, ex.Message);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Updates the status of all payouts in a batch by querying PayPal for the current status
+        /// </summary>
+        /// <param name="batchId">The PayPal batch ID</param>
+        /// <returns>List of updated Payout records</returns>
+        public async Task<List<Payout>> UpdateBatchPayoutStatusAsync(string batchId)
+        {
+            if (string.IsNullOrEmpty(batchId))
+                throw new ArgumentException("Batch ID is required", nameof(batchId));
+
+            try
+            {
+                _logger.LogInformation("Updating status for all payouts in batch {BatchId}", batchId);
+
+                // 1. Get the current batch status from PayPal
+                PayPalBatchStatus batchStatus = await GetBatchPayoutStatusAsync(batchId);
+
+                // 2. Get all payouts that belong to this batch
+                var payouts = await _payoutRepository.GetPayoutsByBatchIdAsync(batchId);
+
+                if (!payouts.Any())
+                {
+                    _logger.LogWarning("No payouts found for batch {BatchId}", batchId);
+                    return new List<Payout>();
+                }
+
+                _logger.LogInformation("Found {Count} payouts for batch {BatchId}", payouts.Count, batchId);
+
+                // 3. Update each payout with the current status
+                foreach (var payout in payouts)
+                {
+                    // Update the batch-level status
+                    payout.BatchStatus = Enum.Parse<PayPalBatchStatusEnum>(batchStatus.BatchHeader.BatchStatus);
+
+                    // Find the matching item in the batch details (if available)
+                    var payoutItem = batchStatus.Items?.FirstOrDefault(i => i.SenderItemId == payout.Id.ToString());
+                    if (payoutItem != null)
+                    {
+                        // Update item-level details
+                        payout.PaypalPayoutItemId = payoutItem.PayoutItemId;
+                        payout.PaypalTransactionId = payoutItem.TransactionId;
+                        payout.TransactionStatus = Enum.Parse<PayPalTransactionStatusEnum>(payoutItem.TransactionStatus);
+
+                        // If the item has an error, update the error message
+                        if (payoutItem.Errors != null)
+                        {
+                            payout.ErrorMessage = payoutItem.Errors.Message;
+                        }
+
+                        if (payoutItem.PayoutItemFee != null)
+                        {
+                            // Convert fee value to decimal for storage in the Payout entity
+                            if (decimal.TryParse(payoutItem.PayoutItemFee.Value, out decimal feeAmount))
+                            {
+                                payout.FeeAmount = feeAmount;
+                            }
+                            else
+                            {
+                                _logger.LogWarning("Could not parse fee amount '{FeeValue}' for payout {PayoutId}", 
+                                    payoutItem.PayoutItemFee.Value, payout.Id);
+                            }
+                        }
+                    }                    
+                }
+
+                // 4. Save updates to the database
+                await _payoutRepository.UpdateRangeAsync(payouts);
+
+                _logger.LogInformation("Successfully updated status for {Count} payouts in batch {BatchId}", payouts.Count, batchId);
+
+                return payouts;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating batch status for {BatchId}: {ErrorMessage}", batchId, ex.Message);
                 throw;
             }
         }
@@ -382,7 +411,9 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
 
             return new PayPalPayoutResponse
             {
-                BatchId = payoutResponse.GetProperty("batch_header").GetProperty("payout_batch_id").GetString()
+                BatchId = payoutResponse.GetProperty("batch_header").GetProperty("payout_batch_id").GetString(),
+                BatchStatus = Enum.Parse<PayPalBatchStatusEnum>(payoutResponse.GetProperty("batch_header").GetProperty("batch_status").GetString()),
+                SenderBatchId = senderBatchId
             };
         }
 
@@ -393,8 +424,9 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
         {
             _logger.LogInformation("Creating PayPal batch payout for {Count} Payouts", payouts.Count);
 
-            // Create unique sender_batch_id for this batch payout
-            var senderBatchId = $"MSIH_BATCH_PAYOUT_{Guid.NewGuid().ToString("N")}";
+            // Create unique sender_batch_id for this batch payout from datestamp yyyymmddMMss        
+
+            var senderBatchId = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
 
             var items = payouts.Select(payout => CreatePayoutItem(payout)).ToArray();
 
@@ -433,7 +465,9 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
 
             return new PayPalPayoutResponse
             {
-                BatchId = payoutResponse.GetProperty("batch_header").GetProperty("payout_batch_id").GetString()
+                BatchId = payoutResponse.GetProperty("batch_header").GetProperty("payout_batch_id").GetString(),
+                BatchStatus = Enum.Parse<PayPalBatchStatusEnum>(payoutResponse.GetProperty("batch_header").GetProperty("batch_status").GetString()),
+                SenderBatchId = senderBatchId
             };
         }
 
@@ -487,71 +521,13 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
         }
 
         /// <summary>
-        /// Parse the batch status response from PayPal
-        /// </summary>
-        private PayPalBatchStatus ParseBatchStatus(JsonElement batchResponse)
-        {
-            var batchHeader = batchResponse.GetProperty("batch_header");
-            var batchStatus = new PayPalBatchStatus
-            {
-                BatchId = batchHeader.GetProperty("payout_batch_id").GetString(),
-                Status = batchHeader.GetProperty("batch_status").GetString(),
-                TotalAmount = decimal.Parse(batchHeader.GetProperty("amount").GetProperty("value").GetString()),
-                Currency = batchHeader.GetProperty("amount").GetProperty("currency").GetString()
-            };
-
-            if (batchHeader.TryGetProperty("time_created", out var timeCreated))
-            {
-                batchStatus.BatchCreationTime = DateTime.Parse(timeCreated.GetString());
-            }
-
-            if (batchHeader.TryGetProperty("time_completed", out var timeCompleted))
-            {
-                batchStatus.BatchCompletionTime = DateTime.Parse(timeCompleted.GetString());
-            }
-
-            // Parse item details if available
-            if (batchResponse.TryGetProperty("items", out var items))
-            {
-                foreach (var item in items.EnumerateArray())
-                {
-                    var payoutItem = new PayPalBatchItemStatus
-                    {
-                        PayoutItemId = item.GetProperty("payout_item_id").GetString(),
-                        Status = item.GetProperty("transaction_status").GetString(),
-                        SenderItemId = item.GetProperty("payout_item").GetProperty("sender_item_id").GetString(),
-                        Amount = decimal.Parse(item.GetProperty("payout_item").GetProperty("amount").GetProperty("value").GetString()),
-                        Currency = item.GetProperty("payout_item").GetProperty("amount").GetProperty("currency").GetString(),
-                        ReceiverEmail = item.GetProperty("payout_item").GetProperty("receiver").GetString()
-                    };
-
-                    if (item.TryGetProperty("transaction_id", out var transactionId))
-                    {
-                        payoutItem.TransactionId = transactionId.GetString();
-                    }
-
-                    if (item.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Object)
-                    {
-                        payoutItem.ErrorMessage = errors.GetProperty("message").GetString();
-                    }
-
-                    batchStatus.Items.Add(payoutItem);
-                }
-            }
-
-            // Calculate success and error counts
-            batchStatus.SuccessCount = batchStatus.Items.Count(i => i.Status == "SUCCESS");
-            batchStatus.ErrorCount = batchStatus.Items.Count(i => i.Status == "FAILED" || i.Status == "BLOCKED" || i.Status == "RETURNED");
-
-            return batchStatus;
-        }
-
-        /// <summary>
         /// Simple response class for PayPal payout response
         /// </summary>
         private class PayPalPayoutResponse
         {
             public string BatchId { get; set; }
+            public PayPalBatchStatusEnum BatchStatus { get; set; }
+            public string SenderBatchId { get; set; }
         }
 
         #endregion
