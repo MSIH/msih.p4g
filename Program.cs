@@ -47,6 +47,7 @@ using msih.p4g.Server.Features.OrganizationService.Data;
 using msih.p4g.Server.Features.OrganizationService.Interfaces;
 using msih.p4g.Server.Features.OrganizationService.Repositories;
 using msih.p4g.Server.Features.OrganizationService.Services;
+using msih.p4g.Server.Features.W9Form.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

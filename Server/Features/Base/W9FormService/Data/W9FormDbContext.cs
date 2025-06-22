@@ -1,10 +1,15 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using Microsoft.EntityFrameworkCore;
-using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Features.Base.W9FormService.Models;
 
 namespace msih.p4g.Server.Common.Data
@@ -32,14 +37,14 @@ namespace msih.p4g.Server.Common.Data
                 entity.Property(e => e.Address).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.CityStateZip).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.AccountNumbers).HasMaxLength(200);
-                
+
                 // Sensitive data fields
                 entity.Property(e => e.SocialSecurityNumber).HasMaxLength(500);
                 entity.Property(e => e.EmployerIdentificationNumber).HasMaxLength(500);
-                
+
                 entity.Property(e => e.SignatureVerification).HasMaxLength(500);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
-                
+
                 // Relationships
                 entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => e.FundraiserId);

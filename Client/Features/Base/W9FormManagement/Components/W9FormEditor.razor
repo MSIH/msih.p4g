@@ -58,6 +58,7 @@
                         </div>
                     </div>
 
+                    <!-- Replace the tax classification radio buttons section with this corrected code -->
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <label class="form-label">Federal tax classification <span class="text-danger">*</span></label>
@@ -66,42 +67,42 @@
                                     <input class="form-check-input" type="radio" id="taxIndividual"
                                            name="taxClassification" value="Individual/sole proprietor"
                                            checked="@(FormData.FederalTaxClassification == "Individual/sole proprietor")"
-                                           @onchange="(e => UpdateTaxClassification("Individual /sole proprietor")) />
+                                           @onchange='(e => UpdateTaxClassification("Individual/sole proprietor]"))' />
                                     <label class="form-check-label" for="taxIndividual">Individual/sole proprietor</label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" id="taxCCorporation"
                                            name="taxClassification" value="C Corporation"
                                            checked="@(FormData.FederalTaxClassification == "C Corporation")"
-                                           @onchange="(e => UpdateTaxClassification(" C Corporation"))" />
+                                           @onchange='(e => UpdateTaxClassification("C Corporation"))' />
                                     <label class="form-check-label" for="taxCCorporation">C Corporation</label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" id="taxSCorporation"
                                            name="taxClassification" value="S Corporation"
                                            checked="@(FormData.FederalTaxClassification == "S Corporation")"
-                                           @onchange="(e => UpdateTaxClassification(" S Corporation"))" />
+                                           @onchange='(e => UpdateTaxClassification("S Corporation"))' />
                                     <label class="form-check-label" for="taxSCorporation">S Corporation</label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" id="taxPartnership"
                                            name="taxClassification" value="Partnership"
                                            checked="@(FormData.FederalTaxClassification == "Partnership")"
-                                           @onchange="(e => UpdateTaxClassification(" Partnership"))" />
+                                           @onchange='(e => UpdateTaxClassification("Partnership"))' />
                                     <label class="form-check-label" for="taxPartnership">Partnership</label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" id="taxTrustEstate"
                                            name="taxClassification" value="Trust/estate"
                                            checked="@(FormData.FederalTaxClassification == "Trust/estate")"
-                                           @onchange="(e => UpdateTaxClassification(" Trust /estate"))" />
+                                           @onchange='(e => UpdateTaxClassification("Trust/estate"))' />
                                     <label class="form-check-label" for="taxTrustEstate">Trust/estate</label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" id="taxLLC"
                                            name="taxClassification" value="LLC"
                                            checked="@(FormData.FederalTaxClassification == "LLC")"
-                                           @onchange="(e => UpdateTaxClassification(" LLC"))" />
+                                           @onchange='(e => UpdateTaxClassification("LLC"))' />
                                     <label class="form-check-label" for="taxLLC">Limited Liability Company</label>
 
                                     @if (FormData.FederalTaxClassification == "LLC")
@@ -113,21 +114,21 @@
                                                     <input class="form-check-input" type="radio" id="llcC"
                                                            name="llcClassification" value="C"
                                                            checked="@(FormData.LLCTaxClassification == "C")"
-                                                           @onchange="(e => FormData.LLCTaxClassification =" C")" />
+                                                           @onchange='(e => FormData.LLCTaxClassification = "C")' />
                                                     <label class="form-check-label" for="llcC">C</label>
                                                 </div>
                                                 <div class="form-check">
                                                     <input class="form-check-input" type="radio" id="llcS"
                                                            name="llcClassification" value="S"
                                                            checked="@(FormData.LLCTaxClassification == "S")"
-                                                           @onchange="(e => FormData.LLCTaxClassification =" S")" />
+                                                           @onchange='(e => FormData.LLCTaxClassification = "S")' />
                                                     <label class="form-check-label" for="llcS">S</label>
                                                 </div>
                                                 <div class="form-check">
                                                     <input class="form-check-input" type="radio" id="llcP"
                                                            name="llcClassification" value="P"
                                                            checked="@(FormData.LLCTaxClassification == "P")"
-                                                           @onchange="(e => FormData.LLCTaxClassification =" P")" />
+                                                           @onchange='(e => FormData.LLCTaxClassification = "P")' />
                                                     <label class="form-check-label" for="llcP">P</label>
                                                 </div>
                                             </div>
@@ -141,7 +142,7 @@
                                     <input class="form-check-input" type="radio" id="taxOther"
                                            name="taxClassification" value="Other"
                                            checked="@(FormData.FederalTaxClassification == "Other")"
-                                           @onchange="(e => UpdateTaxClassification(" Other"))" />
+                                           @onchange='(e => UpdateTaxClassification("Other"))' />
                                     <label class="form-check-label" for="taxOther">Other</label>
 
                                     @if (FormData.FederalTaxClassification == "Other")
@@ -155,7 +156,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="exemptCode" class="form-label">Exempt payee code (if any)</label>
