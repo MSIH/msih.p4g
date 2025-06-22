@@ -15,6 +15,6 @@ namespace msih.p4g.Server.Features.Base.UserService.Interfaces
         // Add any additional custom methods for User here
 
         Task<User?> GetByEmailAsync(string email, bool includeProfile = false, bool includeAddress = false, bool includeDonor = false, bool includeFundraiser = false);
-
+        Task<User?> GetUserByTokenAsync(string emailToken);
     }
 }

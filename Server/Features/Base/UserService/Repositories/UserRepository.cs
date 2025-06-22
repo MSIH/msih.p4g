@@ -47,5 +47,12 @@ namespace msih.p4g.Server.Features.Base.UserService.Repositories
 
             return await query.FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
         }
+
+
+        public async Task<User?> GetUserByTokenAsync(string token)
+        {
+            var user = await _dbSet.FirstOrDefaultAsync(u => u.EmailVerificationToken == token && u.IsActive);
+            return user;
+        }
     }
 }

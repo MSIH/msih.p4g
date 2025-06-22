@@ -74,5 +74,27 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         {
             await _userRepository.SetActiveStatusAsync(userId, isActive, modifiedBy);
         }
+
+        // look up user by emailtoken
+        public async Task<User?> GetUserByTokenAsync(string emailToken)
+        {
+            if (string.IsNullOrWhiteSpace(emailToken))
+                return null;
+            return await _userRepository.GetUserByTokenAsync(emailToken);
+        }
+
+        public async Task<bool> LogOutUserByIdAsync(int userId)
+        {
+            if (userId <= 0)
+                return false;
+
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            user.EmailConfirmed = false;
+            await _userRepository.UpdateAsync(user, "System");
+            return true;
+        }
     }
 }

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
 
+
 namespace msih.p4g.Client.Features.Authentication.Services
 {
     public class AuthService
@@ -69,32 +70,18 @@ namespace msih.p4g.Client.Features.Authentication.Services
                     return (false, "User not found. Please register a new account.");
                 }
 
-                // Check if email is verified
-                if (!user.EmailConfirmed)
+                // Send verification email
+                var emailSent = await _emailVerificationService.SendVerificationEmailAsync(user);
+                if (emailSent)
                 {
-                    // Send verification email
-                    var emailSent = await _emailVerificationService.SendVerificationEmailAsync(user);
-                    if (emailSent)
-                    {
-                        return (true, "Email verification link sent. Please check your inbox and verify your email before logging in.");
-                    }
-                    else
-                    {
-                        return (false, "Failed to send verification email. Please try again later.");
-                    }
-                }
-
-                // If email is already verified, generate and send login link
-                var loginLinkSent = await SendLoginLinkAsync(user);
-
-                if (loginLinkSent)
-                {
-                    return (true, "Login link sent to your email. Please check your inbox.");
+                    return (true, "Email verification link sent. Please check your inbox and verify your email before logging in.");
                 }
                 else
                 {
-                    return (false, "Failed to send login link. Please try again later.");
+                    return (false, "Failed to send verification email. Please try again later.");
                 }
+
+
             }
             catch (Exception ex)
             {
@@ -103,21 +90,6 @@ namespace msih.p4g.Client.Features.Authentication.Services
             }
         }
 
-        // Send a login link via email
-        private async Task<bool> SendLoginLinkAsync(User user)
-        {
-            // In a real implementation, this would generate a secure token and send a login link
-            // For the MVP, we'll simulate this by directly logging in the user
-
-            // In a full implementation, you would:
-            // 1. Generate a secure token
-            // 2. Store it in a short-lived cache or database
-            // 3. Send an email with a link containing the token
-            // 4. Verify the token when the user clicks the link
-
-            // For now, we'll just return true to simulate sending the login link
-            return true;
-        }
 
         // Login with existing user object (after email verification)
         public async Task LoginAsync(User user)
@@ -132,8 +104,10 @@ namespace msih.p4g.Client.Features.Authentication.Services
 
         public async Task LogoutAsync()
         {
+            var emailSent = await _userService.LogOutUserByIdAsync(_currentUser.Id);
             await _localStorage.DeleteAsync("userId");
             _currentUser = null;
+
             NotifyAuthStateChanged();
         }
 

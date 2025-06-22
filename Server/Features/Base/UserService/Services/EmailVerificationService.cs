@@ -13,7 +13,7 @@ using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
-using msih.p4g.Server.Features.Base.UserService.Utilities;
+using Server.Common.Utilities;
 
 namespace msih.p4g.Server.Features.Base.UserService.Services
 {
@@ -25,9 +25,9 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<EmailVerificationService> _logger;
 
-        private const string EMAIL_VERIFICATION_TEMPLATE = "EmailVerification";
-        private const string EMAIL_VERIFICATION_SECRET_KEY = "EmailVerification:SecretKey";
-        private const string BASE_URL_SETTING = "BaseUrl";
+        private const string _eMAIL_VERIFICATION_TEMPLATE = "EmailVerification";
+        private const string _eMAIL_VERIFICATION_SECRET_KEY = "EmailVerification:SecretKey";
+        private const string _bASE_URL_SETTING = "BaseUrl";
 
         public EmailVerificationService(
             IUserService userService,
@@ -50,18 +50,18 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                 if (user == null)
                     throw new ArgumentNullException(nameof(user));
 
-                // Get the secret key for token generation
-                var secretKey = await _settingsService.GetValueAsync(EMAIL_VERIFICATION_SECRET_KEY)
-                    ?? _configuration["EmailVerification:SecretKey"]
-                    ?? throw new InvalidOperationException("Email verification secret key not configured");
-
                 // Get the base URL for the verification link
-                var baseUrl = await _settingsService.GetValueAsync(BASE_URL_SETTING)
+                var baseUrl = await _settingsService.GetValueAsync(_bASE_URL_SETTING)
                     ?? _configuration["BaseUrl"]
                     ?? "https://localhost:7265";
 
+                // based ont he current time get number in format of yyyyMMddHHmmss
+                var currentTime = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+                // covert to int
+                var currentTimeInt = int.Parse(currentTime);
+
                 // Generate a verification token
-                var token = user.GenerateEmailVerificationToken(secretKey);
+                var token = RandomStringGenerator.Generate(user.Id + currentTimeInt, 8, RandomStringGenerator.CharSet.All);
 
                 // Create the verification link
                 var verificationLink = $"{baseUrl}/verify-email?token={token}";
@@ -75,7 +75,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
 
                 // Send the verification email using the template
                 var emailSent = await _messageService.SendTemplatedMessageByNameAsync(
-                    EMAIL_VERIFICATION_TEMPLATE,
+                    _eMAIL_VERIFICATION_TEMPLATE,
                     user.Email,
                     placeholders,
                     subject: "Verify Your Email Address"
@@ -84,6 +84,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                 if (emailSent)
                 {
                     // Update the last verification sent timestamp
+                    user.EmailVerificationToken = token;
                     user.LastEmailVerificationSentAt = DateTime.UtcNow;
                     await _userService.UpdateAsync(user);
                     return true;
@@ -102,32 +103,31 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         {
             try
             {
-                // Get the secret key for token validation
-                var secretKey = await _settingsService.GetValueAsync(EMAIL_VERIFICATION_SECRET_KEY)
-                    ?? _configuration["EmailVerification:SecretKey"]
-                    ?? throw new InvalidOperationException("Email verification secret key not configured");
 
-                // Validate the token
-                var (isValid, userId) = UserExtensions.ValidateEmailVerificationToken(token, secretKey);
-
-                if (isValid && userId.HasValue)
+                // get user by token
+                var user = await _userService.GetUserByTokenAsync(token);
+                if (user == null)
                 {
-                    // Get the user
-                    var user = await _userService.GetByIdAsync(userId.Value);
-
-                    if (user != null)
-                    {
-                        // Mark the email as verified
-                        user.EmailConfirmed = true;
-                        user.EmailConfirmedAt = DateTime.UtcNow;
-
-                        // Update the user
-                        await _userService.UpdateAsync(user);
-                        return true;
-                    }
+                    _logger.LogWarning("No user found for email verification token: {Token}", token);
+                    return false;
                 }
 
-                return false;
+                // is less than 15 minutes old
+                if (user.LastEmailVerificationSentAt.HasValue &&
+                    (DateTime.UtcNow - user.LastEmailVerificationSentAt.Value).TotalMinutes > 15)
+                {
+                    _logger.LogWarning("Email verification token for user {UserId} is expired", user.Id);
+                    return false;
+                }
+
+                // Mark the email as verified
+                user.EmailConfirmed = true;
+                user.EmailConfirmedAt = DateTime.UtcNow;
+
+                // Update the user
+                await _userService.UpdateAsync(user);
+                return true;
+
             }
             catch (Exception ex)
             {

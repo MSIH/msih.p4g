@@ -10,7 +10,7 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Features.Base.UserService.Models;
-using System.Security.Cryptography;
+using Server.Common.Utilities;
 using System.Text;
 
 namespace msih.p4g.Server.Features.Base.UserService.Utilities
@@ -24,23 +24,19 @@ namespace msih.p4g.Server.Features.Base.UserService.Utilities
         /// <param name="secret">Secret key for token generation</param>
         /// <param name="expiryHours">Hours until token expiry</param>
         /// <returns>A verification token</returns>
-        public static string GenerateEmailVerificationToken(this User user, string secret, int expiryHours = 24)
+        public static string
+            GenerateEmailVerificationToken(this User user)
         {
-            // Create a unique value using user data and expiry time
-            var expiry = DateTime.UtcNow.AddHours(expiryHours);
-            var dataToHash = $"{user.Id}:{user.Email}:{expiry.Ticks}:{secret}";
 
-            // Create a hash of the data
-            using (var sha256 = SHA256.Create())
-            {
-                var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(dataToHash));
-                var hashString = Convert.ToBase64String(hashBytes);
+            // based ont he current time get number in format of yyyyMMddHHmmss
+            var currentTime = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+            // covert to int
+            var currentTimeInt = int.Parse(currentTime);
 
-                // Combine token data (userId, expiry, hash) in a URL-safe format
-                return Convert.ToBase64String(
-                    Encoding.UTF8.GetBytes($"{user.Id}:{expiry.Ticks}:{hashString}")
-                ).Replace('/', '_').Replace('+', '-').Replace('=', '~');
-            }
+            // Generate a verification token
+            var token = RandomStringGenerator.Generate(user.Id + currentTimeInt, 8, RandomStringGenerator.CharSet.All);
+
+            return token;
         }
 
         /// <summary>
@@ -49,10 +45,12 @@ namespace msih.p4g.Server.Features.Base.UserService.Utilities
         /// <param name="token">The token to validate</param>
         /// <param name="secret">Secret key for token validation</param>
         /// <returns>User ID if valid, null if invalid</returns>
-        public static (bool isValid, int? userId) ValidateEmailVerificationToken(string token, string secret)
+        public static (bool isValid, int? userId) ValidateEmailVerificationToken(string token)
         {
             try
             {
+
+
                 // Decode the token
                 var decodedToken = Encoding.UTF8.GetString(
                     Convert.FromBase64String(token.Replace('_', '/').Replace('-', '+').Replace('~', '='))

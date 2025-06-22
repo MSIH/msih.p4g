@@ -1,5 +1,9 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 using msih.p4g.Server.Features.Base.UserService.Models;
 
 namespace msih.p4g.Server.Features.Base.UserService.Interfaces
@@ -52,5 +56,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Interfaces
         /// <param name="isActive">The new active status</param>
         /// <param name="modifiedBy">Who changed the status</param>
         Task SetActiveAsync(int userId, bool isActive, string modifiedBy = "System");
+        Task<User?> GetUserByTokenAsync(string token);
+        Task<bool> LogOutUserByIdAsync(int userId);
     }
 }

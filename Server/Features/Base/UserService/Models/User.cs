@@ -41,6 +41,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Models
         public bool EmailConfirmed { get; set; } = false;
         public DateTime? EmailConfirmedAt { get; set; }
         public DateTime? LastEmailVerificationSentAt { get; set; }
+        public string? EmailVerificationToken { get; set; }
 
     }
 }
