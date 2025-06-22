@@ -1,10 +1,15 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Features.Base.W9FormService.Interfaces;
 using msih.p4g.Server.Features.Base.W9FormService.Models;
@@ -329,22 +334,22 @@ namespace msih.p4g.Server.Features.Base.W9FormService.Services
             entity.Address = dto.Address;
             entity.CityStateZip = dto.CityStateZip;
             entity.AccountNumbers = dto.AccountNumbers;
-            
+
             // Only update SSN or EIN if they have changed
-            if (!string.IsNullOrEmpty(dto.SocialSecurityNumber) && 
+            if (!string.IsNullOrEmpty(dto.SocialSecurityNumber) &&
                 dto.SocialSecurityNumber != SsnUtility.FormatSsnForDisplay(entity.SocialSecurityNumber))
             {
-                entity.SocialSecurityNumber = SsnUtility.EncryptSsn(dto.SocialSecurityNumber);
+                entity.SocialSecurityNumber = SsnUtility.EncryptEin(dto.SocialSecurityNumber);
                 entity.EmployerIdentificationNumber = null; // Clear EIN if SSN is provided
             }
-            
-            if (!string.IsNullOrEmpty(dto.EmployerIdentificationNumber) && 
+
+            if (!string.IsNullOrEmpty(dto.EmployerIdentificationNumber) &&
                 dto.EmployerIdentificationNumber != SsnUtility.FormatEinForDisplay(entity.EmployerIdentificationNumber))
             {
                 entity.EmployerIdentificationNumber = SsnUtility.EncryptEin(dto.EmployerIdentificationNumber);
                 entity.SocialSecurityNumber = null; // Clear SSN if EIN is provided
             }
-            
+
             entity.SignedDate = dto.SignedDate;
             entity.SignatureVerification = dto.SignatureVerification;
             entity.FundraiserId = dto.FundraiserId;
