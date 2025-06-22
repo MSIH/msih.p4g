@@ -158,6 +158,11 @@ builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 // Register W9FormService for DI
 builder.Services.AddScoped<IW9FormService, W9FormService>();
 
+// Add to the existing service registrations in Program.cs
+builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
+
+// Update appsettings.json with the secret key
+
 builder.Services.AddScoped<OrganizationDataSeeder>();
 
 var app = builder.Build();
