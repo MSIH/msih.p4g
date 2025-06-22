@@ -1,4 +1,5 @@
 @namespace msih.p4g.Client.Features.Base.W9FormManagement.Components
+@using msih.p4g.Server.Features.Base.W9FormService.Services
 @using msih.p4g.Shared.W9FormService.Dtos
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Security.Claims
@@ -8,6 +9,7 @@
 @inject AuthService AuthService
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
+@inject W9FormService W9FormService
 
 <div class="w-9-form-container">
     @if (IsLoading)
@@ -365,39 +367,25 @@
             }
 
             // Try to load existing form for this user/fundraiser
+            W9FormDto existingForm = null;
+            
             if (FundraiserId.HasValue && FundraiserId.Value > 0)
             {
-                var response = await Http.GetAsync($"api/w9form/fundraiser/{FundraiserId.Value}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var existingForm = await response.Content.ReadFromJsonAsync<W9FormDto>();
-                    if (existingForm != null)
-                    {
-                        FormData = existingForm;
-
-                        // Set other UI state based on form data
-                        isCertificationChecked = FormData.Status == "Submitted";
-                        isPartnershipTrustSelected = !string.IsNullOrEmpty(FormData.PartnershipTrustInfo);
-                        return;
-                    }
-                }
+                existingForm = await W9FormService.GetByFundraiserIdAsync(FundraiserId.Value);
             }
             else
             {
-                var response = await Http.GetAsync($"api/w9form/user/{UserId}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var existingForm = await response.Content.ReadFromJsonAsync<W9FormDto>();
-                    if (existingForm != null)
-                    {
-                        FormData = existingForm;
+                existingForm = await W9FormService.GetByUserIdAsync(UserId);
+            }
 
-                        // Set other UI state based on form data
-                        isCertificationChecked = FormData.Status == "Submitted";
-                        isPartnershipTrustSelected = !string.IsNullOrEmpty(FormData.PartnershipTrustInfo);
-                        return;
-                    }
-                }
+            if (existingForm != null)
+            {
+                FormData = existingForm;
+
+                // Set other UI state based on form data
+                isCertificationChecked = FormData.Status == "Submitted";
+                isPartnershipTrustSelected = !string.IsNullOrEmpty(FormData.PartnershipTrustInfo);
+                return;
             }
 
             // If we didn't get an existing form, initialize a new one
@@ -548,37 +536,28 @@
                 FormData.PartnershipTrustInfo = null;
             }
 
-            // Call the API to save the form
-            var response = await Http.PostAsJsonAsync("api/w9form", FormData);
-
-            if (response.IsSuccessStatusCode)
+            // Save the form using the W9FormService
+            var savedForm = await W9FormService.SaveW9FormAsync(FormData);
+            
+            if (savedForm != null)
             {
-                var savedForm = await response.Content.ReadFromJsonAsync<W9FormDto>();
-                if (savedForm != null)
+                FormData = savedForm;
+
+                // Notify parent component
+                await OnFormSubmitted.InvokeAsync(FormData);
+
+                if (status == "Submitted")
                 {
-                    FormData = savedForm;
-
-                    // Notify parent component
-                    await OnFormSubmitted.InvokeAsync(FormData);
-
-                    if (status == "Submitted")
-                    {
-                        await JSRuntime.InvokeVoidAsync("alert", "W-9 form submitted successfully!");
-                    }
-                    else
-                    {
-                        await JSRuntime.InvokeVoidAsync("alert", "W-9 form saved as draft.");
-                    }
+                    await JSRuntime.InvokeVoidAsync("alert", "W-9 form submitted successfully!");
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "W-9 form saved as draft.");
                 }
             }
             else
             {
-                Error = $"Failed to save form: {response.ReasonPhrase}";
-                var errorContent = await response.Content.ReadAsStringAsync();
-                if (!string.IsNullOrEmpty(errorContent))
-                {
-                    Error += $" - {errorContent}";
-                }
+                Error = "Failed to save form. Please try again.";
             }
         }
         catch (Exception ex)
