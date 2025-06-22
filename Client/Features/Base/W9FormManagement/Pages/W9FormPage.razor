@@ -1,4 +1,6 @@
-@namespace msih.p4g.Client.Features.Base.W9FormManagement.Components
+@page "/w9form"
+@page "/w9form/{FundraiserId:int?}"
+
 @using msih.p4g.Server.Features.Base.W9FormService.Services
 @using msih.p4g.Shared.W9FormService.Dtos
 @using Microsoft.AspNetCore.Components.Forms
@@ -335,8 +337,6 @@
 @code {
     [Parameter] public int UserId { get; set; }
     [Parameter] public int? FundraiserId { get; set; }
-    [Parameter] public EventCallback<W9FormDto> OnFormSubmitted { get; set; }
-    [Parameter] public EventCallback OnCancel { get; set; }
 
     private W9FormDto FormData = new W9FormDto();
     private bool IsLoading = true;
