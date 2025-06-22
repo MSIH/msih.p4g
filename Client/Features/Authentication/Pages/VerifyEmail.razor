@@ -118,7 +118,7 @@
             if (redirectCountdown <= 0)  
             {  
                 redirectTimer?.Dispose();  
-                await InvokeAsync(() => NavigationManager.NavigateTo("/"));  
+                await InvokeAsync(() => NavigationManager.NavigateTo("/profile"));
             }  
         }, null, 0, 1000);  
     }

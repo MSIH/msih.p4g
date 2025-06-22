@@ -27,7 +27,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
 
         private const string _eMAIL_VERIFICATION_TEMPLATE = "Email Verification";
         private const string _eMAIL_VERIFICATION_SECRET_KEY = "EmailVerification:SecretKey";
-        private const string _bASE_URL_SETTING = "BaseUrl";
+        private const string _bASE_URL_SETTING = "EmailVerification:BaseUrl";
 
         public EmailVerificationService(
             IUserService userService,
