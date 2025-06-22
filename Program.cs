@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -15,6 +21,7 @@ using msih.p4g.Server.Features.Base.MessageService.Data;
 using msih.p4g.Server.Features.Base.MessageService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
+using msih.p4g.Server.Features.Base.PayoutService.Extensions;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Repositories;
 using msih.p4g.Server.Features.Base.ProfileService.Services;
@@ -53,6 +60,7 @@ builder.Services.AddRazorPages(options =>
 });
 //builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddControllers(); // Add this line to enable API controllers
 
 // Register the AuthService as a scoped service so it's created per user session
 builder.Services.AddScoped<AuthService>();
@@ -88,6 +96,9 @@ builder.Services.AddScoped<MessageTemplateDataSeeder>();
 
 // Register Payment Service and related dependencies
 builder.Services.AddPaymentServices(builder.Configuration, builder.Environment);
+
+// Register Payout Service and related dependencies
+builder.Services.AddPayoutServices(builder.Configuration, builder.Environment);
 
 // Register IPaymentService using a factory (resolves dependency injection error)
 builder.Services.AddScoped<IPaymentService>(provider =>
@@ -151,7 +162,7 @@ using (var scope = app.Services.CreateScope())
     // Seed organization data
     var organizationSeeder = scope.ServiceProvider.GetRequiredService<OrganizationDataSeeder>();
     await organizationSeeder.SeedAsync();
-    
+
     // Seed message templates
     var messageTemplateSeeder = scope.ServiceProvider.GetRequiredService<MessageTemplateDataSeeder>();
     await messageTemplateSeeder.SeedAsync();
@@ -171,6 +182,7 @@ app.UseRouting();
 
 app.MapRazorPages();
 app.MapBlazorHub();
+app.MapControllers(); // Add this line to map API controllers
 // Update the fallback route to point to your new location
 app.MapFallbackToPage("/_Host");
 
