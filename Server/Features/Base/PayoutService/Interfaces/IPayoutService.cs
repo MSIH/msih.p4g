@@ -1,12 +1,16 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
-using msih.p4g.Shared.Models.PayoutService;
 using msih.p4g.Server.Features.Base.PayoutService.Models;
-using System.Threading.Tasks;
-using System.Collections.Generic;
+using msih.p4g.Shared.Models.PayoutService;
 
 namespace msih.p4g.Server.Features.Base.PayoutService.Interfaces
 {
@@ -23,15 +27,18 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Interfaces
         /// <param name="amount">The amount to pay</param>
         /// <param name="currency">The currency code (default: USD)</param>
         /// <param name="notes">Optional notes for the Payout</param>
+        /// <param name="accountType">The type of account for the payout (default: PayPal)</param>
+        /// <param name="accountFormat">The format of the account identifier (default: Email)</param>
         /// <returns>The created Payout record</returns>
-        Task<Payout> CreatePayoutAsync(string fundraiserId, string paypalEmail, decimal amount, string currency = "USD", string? notes = null);
+        Task<Payout> CreatePayoutAsync(
+            string fundraiserId,
+            string paypalEmail,
+            decimal amount,
+            string currency = "USD",
+            string? notes = null,
+            msih.p4g.Server.Features.FundraiserService.Model.AccountType accountType = msih.p4g.Server.Features.FundraiserService.Model.AccountType.PayPal,
+            msih.p4g.Server.Features.FundraiserService.Model.AccountFormat accountFormat = msih.p4g.Server.Features.FundraiserService.Model.AccountFormat.Email);
 
-        /// <summary>
-        /// Process a pending Payout through PayPal
-        /// </summary>
-        /// <param name="payoutId">The ID of the Payout to process</param>
-        /// <returns>The updated Payout record</returns>
-        Task<Payout> ProcessPayoutAsync(string payoutId);
 
         /// <summary>
         /// Process multiple Payouts as a batch payout
@@ -64,7 +71,7 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Interfaces
         /// <param name="pageSize">Number of items per page</param>
         /// <returns>List of Payout records</returns>
         Task<List<Payout>> GetPayoutsByStatusAsync(PayoutStatus status, int page = 1, int pageSize = 20);
-        
+
         /// <summary>
         /// Get the status of a PayPal batch payout
         /// </summary>

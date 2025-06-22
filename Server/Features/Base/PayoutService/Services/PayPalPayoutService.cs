@@ -51,7 +51,14 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
         /// <summary>
         /// Create a new Payout record
         /// </summary>
-        public async Task<Payout> CreatePayoutAsync(string fundraiserId, string paypalEmail, decimal amount, string currency = "USD", string? notes = null)
+        public async Task<Payout> CreatePayoutAsync(
+            string fundraiserId,
+            string paypalEmail,
+            decimal amount,
+            string currency = "USD",
+            string? notes = null,
+            msih.p4g.Server.Features.FundraiserService.Model.AccountType accountType = msih.p4g.Server.Features.FundraiserService.Model.AccountType.PayPal,
+            msih.p4g.Server.Features.FundraiserService.Model.AccountFormat accountFormat = msih.p4g.Server.Features.FundraiserService.Model.AccountFormat.Email)
         {
             if (string.IsNullOrEmpty(fundraiserId))
                 throw new ArgumentException("Fundraiser ID is required", nameof(fundraiserId));
@@ -66,11 +73,10 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
             {
                 FundraiserId = fundraiserId,
                 PayoutAccount = paypalEmail,
-                PayoutAccountType = msih.p4g.Server.Features.FundraiserService.Model.AccountType.PayPal,
-                PayoutAccountFormat = msih.p4g.Server.Features.FundraiserService.Model.AccountFormat.Email,
+                PayoutAccountType = accountType,
+                PayoutAccountFormat = accountFormat,
                 Amount = amount,
                 Currency = currency,
-                Status = PayoutStatus.Pending,
                 ErrorMessage = null,
                 CreatedBy = "System",
                 IsBatchPayout = false
@@ -86,59 +92,59 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
         /// <summary>
         /// Process a pending Payout through PayPal
         /// </summary>
-        public async Task<Payout> ProcessPayoutAsync(string payoutId)
-        {
-            // Convert string ID to int
-            if (!int.TryParse(payoutId, out int id))
-            {
-                throw new ArgumentException($"Invalid payout ID format: {payoutId}", nameof(payoutId));
-            }
+        //public async Task<Payout> ProcessPayoutAsync(string payoutId)
+        //{
+        //    // Convert string ID to int
+        //    if (!int.TryParse(payoutId, out int id))
+        //    {
+        //        throw new ArgumentException($"Invalid payout ID format: {payoutId}", nameof(payoutId));
+        //    }
 
-            var payout = await _payoutRepository.GetByIdAsync(id);
+        //    var payout = await _payoutRepository.GetByIdAsync(id);
 
-            if (payout == null)
-                throw new KeyNotFoundException($"Payout with ID {payoutId} not found");
+        //    if (payout == null)
+        //        throw new KeyNotFoundException($"Payout with ID {payoutId} not found");
 
-            if (payout.Status != PayoutStatus.Pending)
-                throw new InvalidOperationException($"Payout {payoutId} has already been processed with status {payout.Status}");
+        //    if (payout.BatchStatus != Models.PayPal.PayPalBatchStatusEnum.PENDING)
+        //        throw new InvalidOperationException($"Payout {payoutId} has already been processed with status {payout.BatchStatus}");
 
-            try
-            {
-                _logger.LogInformation("Processing Payout {PayoutId} for fundraiser {FundraiserId}", payout.Id, payout.FundraiserId);
+        //    try
+        //    {
+        //        _logger.LogInformation("Processing Payout {PayoutId} for fundraiser {FundraiserId}", payout.Id, payout.FundraiserId);
 
-                // Update Payout status to processing
-                payout.Status = PayoutStatus.Processing;
-                await _payoutRepository.UpdateAsync(payout);
+        //        // Update Payout status to processing
+        //        payout.Status = PayoutStatus.Processing;
+        //        await _payoutRepository.UpdateAsync(payout);
 
-                // Ensure we have a valid access token
-                await EnsureAccessTokenAsync();
+        //        // Ensure we have a valid access token
+        //        await EnsureAccessTokenAsync();
 
-                // Create the payout
-                var payoutResponse = await CreatePayPalPayoutAsync(payout);
+        //        // Create the payout
+        //        var payoutResponse = await CreatePayPalPayoutAsync(payout);
 
-                // Update Payout with PayPal response data
-                payout.PaypalBatchId = payoutResponse.BatchId;
-                payout.Status = PayoutStatus.Completed;
-                payout.ProcessedAt = DateTime.UtcNow;
+        //        // Update Payout with PayPal response data
+        //        payout.PaypalBatchId = payoutResponse.BatchId;
+        //        payout.Status = PayoutStatus.Completed;
+        //        payout.ProcessedAt = DateTime.UtcNow;
 
-                await _payoutRepository.UpdateAsync(payout);
+        //        await _payoutRepository.UpdateAsync(payout);
 
-                _logger.LogInformation("Successfully processed Payout {PayoutId} with PayPal batch ID {BatchId}", payout.Id, payout.PaypalBatchId);
+        //        _logger.LogInformation("Successfully processed Payout {PayoutId} with PayPal batch ID {BatchId}", payout.Id, payout.PaypalBatchId);
 
-                return payout;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing Payout {PayoutId}: {ErrorMessage}", payout.Id, ex.Message);
+        //        return payout;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error processing Payout {PayoutId}: {ErrorMessage}", payout.Id, ex.Message);
 
-                // Update Payout with error
-                payout.Status = PayoutStatus.Failed;
-                payout.ErrorMessage = ex.Message;
-                await _payoutRepository.UpdateAsync(payout);
+        //        // Update Payout with error
+        //        payout.Status = PayoutStatus.Failed;
+        //        payout.ErrorMessage = ex.Message;
+        //        await _payoutRepository.UpdateAsync(payout);
 
-                return payout;
-            }
-        }
+        //        return payout;
+        //    }
+        //}
 
         /// <summary>
         /// Process multiple Payouts as a batch payout
@@ -157,7 +163,7 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
                 throw new KeyNotFoundException("None of the specified Payout IDs were found");
 
             // Validate all Payouts
-            var invalidPayouts = payouts.Where(p => p.Status != PayoutStatus.Pending).ToList();
+            var invalidPayouts = payouts.Where(p => p.BatchStatus != Models.PayPal.PayPalBatchStatusEnum.PENDING).ToList();
             if (invalidPayouts.Any())
             {
                 var invalidIds = string.Join(", ", invalidPayouts.Select(p => p.Id));
@@ -167,15 +173,6 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
             try
             {
                 _logger.LogInformation("Processing batch of {Count} Payouts", payouts.Count);
-
-                // Update Payout statuses to processing
-                foreach (var payout in payouts)
-                {
-                    payout.Status = PayoutStatus.Processing;
-                    payout.IsBatchPayout = true;
-                }
-
-                await _payoutRepository.UpdateRangeAsync(payouts);
 
                 // Ensure we have a valid access token
                 await EnsureAccessTokenAsync();
@@ -187,8 +184,9 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
                 foreach (var payout in payouts)
                 {
                     payout.PaypalBatchId = payoutResponse.BatchId;
-                    payout.Status = PayoutStatus.Completed;
                     payout.ProcessedAt = DateTime.UtcNow;
+                    payout.BatchStatus = Models.PayPal.PayPalBatchStatusEnum.PENDING; // TODO let get this from the response
+                    payout.IsBatchPayout = true;
                 }
 
                 await _payoutRepository.UpdateRangeAsync(payouts);
@@ -202,14 +200,14 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
             {
                 _logger.LogError(ex, "Error processing batch of {Count} Payouts: {ErrorMessage}", payouts.Count, ex.Message);
 
-                // Update Payouts with error
-                foreach (var payout in payouts)
-                {
-                    payout.Status = PayoutStatus.Failed;
-                    payout.ErrorMessage = ex.Message;
-                }
+                //// Update Payouts with error
+                //foreach (var payout in payouts)
+                //{
+                //    payout.Status = PayoutStatus.Failed;
+                //    payout.ErrorMessage = ex.Message;
+                //}
 
-                await _payoutRepository.UpdateRangeAsync(payouts);
+                //await _payoutRepository.UpdateRangeAsync(payouts);
 
                 return payouts;
             }
@@ -347,6 +345,8 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
             // Create unique sender_batch_id for this payout
             var senderBatchId = $"MSIH_PAYOUT_{Guid.NewGuid().ToString("N")}";
 
+            var payoutItem = CreatePayoutItem(payout);
+
             var payoutRequest = new
             {
                 sender_batch_header = new
@@ -355,21 +355,7 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
                     email_subject = "You have a payout from your fundraising campaign",
                     email_message = "Thank you for your fundraising efforts. This is your payout."
                 },
-                items = new[]
-                {
-                    new
-                    {
-                        recipient_type = "EMAIL",
-                        amount = new
-                        {
-                            value = payout.Amount.ToString("F2"),
-                            currency = payout.Currency
-                        },
-                        note = string.IsNullOrEmpty(payout.Notes) ? "Fundraiser payout" : payout.Notes,
-                        receiver = payout.PayoutAccount,
-                        sender_item_id = payout.Id.ToString()
-                    }
-                }
+                items = new[] { payoutItem }
             };
 
             var request = new HttpRequestMessage
@@ -410,18 +396,7 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
             // Create unique sender_batch_id for this batch payout
             var senderBatchId = $"MSIH_BATCH_PAYOUT_{Guid.NewGuid().ToString("N")}";
 
-            var items = payouts.Select(payout => new
-            {
-                recipient_type = "EMAIL",
-                amount = new
-                {
-                    value = payout.Amount.ToString("F2"),
-                    currency = payout.Currency
-                },
-                note = string.IsNullOrEmpty(payout.Notes) ? "Fundraiser payout" : payout.Notes,
-                receiver = payout.PayoutAccount,
-                sender_item_id = payout.Id.ToString()
-            }).ToArray();
+            var items = payouts.Select(payout => CreatePayoutItem(payout)).ToArray();
 
             var payoutRequest = new
             {
@@ -460,6 +435,55 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
             {
                 BatchId = payoutResponse.GetProperty("batch_header").GetProperty("payout_batch_id").GetString()
             };
+        }
+
+        /// <summary>
+        /// Creates a payout item based on the payout account type and format
+        /// </summary>
+        private object CreatePayoutItem(Payout payout)
+        {
+            var item = new Dictionary<string, object>
+            {
+                ["amount"] = new
+                {
+                    value = payout.Amount.ToString("F2"),
+                    currency = payout.Currency
+                },
+                ["note"] = string.IsNullOrEmpty(payout.Notes) ? "Fundraiser payout" : payout.Notes,
+                ["sender_item_id"] = payout.Id.ToString(),
+                ["receiver"] = payout.PayoutAccount
+            };
+
+            // Set recipient_type based on account format
+            switch (payout.PayoutAccountFormat)
+            {
+                case msih.p4g.Server.Features.FundraiserService.Model.AccountFormat.Mobile:
+                    item["recipient_type"] = "PHONE";
+                    break;
+                case msih.p4g.Server.Features.FundraiserService.Model.AccountFormat.Email:
+                    item["recipient_type"] = "EMAIL";
+                    break;
+                case msih.p4g.Server.Features.FundraiserService.Model.AccountFormat.Handle:
+                    // User handle (or) Username associated with Venmo account
+                    item["recipient_type"] = "USER_HANDLE";
+                    break;
+                default:
+                    item["recipient_type"] = "EMAIL"; // Default to email if not specified
+                    break;
+            }
+
+            // Set wallet type based on account type
+            switch (payout.PayoutAccountType)
+            {
+                case msih.p4g.Server.Features.FundraiserService.Model.AccountType.PayPal:
+                    item["recipient_wallet"] = "PAYPAL";
+                    break;
+                case msih.p4g.Server.Features.FundraiserService.Model.AccountType.Venmo:
+                    item["recipient_wallet"] = "VENMO";
+                    break;
+            }
+
+            return item;
         }
 
         /// <summary>

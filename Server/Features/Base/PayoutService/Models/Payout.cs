@@ -1,11 +1,16 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Common.Models;
-using msih.p4g.Server.Features.FundraiserService.Model;
-using msih.p4g.Shared.Models.PayoutService;
+using msih.p4g.Server.Features.Base.PayoutService.Models.PayPal;
 
 namespace msih.p4g.Server.Features.Base.PayoutService.Models
 {
@@ -38,7 +43,18 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Models
         /// <summary>
         /// The current status of the Payout
         /// </summary>
-        public PayoutStatus Status { get; set; } = PayoutStatus.Pending;
+        public PayPalBatchStatusEnum BatchStatus { get; set; } = PayPalBatchStatusEnum.PENDING;
+
+        /// The current status of the Payout
+        /// </summary>
+        public PayPalTransactionStatusEnum TransactionStatus { get; set; } = PayPalTransactionStatusEnum.PENDING;
+
+        public decimal? FeeAmount { get; set; }
+
+        /// <summary>
+        /// The PayPal batch ID for batch payouts
+        /// </summary>
+        public string? PaypalSenderId { get; set; }
 
         /// <summary>
         /// The PayPal batch ID for batch payouts
