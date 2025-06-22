@@ -44,7 +44,9 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Models.PayPal
         PENDING,
         PROCESSING,
         SUCCESS,
-        CANCELED
+        CANCELED,
+        ERROR
+
     }
 
     public enum PayPalTransactionStatusEnum
@@ -163,6 +165,12 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Models.PayPal
         /// </summary>
         [JsonPropertyName("transaction_id")]
         public string? TransactionId { get; set; }
+
+        /// <summary>
+        /// Item reference ID (typically the payment ID in our system)
+        /// </summary>
+        [JsonPropertyName("sender_item_id")]
+        public string SenderItemId { get; set; } = null!;
     }
 
     /// <summary>

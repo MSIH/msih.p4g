@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -38,7 +32,7 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Utilities
                 PayoutAccountFormat = payout.PayoutAccountFormat,
                 Amount = payout.Amount,
                 Currency = payout.Currency,
-                Status = payout.Status,
+                // Status field removed as it doesn't exist in the Payout model
                 PaypalBatchId = payout.PaypalBatchId,
                 PaypalPayoutItemId = payout.PaypalPayoutItemId,
                 PaypalTransactionId = payout.PaypalTransactionId,
@@ -65,32 +59,83 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Utilities
         /// </summary>
         /// <param name="batchStatus">The PayPalBatchStatus entity to map</param>
         /// <returns>A PayPalBatchStatusDto object</returns>
-        public static PayPalBatchStatusDto ToDto(this Models.PayPalBatchStatus batchStatus)
+        public static PayPalBatchStatusDto ToDto(this PayPalBatchStatus batchStatus)
         {
             if (batchStatus == null)
                 return null;
 
-            return new PayPalBatchStatusDto
+            var dto = new PayPalBatchStatusDto
             {
-                BatchId = batchStatus.BatchId,
-                Status = batchStatus.Status,
-                BatchCreationTime = batchStatus.BatchCreationTime,
-                BatchCompletionTime = batchStatus.BatchCompletionTime,
-                TotalAmount = batchStatus.TotalAmount,
-                Currency = batchStatus.Currency,
-                SuccessCount = batchStatus.SuccessCount,
-                ErrorCount = batchStatus.ErrorCount,
-                Items = batchStatus.Items?.Select(i => new PayPalBatchItemStatusDto
-                {
-                    PayoutItemId = i.PayoutItemId,
-                    TransactionId = i.TransactionId,
-                    Status = i.Status,
-                    Amount = i.Amount,
-                    Currency = i.Currency,
-                    ReceiverEmail = i.ReceiverEmail,
-                    SenderItemId = i.SenderItemId
-                }).ToList() ?? new List<PayPalBatchItemStatusDto>()
+                BatchId = batchStatus.BatchHeader.PayoutBatchId,
+                Status = batchStatus.BatchHeader.BatchStatus,
+                // TimeCreated and TimeCompleted fields in PayPalBatchStatusHeader are string in the original model
+                BatchCreationTime = DateTime.UtcNow, // Default to current time
+                BatchCompletionTime = null,
+                Currency = batchStatus.BatchHeader.Amount?.Currency ?? string.Empty,
+                Items = new List<PayPalBatchItemStatusDto>(),
+                SuccessCount = 0,
+                ErrorCount = 0
             };
+
+            // Try to parse the creation time if available
+            if (batchStatus.BatchHeader.TimeProcessed != null && 
+                DateTime.TryParse(batchStatus.BatchHeader.TimeProcessed, out DateTime creationTime))
+            {
+                dto.BatchCreationTime = creationTime;
+            }
+
+            // Try to parse the completion time if available
+            if (batchStatus.BatchHeader.TimeCompleted != null && 
+                DateTime.TryParse(batchStatus.BatchHeader.TimeCompleted, out DateTime completionTime))
+            {
+                dto.BatchCompletionTime = completionTime;
+            }
+
+            if (batchStatus.BatchHeader.Amount != null && decimal.TryParse(batchStatus.BatchHeader.Amount.Value, out decimal totalAmount))
+            {
+                dto.TotalAmount = totalAmount;
+            }
+
+            // Map items if available
+            if (batchStatus.Items != null)
+            {
+                foreach (var item in batchStatus.Items)
+                {
+                    var itemDto = new PayPalBatchItemStatusDto
+                    {
+                        PayoutItemId = item.PayoutItemId,
+                        TransactionId = item.TransactionId,
+                        Status = item.TransactionStatus,
+                        SenderItemId = item.SenderItemId
+                    };
+
+                    // Extract amount and currency from PayoutItem if available
+                    if (item.PayoutItem?.Amount != null)
+                    {
+                        if (decimal.TryParse(item.PayoutItem.Amount.Value, out decimal amount))
+                        {
+                            itemDto.Amount = amount;
+                        }
+                        itemDto.Currency = item.PayoutItem.Amount.Currency;
+                    }
+
+                    // Extract receiver email
+                    if (item.PayoutItem != null)
+                    {
+                        itemDto.ReceiverEmail = item.PayoutItem.Receiver;
+                    }
+
+                    dto.Items.Add(itemDto);
+
+                    // Update counts
+                    if (item.TransactionStatus == "SUCCESS")
+                        dto.SuccessCount++;
+                    else if (item.TransactionStatus == "FAILED" || item.TransactionStatus == "BLOCKED" || item.TransactionStatus == "RETURNED")
+                        dto.ErrorCount++;
+                }
+            }
+
+            return dto;
         }
     }
 }

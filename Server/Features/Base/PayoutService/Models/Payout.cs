@@ -54,7 +54,7 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Models
         /// <summary>
         /// The PayPal batch ID for batch payouts
         /// </summary>
-        public string? PaypalSenderId { get; set; }
+        public string? PaypalSenderId { get; set; } = null;
 
         /// <summary>
         /// The PayPal batch ID for batch payouts

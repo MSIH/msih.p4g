@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Server\Features\Base\PayoutService\Models\PayPalBatchStatus.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="Client\Pages\Shared\_Layout.cshtml" />
     <Content Remove="Client\Pages\_Host.cshtml" />
   </ItemGroup>

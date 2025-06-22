@@ -10,7 +10,7 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Features.Base.PayoutService.Models;
-using msih.p4g.Shared.Models.PayoutService;
+using msih.p4g.Server.Features.Base.PayoutService.Models.PayPal;
 
 namespace msih.p4g.Server.Features.Base.PayoutService.Interfaces
 {
@@ -70,7 +70,7 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Interfaces
         /// <param name="page">Page number (1-based)</param>
         /// <param name="pageSize">Number of items per page</param>
         /// <returns>List of Payout records</returns>
-        Task<List<Payout>> GetPayoutsByStatusAsync(PayoutStatus status, int page = 1, int pageSize = 20);
+        Task<List<Payout>> GetPayoutsByStatusAsync(PayPalTransactionStatusEnum status, int page = 1, int pageSize = 20);
 
         /// <summary>
         /// Get the status of a PayPal batch payout
