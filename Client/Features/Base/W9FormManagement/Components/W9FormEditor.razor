@@ -1,0 +1,64 @@
+@namespace msih.p4g.Client.Features.Base.W9FormManagement.Components
+@using msih.p4g.Shared.W9FormService.Dtos
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using msih.p4g.Client.Features.Authentication.Services
+
+@inject AuthService AuthService
+@inject IJSRuntime JSRuntime
+
+<div class="w-9-form-container">
+    @if (IsLoading)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(Error))
+    {
+        <div class="alert alert-danger mb-4">
+            <p class="mb-0">@Error</p>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="@FormData" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <!-- W-9 Form Header -->
+            <div class="w9-header mb-4">
+                <h2 class="mb-3">Form W-9: Request for Taxpayer Identification and Certification</h2>
+                <p class="text-muted">This form will be securely stored in our system for tax reporting purposes.</p>
+            </div>
+
+            <!-- Part 1: Name & Tax Classification -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">1. Taxpayer Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="name" class="form-label">Name (as shown on your tax return) <span class="text-danger">*</span></label>
+                            <InputText id="name" @bind-Value="FormData.Name" class="form-control" />
+                            <small class="form-text text-muted">For a sole proprietor or disregarded entity, enter the owner's name on line 1.</small>
+                            <ValidationMessage For="@(() => FormData.Name)" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="businessName" class="form-label">Business name/disregarded entity name (if different)</label>
+                            <InputText id="businessName" @bind-Value="FormData.BusinessName" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Federal tax classification <span class="text-danger">*</span></label>
+                            <InputRadioGroup @bind-Value="FormData.FederalTaxClassification" class="mb-2">
+                                @<div>
+                                    <div class="form-check

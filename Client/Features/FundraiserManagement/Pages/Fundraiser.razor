@@ -13,6 +13,7 @@
 @inject msih.p4g.Server.Features.FundraiserService.Interfaces.IFundraiserStatisticsService FundraiserStatsService
 @inject IJSRuntime JSRuntime
 @inject AuthService AuthService
+@inject NavigationManager NavigationManager
 
 <PageTitle>My Fundraiser</PageTitle>
 
@@ -103,9 +104,26 @@
                             </div>
 
                             <div class="mb-4">
-                                <label for="w9Document" class="form-label">W9 Document Reference</label>
-                                <InputText id="w9Document" @bind-Value="fundraiser.W9Document" class="form-control" />
-                                <small class="text-muted">Reference to your submitted W9 tax form.</small>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label for="w9Document" class="form-label mb-0">W9 Tax Form</label>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" @onclick="NavigateToW9Form">
+                                        <span class="oi oi-document me-1"></span> @(string.IsNullOrEmpty(fundraiser.W9Document) ? "Complete W9 Form" : "View/Edit W9 Form")
+                                    </button>
+                                </div>
+                                <div class="mt-2">
+                                    @if (string.IsNullOrEmpty(fundraiser.W9Document))
+                                    {
+                                        <div class="alert alert-warning py-2">
+                                            <small class="mb-0">You need to complete a W9 tax form to receive payments over $600.</small>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-success py-2">
+                                            <small class="mb-0">W9 form submitted: @fundraiser.W9Document</small>
+                                        </div>
+                                    }
+                                </div>
                             </div>
 
                             <div class="mb-4">
@@ -340,6 +358,18 @@
         {
             // Handle clipboard error
             message = "Unable to copy to clipboard. Please select and copy the URL manually.";
+        }
+    }
+    
+    private void NavigateToW9Form()
+    {
+        if (fundraiser != null && fundraiser.Id > 0)
+        {
+            NavigationManager.NavigateTo($"/w9form/{fundraiser.Id}");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/w9form");
         }
     }
 }

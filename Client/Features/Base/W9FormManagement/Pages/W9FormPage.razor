@@ -1,0 +1,85 @@
+@page "/w9form"
+@page "/w9form/{FundraiserId:int}"
+@using msih.p4g.Client.Features.Base.W9FormManagement.Components
+@using msih.p4g.Client.Features.Authentication.Services
+@using msih.p4g.Shared.W9FormService.Dtos
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
+
+<PageTitle>W-9 Tax Form</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <h1 class="mb-4">W-9 Tax Form</h1>
+            
+            @if (isLoading)
+            {
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <W9FormEditor 
+                    UserId="@userId" 
+                    FundraiserId="@fundraiserId" 
+                    OnFormSubmitted="HandleFormSubmitted"
+                    OnCancel="HandleCancel" />
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int? FundraiserId { get; set; }
+    
+    private int userId;
+    private int? fundraiserId => FundraiserId;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var user = await AuthService.GetCurrentUserAsync();
+            if (user != null)
+            {
+                userId = user.Id;
+            }
+            else
+            {
+                // Redirect to login if no user is found
+                NavigationManager.NavigateTo("/login", true);
+                return;
+            }
+        }
+        catch (Exception)
+        {
+            // Handle authentication errors
+            NavigationManager.NavigateTo("/login", true);
+            return;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void HandleFormSubmitted(W9FormDto form)
+    {
+        // Optionally redirect after submission
+        if (form.Status == "Submitted")
+        {
+            NavigationManager.NavigateTo("/fundraiser");
+        }
+    }
+    
+    private void HandleCancel()
+    {
+        NavigationManager.NavigateTo("/fundraiser");
+    }
+}

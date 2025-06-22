@@ -1,15 +1,10 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Common.Data;
@@ -34,6 +29,8 @@ using msih.p4g.Server.Features.Base.UserProfileService.Services;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Repositories;
 using msih.p4g.Server.Features.Base.UserService.Services;
+using msih.p4g.Server.Features.Base.W9FormService.Interfaces;
+using msih.p4g.Server.Features.Base.W9FormService.Services;
 using msih.p4g.Server.Features.CampaignService.Interfaces;
 using msih.p4g.Server.Features.CampaignService.Repositories;
 using msih.p4g.Server.Features.CampaignService.Services;
@@ -64,6 +61,14 @@ builder.Services.AddControllers(); // Add this line to enable API controllers
 
 // Register the AuthService as a scoped service so it's created per user session
 builder.Services.AddScoped<AuthService>();
+
+// Add HttpContextAccessor for accessing current user information
+builder.Services.AddHttpContextAccessor();
+
+// Add Data Protection services for sensitive data encryption
+builder.Services.AddDataProtection()
+    .SetApplicationName("msih.p4g")
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "keys")));
 
 // Add Entity Framework with the unified ApplicationDbContext
 DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
@@ -143,6 +148,9 @@ builder.Services.AddScoped<IFundraiserStatisticsService, FundraiserStatisticsSer
 
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+
+// Register W9FormService for DI
+builder.Services.AddScoped<IW9FormService, W9FormService>();
 
 builder.Services.AddScoped<OrganizationDataSeeder>();
 

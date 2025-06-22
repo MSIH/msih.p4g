@@ -51,10 +51,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Client\Features\W9Form\" />
     <Folder Include="Server\Common\Interfaces\" />
     <Folder Include="Server\Common\Services\" />
     <Folder Include="Server\Features\Base\ProfileService\Data\Migrations\" />
     <Folder Include="Server\Features\Base\UserService\Data\Migrations\" />
+    <Folder Include="Server\Features\W9Form\Interface\" />
+    <Folder Include="Server\Features\W9Form\Data\" />
+    <Folder Include="Server\Features\W9Form\Model\" />
+    <Folder Include="Server\Features\W9Form\Services\" />
+    <Folder Include="Server\Features\W9Form\Repositories\" />
     <Folder Include="Shared\Dto\" />
   </ItemGroup>
 

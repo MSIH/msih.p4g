@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -85,7 +79,7 @@ namespace msih.p4g.Server.Common.Data
             ConfigureMessageModel(modelBuilder);
             ConfigureFundraiserModel(modelBuilder);
             ConfigureOrganizationModel(modelBuilder);
-
+            ConfigureW9FormModel(modelBuilder);
         }
 
         // These methods are implemented in each feature's partial class
@@ -100,5 +94,6 @@ namespace msih.p4g.Server.Common.Data
         partial void ConfigureMessageModel(ModelBuilder modelBuilder);
         partial void ConfigureFundraiserModel(ModelBuilder modelBuilder);
         partial void ConfigureOrganizationModel(ModelBuilder modelBuilder);
+        partial void ConfigureW9FormModel(ModelBuilder modelBuilder);
     }
 }
