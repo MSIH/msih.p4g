@@ -25,7 +25,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<EmailVerificationService> _logger;
 
-        private const string _eMAIL_VERIFICATION_TEMPLATE = "EmailVerification";
+        private const string _eMAIL_VERIFICATION_TEMPLATE = "Email Verification";
         private const string _eMAIL_VERIFICATION_SECRET_KEY = "EmailVerification:SecretKey";
         private const string _bASE_URL_SETTING = "BaseUrl";
 
@@ -55,8 +55,8 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     ?? _configuration["BaseUrl"]
                     ?? "https://localhost:7265";
 
-                // based ont he current time get number in format of yyyyMMddHHmmss
-                var currentTime = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+                // based on the current time get number in format of HHmmss
+                var currentTime = DateTime.UtcNow.ToString("HHmmss");
                 // covert to int
                 var currentTimeInt = int.Parse(currentTime);
 
@@ -72,14 +72,46 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     { "UserName", user.Email },
                     { "VerificationLink", verificationLink }
                 };
+                var TemplateContent = @"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=""utf-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
+    <title>Email Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c5282; }
+    </style>
+</head>
+<body>
+    <h1>Email Verification Required</h1>
+    <p>Dear {{userName}},</p>
+    <p>Please click the link below to verify your email address:</p>
+    <p><a href=""{{verificationUrl}}"">{{verificationUrl}}</a></p>
+    <p>If you did not request this email, please ignore it.</p>
+</body>
+</html>";
 
+                // Replace placeholders in the template content
+                TemplateContent = TemplateContent
+                    .Replace("{{userName}}", placeholders["UserName"])
+                    .Replace("{{verificationUrl}}", placeholders["VerificationLink"]);
+
+                var emailSent = await _messageService.SendEmailAsync(user.Email, "Verify Email Address", TemplateContent, "donation@msih.org");
                 // Send the verification email using the template
-                var emailSent = await _messageService.SendTemplatedMessageByNameAsync(
-                    _eMAIL_VERIFICATION_TEMPLATE,
-                    user.Email,
-                    placeholders,
-                    subject: "Verify Your Email Address"
-                );
+
+                if (!emailSent)
+                {
+                    _logger.LogWarning("Email verification email failed to send to user {UserId}", user.Id);
+                    return false;
+                }
+
+                //var emailSent = await _messageService.SendTemplatedMessageByNameAsync(
+                //    _eMAIL_VERIFICATION_TEMPLATE,
+                //    user.Email,
+                //    placeholders,
+                //    subject: "Verify Your Email Address"
+                //);
 
                 if (emailSent)
                 {

@@ -5,6 +5,8 @@
 @inject IEmailVerificationService EmailVerificationService
 @inject NavigationManager NavigationManager
 @inject AuthService AuthService
+@inject IUserService UserService
+@implements IDisposable
 
 <PageTitle>Verify Email</PageTitle>
 
@@ -25,7 +27,17 @@
                             <p class="mt-3">Verifying your email address...</p>
                         </div>
                     }
-                    else if (!isVerified)
+                    else if (isVerified)
+                    {
+                        <div class="my-4">
+                            <div class="text-success mb-3">
+                                <i class="bi bi-check-circle" style="font-size: 3rem;"></i>
+                            </div>
+                            <h4 class="text-success">Email Verified Successfully</h4>
+                            <p class="mt-3">Your email has been verified. You will be redirected to the home page in @redirectCountdown seconds.</p>
+                        </div>
+                    }
+                    else
                     {                        
                         <div class="my-4">
                             <div class="text-danger mb-3">
@@ -42,47 +54,78 @@
     </div>
 </div>
 
-@code {
-    private bool isVerifying = true;
-    private bool isVerified = false;
-    private string errorMessage = "We couldn't verify your email. The verification link may have expired or is invalid.";
+@code {  
+    private bool isVerifying = true;  
+    private bool isVerified = false;  
+    private string errorMessage = "We couldn't verify your email. The verification link may have expired or is invalid.";  
+    private int redirectCountdown = 5;
+    private System.Threading.Timer? redirectTimer;
 
-    protected override async Task OnInitializedAsync()
-    {
-        // Get the token from the URL
-        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
-        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("token", out var token))
-        {
-            await VerifyEmailAsync(token);
-        }
-        else
-        {
-            isVerifying = false;
-            errorMessage = "No verification token provided.";
-        }
+    protected override async Task OnInitializedAsync()  
+    {  
+        // Get the token from the URL  
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);  
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("token", out var token))  
+        {  
+            await VerifyEmailAsync(token);  
+        }  
+        else  
+        {  
+            isVerifying = false;  
+            errorMessage = "No verification token provided.";  
+        }  
+    }  
+
+    private async Task VerifyEmailAsync(string token)  
+    {  
+        try  
+        {  
+            isVerifying = true;  
+            isVerified = await EmailVerificationService.VerifyEmailAsync(token);  
+            
+            if (isVerified)  
+            {  
+                // Get the user by token and log them in
+                var user = await UserService.GetUserByTokenAsync(token);
+                if (user != null)
+                {
+                    await AuthService.LoginAsync(user);
+                }
+                
+                isVerifying = false;
+                StartRedirectCountdown();  
+            }  
+            else  
+            {  
+                isVerifying = false;  
+                errorMessage = "Email verification failed. Please try again.";  
+            }  
+        }  
+        catch (Exception ex)  
+        {  
+            isVerifying = false;  
+            errorMessage = $"An error occurred: {ex.Message}";  
+        }  
+    }  
+    
+    private void StartRedirectCountdown()  
+    {  
+        redirectTimer = new System.Threading.Timer(async _ =>  
+        {  
+            redirectCountdown--;  
+            await InvokeAsync(StateHasChanged);  
+
+            if (redirectCountdown <= 0)  
+            {  
+                redirectTimer?.Dispose();  
+                await InvokeAsync(() => NavigationManager.NavigateTo("/"));  
+            }  
+        }, null, 0, 1000);  
     }
 
-    private async Task VerifyEmailAsync(string token)
+    public void Dispose()
     {
-        try
-        {
-            isVerifying = true;
-            isVerified = await EmailVerificationService.VerifyEmailAsync(token);
-            if (isVerified)
-            {
-                // Optionally, you can redirect to the login page or show a success message
-                NavigationManager.NavigateTo("/");
-            }
-            else
-            {
-                errorMessage = "Email verification failed. Please try again.";
-            }
-            isVerifying = false;
-        }
-        catch (Exception ex)
-        {
-            isVerifying = false;
-            errorMessage = $"An error occurred: {ex.Message}";
-        }
+        // Clean up the timer when component is disposed
+        redirectTimer?.Dispose();
     }
 }
