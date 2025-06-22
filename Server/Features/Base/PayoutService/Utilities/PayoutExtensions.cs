@@ -1,10 +1,14 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
-using System.Collections.Generic;
-using System.Linq;
 using msih.p4g.Server.Features.Base.PayoutService.Models;
 using msih.p4g.Server.Features.Base.PayoutService.Models.PayPal;
 
@@ -24,12 +28,14 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Utilities
         {
             if (payout == null)
                 return null;
-                
+
             return new PayoutDto
             {
                 Id = payout.Id,
                 FundraiserId = payout.FundraiserId,
-                PaypalEmail = payout.PaypalEmail,
+                PayoutAccount = payout.PayoutAccount,
+                PayoutAccountType = payout.PayoutAccountType,
+                PayoutAccountFormat = payout.PayoutAccountFormat,
                 Amount = payout.Amount,
                 Currency = payout.Currency,
                 Status = payout.Status,
@@ -38,10 +44,12 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Utilities
                 PaypalTransactionId = payout.PaypalTransactionId,
                 CreatedAt = payout.CreatedAt,
                 ProcessedAt = payout.ProcessedAt,
-                Notes = payout.Notes
+                Notes = payout.Notes,
+                ErrorMessage = payout.ErrorMessage,
+                IsBatchPayout = payout.IsBatchPayout
             };
         }
-        
+
         /// <summary>
         /// Maps a list of Payout entities to a list of PayoutDtos
         /// </summary>
@@ -51,17 +59,17 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Utilities
         {
             return payouts?.Select(p => p.ToDto()).ToList() ?? new List<PayoutDto>();
         }
-        
+
         /// <summary>
         /// Maps a PayPalBatchStatus entity to a PayPalBatchStatusDto
         /// </summary>
         /// <param name="batchStatus">The PayPalBatchStatus entity to map</param>
         /// <returns>A PayPalBatchStatusDto object</returns>
-        public static PayPalBatchStatusDto ToDto(this PayPalBatchStatus batchStatus)
+        public static PayPalBatchStatusDto ToDto(this Models.PayPalBatchStatus batchStatus)
         {
             if (batchStatus == null)
                 return null;
-                
+
             return new PayPalBatchStatusDto
             {
                 BatchId = batchStatus.BatchId,

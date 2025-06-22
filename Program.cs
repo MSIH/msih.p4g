@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -58,9 +64,6 @@ builder.Services.AddControllers(); // Add this line to enable API controllers
 
 // Register the AuthService as a scoped service so it's created per user session
 builder.Services.AddScoped<AuthService>();
-
-// Add client-side services
-builder.Services.AddScoped<Client.Features.Base.Payment.Services.PayPalPayoutService>();
 
 // Add Entity Framework with the unified ApplicationDbContext
 DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
@@ -159,7 +162,7 @@ using (var scope = app.Services.CreateScope())
     // Seed organization data
     var organizationSeeder = scope.ServiceProvider.GetRequiredService<OrganizationDataSeeder>();
     await organizationSeeder.SeedAsync();
-    
+
     // Seed message templates
     var messageTemplateSeeder = scope.ServiceProvider.GetRequiredService<MessageTemplateDataSeeder>();
     await messageTemplateSeeder.SeedAsync();

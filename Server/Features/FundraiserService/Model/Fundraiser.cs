@@ -16,11 +16,11 @@ namespace msih.p4g.Server.Features.FundraiserService.Model
     {
 
         [MaxLength(200)]
-        public string? PayPalAccount { get; set; }
+        public string? PayoutAccount { get; set; }
 
-        public AccountType? AccountType { get; set; }
+        public AccountType? PayoutAccountType { get; set; }
 
-        public AccountForm? AccountForm { get; set; }
+        public AccountFormat? PayoutAccountFormat { get; set; }
 
         /// <summary>
         /// Path or identifier for the document (e.g., PDF, image).
@@ -38,7 +38,7 @@ namespace msih.p4g.Server.Features.FundraiserService.Model
         Venmo
     }
 
-    public enum AccountForm
+    public enum AccountFormat
     {
         Email,
         Mobile,
