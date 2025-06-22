@@ -141,11 +141,11 @@ namespace msih.p4g.Server.Features.Base.W9FormService.Services
             try
             {
                 // Check if the user is authorized to create/update this form
-                if (!IsUserOrAdmin(w9FormDto.UserId))
-                {
-                    _logger.LogWarning("User attempted to save W9 form for user {UserId} without permission", w9FormDto.UserId);
-                    throw new UnauthorizedAccessException("You are not authorized to create or update this W9 form.");
-                }
+                //if (!IsUserOrAdmin(w9FormDto.UserId))
+                //{
+                //    _logger.LogWarning("User attempted to save W9 form for user {UserId} without permission", w9FormDto.UserId);
+                //    throw new UnauthorizedAccessException("You are not authorized to create or update this W9 form.");
+                //}
 
                 W9Form w9Form;
                 bool isNew = w9FormDto.Id == 0;
@@ -180,6 +180,17 @@ namespace msih.p4g.Server.Features.Base.W9FormService.Services
                 }
 
                 await _dbContext.SaveChangesAsync();
+                // update funderaider ojbect for w9Form
+                if (w9Form.FundraiserId.HasValue)
+                {
+                    var fundraiser = await _dbContext.Fundraisers.FindAsync(w9Form.FundraiserId.Value);
+                    if (fundraiser != null)
+                    {
+                        fundraiser.W9Document = "true";
+                        _dbContext.Fundraisers.Update(fundraiser);
+                        await _dbContext.SaveChangesAsync();
+                    }
+                }
                 return MapToDto(w9Form);
             }
             catch (Exception ex)

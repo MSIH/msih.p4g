@@ -1,6 +1,7 @@
 @page "/w9form"
 @page "/w9form/{FundraiserId:int?}"
 
+@using msih.p4g.Server.Features.Base.W9FormService.Interfaces
 @using msih.p4g.Server.Features.Base.W9FormService.Services
 @using msih.p4g.Shared.W9FormService.Dtos
 @using Microsoft.AspNetCore.Components.Forms
@@ -11,7 +12,8 @@
 @inject AuthService AuthService
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
-@inject W9FormService W9FormService
+@inject IW9FormService W9FormService
+@inject NavigationManager NavigationManager
 
 <div class="w-9-form-container">
     @if (IsLoading)
@@ -327,7 +329,7 @@
                 else
                 {
                     <span></span>
-                    <button type="button" class="btn btn-secondary" @onclick="OnCancel">Close</button>
+                    <button type="button" class="btn btn-secondary" @onclick='() => NavigationManager.NavigateTo("/")'>Close</button>
                 }
             </div>
         </EditForm>
@@ -542,9 +544,6 @@
             if (savedForm != null)
             {
                 FormData = savedForm;
-
-                // Notify parent component
-                await OnFormSubmitted.InvokeAsync(FormData);
 
                 if (status == "Submitted")
                 {
