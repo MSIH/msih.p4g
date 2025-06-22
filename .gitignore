@@ -225,3 +225,4 @@ paket-files/
 # Ignore all environment-specific appsettings files
 appsettings.*.json
 /msih_p4g.db*
+/appsettings.Development.json
