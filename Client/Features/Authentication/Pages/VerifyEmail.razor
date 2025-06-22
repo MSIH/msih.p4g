@@ -1,0 +1,90 @@
+@page "/verify-email"
+@namespace msih.p4g.Client.Features.Authentication.Pages
+@using msih.p4g.Client.Features.Authentication.Services
+@using msih.p4g.Server.Features.Base.UserService.Interfaces
+@inject IEmailVerificationService EmailVerificationService
+@inject NavigationManager NavigationManager
+@inject AuthService AuthService
+
+<PageTitle>Verify Email</PageTitle>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm mt-5">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Email Verification</h3>
+                </div>
+                <div class="card-body text-center">
+                    @if (isVerifying)
+                    {
+                        <div class="my-4">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Verifying...</span>
+                            </div>
+                            <p class="mt-3">Verifying your email address...</p>
+                        </div>
+                    }
+                    else if (isVerified)
+                    {
+                        <div class="my-4">
+                            <div class="text-success mb-3">
+                                <i class="bi bi-check-circle" style="font-size: 3rem;"></i>
+                            </div>
+                            <h4 class="text-success">Email Verified Successfully!</h4>
+                            <p class="mt-3">Your email has been verified. You can now log in to your account.</p>
+                            <a href="/login" class="btn btn-primary mt-3">Go to Login</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="my-4">
+                            <div class="text-danger mb-3">
+                                <i class="bi bi-x-circle" style="font-size: 3rem;"></i>
+                            </div>
+                            <h4 class="text-danger">Verification Failed</h4>
+                            <p class="mt-3">@errorMessage</p>
+                            <a href="/login" class="btn btn-primary mt-3">Return to Login</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isVerifying = true;
+    private bool isVerified = false;
+    private string errorMessage = "We couldn't verify your email. The verification link may have expired or is invalid.";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the token from the URL
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("token", out var token))
+        {
+            await VerifyEmailAsync(token);
+        }
+        else
+        {
+            isVerifying = false;
+            errorMessage = "No verification token provided.";
+        }
+    }
+
+    private async Task VerifyEmailAsync(string token)
+    {
+        try
+        {
+            isVerifying = true;
+            isVerified = await EmailVerificationService.VerifyEmailAsync(token);
+            isVerifying = false;
+        }
+        catch (Exception ex)
+        {
+            isVerifying = false;
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+    }
+}

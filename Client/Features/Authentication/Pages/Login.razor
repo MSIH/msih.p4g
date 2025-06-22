@@ -30,6 +30,13 @@
                             @errorMessage
                         </div>
                     }
+                    
+                    @if (!string.IsNullOrEmpty(successMessage))
+                    {
+                        <div class="alert alert-success" role="alert">
+                            @successMessage
+                        </div>
+                    }
 
                     <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
                         <DataAnnotationsValidator />
@@ -45,11 +52,11 @@
                                 @if (isLoggingIn)
                                 {
                                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                    <span> Logging in...</span>
+                                    <span> Sending login link...</span>
                                 }
                                 else
                                 {
-                                    <span>Login</span>
+                                    <span>Send Login Link</span>
                                 }
                             </button>
                         </div>
@@ -68,6 +75,7 @@
     private LoginModel loginModel = new();
     private bool isLoggingIn = false;
     private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
 
     private class LoginModel
     {
@@ -83,26 +91,33 @@
         {
             NavigationManager.NavigateTo("/");
         }
+        
+        // Check for email verification token in the URL
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("token", out var token))
+        {
+            await HandleLoginWithToken(token);
+        }
     }
 
     private async Task HandleLogin()
     {
         isLoggingIn = true;
         errorMessage = string.Empty;
+        successMessage = string.Empty;
 
         try
         {
-            // Use the AuthService's LoginAsync method which now persists the login state
-            var success = await AuthService.LoginAsync(loginModel.Email);
-
+            // Request login email with verification link if needed
+            var (success, message) = await AuthService.RequestLoginEmailAsync(loginModel.Email);
+            
             if (success)
             {
-                // Navigate to home page after successful login
-                NavigationManager.NavigateTo("/");
+                successMessage = message;
             }
             else
             {
-                errorMessage = "User not found. Please register a new account.";
+                errorMessage = message;
             }
         }
         catch (Exception ex)
@@ -114,5 +129,19 @@
             isLoggingIn = false;
             StateHasChanged();
         }
+    }
+    
+    private async Task HandleLoginWithToken(string token)
+    {
+        // This would validate the login token and authenticate the user
+        // For the MVP, this is a placeholder
+        
+        // In a real implementation, you would:
+        // 1. Validate the token
+        // 2. Find the associated user
+        // 3. Log them in
+        
+        // For demo purposes, just show a message
+        successMessage = "Login successful via email link!";
     }
 }

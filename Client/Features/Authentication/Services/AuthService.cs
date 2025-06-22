@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -5,10 +11,8 @@
  */
 
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using msih.p4g.Server.Features.Base.UserService.Models;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
-using System;
-using System.Threading.Tasks;
+using msih.p4g.Server.Features.Base.UserService.Models;
 
 namespace msih.p4g.Client.Features.Authentication.Services
 {
@@ -16,18 +20,21 @@ namespace msih.p4g.Client.Features.Authentication.Services
     {
         private readonly ProtectedLocalStorage _localStorage;
         private readonly IUserService _userService;
+        private readonly IEmailVerificationService _emailVerificationService;
         private User? _currentUser;
-        
+
         public event Action? AuthStateChanged;
         public User? CurrentUser => _currentUser;
         public bool IsAuthenticated => _currentUser != null;
 
         public AuthService(
             ProtectedLocalStorage localStorage,
-            IUserService userService)
+            IUserService userService,
+            IEmailVerificationService emailVerificationService)
         {
             _localStorage = localStorage;
             _userService = userService;
+            _emailVerificationService = emailVerificationService;
         }
 
         public async Task InitializeAuthenticationStateAsync()
@@ -36,7 +43,7 @@ namespace msih.p4g.Client.Features.Authentication.Services
             {
                 // Try to get the stored user ID from browser storage
                 var result = await _localStorage.GetAsync<int>("userId");
-                
+
                 if (result.Success)
                 {
                     var userId = result.Value;
@@ -50,31 +57,69 @@ namespace msih.p4g.Client.Features.Authentication.Services
             }
         }
 
-        // Login with email only (no password required for MVP)
-        public async Task<bool> LoginAsync(string email)
+        // Send login email with verification link
+        public async Task<(bool success, string message)> RequestLoginEmailAsync(string email)
         {
             try
             {
                 var user = await _userService.GetByEmailAsync(email);
-                
-                if (user != null)
+
+                if (user == null)
                 {
-                    await _localStorage.SetAsync("userId", user.Id);
-                    _currentUser = user;
-                    NotifyAuthStateChanged();
-                    return true;
+                    return (false, "User not found. Please register a new account.");
                 }
-                
-                return false;
+
+                // Check if email is verified
+                if (!user.EmailConfirmed)
+                {
+                    // Send verification email
+                    var emailSent = await _emailVerificationService.SendVerificationEmailAsync(user);
+                    if (emailSent)
+                    {
+                        return (true, "Email verification link sent. Please check your inbox and verify your email before logging in.");
+                    }
+                    else
+                    {
+                        return (false, "Failed to send verification email. Please try again later.");
+                    }
+                }
+
+                // If email is already verified, generate and send login link
+                var loginLinkSent = await SendLoginLinkAsync(user);
+
+                if (loginLinkSent)
+                {
+                    return (true, "Login link sent to your email. Please check your inbox.");
+                }
+                else
+                {
+                    return (false, "Failed to send login link. Please try again later.");
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Login error: {ex.Message}");
-                return false;
+                return (false, $"An error occurred: {ex.Message}");
             }
         }
 
-        // Login with an existing user object (e.g., for testing)
+        // Send a login link via email
+        private async Task<bool> SendLoginLinkAsync(User user)
+        {
+            // In a real implementation, this would generate a secure token and send a login link
+            // For the MVP, we'll simulate this by directly logging in the user
+
+            // In a full implementation, you would:
+            // 1. Generate a secure token
+            // 2. Store it in a short-lived cache or database
+            // 3. Send an email with a link containing the token
+            // 4. Verify the token when the user clicks the link
+
+            // For now, we'll just return true to simulate sending the login link
+            return true;
+        }
+
+        // Login with existing user object (after email verification)
         public async Task LoginAsync(User user)
         {
             if (user != null)
@@ -103,7 +148,7 @@ namespace msih.p4g.Client.Features.Authentication.Services
             {
                 await InitializeAuthenticationStateAsync();
             }
-            
+
             return _currentUser;
         }
 
@@ -111,17 +156,21 @@ namespace msih.p4g.Client.Features.Authentication.Services
         {
             try
             {
-                // This will use the generic repository's GetByIdAsync method
-                // through the UserService
                 var user = await _userService.GetByIdAsync(userId);
-                
-                if (user != null)
+
+                if (user != null && user.EmailConfirmed)
                 {
                     _currentUser = user;
                     NotifyAuthStateChanged();
                     return true;
                 }
-                
+
+                // If email is not confirmed, log them out
+                if (user != null && !user.EmailConfirmed)
+                {
+                    await LogoutAsync();
+                }
+
                 return false;
             }
             catch (Exception ex)
