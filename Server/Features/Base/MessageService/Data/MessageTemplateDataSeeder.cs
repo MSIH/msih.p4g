@@ -41,18 +41,58 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                 using var scope = _serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+
                 // Check if we need to seed templates
                 if (!await dbContext.Set<MessageTemplate>().AnyAsync(t =>
-                    t.Category == "ThankYou" ||
-                    t.Category == "FundraiserReport" ||
-                    t.Category == "TaxReceipt" ||
-                    t.Category == "DonationNotification"))
+                t.Category == "ThankYou" ||
+                t.Category == "FundraiserReport" ||
+                t.Category == "TaxReceipt" ||
+                t.Category == "DonationNotification" ||
+                t.Category == "EmailVerification"))
+
                 {
                     _logger.LogInformation("Seeding message template data...");
 
                     // Create an array of message templates
                     var messageTemplates = new[]
                     {
+                        // add email verficaton email template
+
+
+new MessageTemplate
+{
+    Name = "Email Verification",
+    Description = "Email sent to users to verify their email address",
+    MessageType = "Email",
+    Category = "EmailVerification",
+    DefaultSubject = "Please Verify Your Email Address",
+    DefaultSender = "donations@msih.org",
+    TemplateContent = @"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=""utf-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
+    <title>Email Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c5282; }
+    </style>
+</head>
+<body>
+    <h1>Email Verification Required</h1>
+    <p>Dear {{userName}},</p>
+    <p>Please click the link below to verify your email address:</p>
+    <p><a href=""{{verificationUrl}}"">{{verificationUrl}}</a></p>
+    <p>If you did not request this email, please ignore it.</p>
+</body>
+</html>",
+    IsHtml = true,
+    AvailablePlaceholders = "userName, verificationUrl",
+    IsDefault = true,
+    IsActive = true,
+    CreatedOn = DateTime.UtcNow,
+    CreatedBy = "System"
+},
                         // 1. Donor Thank You Email Template
                         new MessageTemplate
                         {

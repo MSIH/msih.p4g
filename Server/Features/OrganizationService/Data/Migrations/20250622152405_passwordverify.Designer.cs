@@ -2,17 +2,20 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using msih.p4g.Server.Common.Data;
 
 #nullable disable
 
-namespace msih.p4g.Server.Common.Data.Migrations
+namespace msih.p4g.Server.Features.OrganizationService.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250622152405_passwordverify")]
+    partial class passwordverify
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
@@ -451,9 +454,6 @@ namespace msih.p4g.Server.Common.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("EmailConfirmedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EmailVerificationToken")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
