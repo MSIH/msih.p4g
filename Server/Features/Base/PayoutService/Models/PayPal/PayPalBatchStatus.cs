@@ -1,10 +1,14 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
-using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace msih.p4g.Server.Features.Base.PayoutService.Models.PayPal
@@ -31,6 +35,38 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Models.PayPal
         /// </summary>
         [JsonPropertyName("links")]
         public List<PayPalLink>? Links { get; set; }
+
+
+    }
+    public enum PayPalBatchStatusEnum
+    {
+        DENIED,
+        PENDING,
+        PROCESSING,
+        SUCCESS,
+        CANCELED
+    }
+
+    public enum PayPalTransactionStatusEnum
+    {
+        //            SUCCESS    Funds have been credited to the recipient’s account.
+        //FAILED  This payout request has failed, so funds were not deducted from the sender’s account.
+        //PENDING Payout request has been submitted and is being processed. Recipient will get the funds once the request is processed successfully, else the funds will be returned to you.
+        //UNCLAIMED   The recipient for this payout does not have a PayPal account. A link to sign up for a PayPal account was sent to the recipient. However, if the recipient does not claim this payout within 30 days, the funds are returned to your account.
+        //RETURNED    Funds have been returned to your account. This can be because the recipient has not claimed this payout, or you have cancelled the payout.
+        //ONHOLD  This payout request is being reviewed and is on hold.
+        //BLOCKED This payout request has been blocked.
+        //REFUNDED    Funds have been refunded back to your account. This is because the recipient(PayPal Business verified account) has issued a refund for the payout initiated by you.
+        //REVERSED This payout request was reversed.This status is specific to web uploads.
+        SUCCESS,
+        FAILED,
+        PENDING,
+        UNCLAIMED,
+        RETURNED,
+        ONHOLD,
+        BLOCKED,
+        REFUNDED,
+        REVERSED
     }
 
     /// <summary>
@@ -73,7 +109,7 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Models.PayPal
         /// </summary>
         [JsonPropertyName("payout_item_count")]
         public int? PayoutItemCount { get; set; }
-        
+
         /// <summary>
         /// The amount of time in seconds for which to try a payout
         /// </summary>
@@ -171,3 +207,5 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Models.PayPal
         public string? Issue { get; set; }
     }
 }
+
+

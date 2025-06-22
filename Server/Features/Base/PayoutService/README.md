@@ -6,41 +6,45 @@
 
 # Payout Service Module
 
-This module provides payout capabilities to fundraisers using various payment providers, starting with PayPal.
+This module provides payout capabilities to fundraisers using various payment providers, starting with PayPal. It manages the entire payout lifecycle, from creation to processing and status tracking.
 
 ## Features
 
 - Processing payouts to fundraisers via PayPal
+- Support for multiple account types (PayPal, Bank, Venmo)
+- Support for different account formats (Email, Phone, AccountNumber, Username)
 - Single and batch payout processing
 - Storing payout transaction information in a database
-- Tracking payout status
+- Tracking payout status (Pending, Processing, Completed, Failed, Cancelled)
 - Retrieving payout history for fundraisers
 - Checking batch payout status from PayPal
 - Extensible design for adding new payout providers
 
 ## Database Schema
 
-The module uses its own database context (`PayoutDbContext`) to store payout transactions:
+The Payout model includes the following properties:
 
-- **Payouts**: Stores payout transaction details, including:
+- **Payout**:
   - `Id`: Unique identifier for the payout
   - `FundraiserId`: ID of the fundraiser receiving the payout
-  - `PaypalEmail`: Email address associated with the fundraiser's PayPal account
+  - `PayoutAccount`: Account identifier for the payout (e.g., PayPal email, bank account)
+  - `PayoutAccountType`: Type of account (PayPal, Bank, Venmo, Other)
+  - `PayoutAccountFormat`: Format of the account identifier (Email, Phone, AccountNumber, Username, Other)
   - `Amount`: The payout amount
   - `Currency`: The currency code (e.g., USD, EUR)
-  - `Status`: The current status of the payout (enum: Pending, Processing, Completed, Failed)
-  - `Notes`: Optional notes about the payout
-  - `PaypalBatchId`: The batch ID returned from PayPal after processing
-  - `ErrorMessage`: Error message if the payout failed
+  - `Status`: The current status of the payout (Pending, Processing, Completed, Failed, Cancelled)
+  - `PaypalBatchId`: The batch ID returned from PayPal for batch payouts
+  - `PaypalPayoutItemId`: The payout item ID for individual payouts
+  - `PaypalTransactionId`: Transaction ID returned by PayPal
+  - `CreatedAt`: When the payout record was created
   - `ProcessedAt`: When the payout was processed
+  - `Notes`: Optional notes about the payout
+  - `ErrorMessage`: Error message if the payout failed
   - `IsBatchPayout`: Whether this payout was part of a batch
-  - Audit fields: `IsActive`, `IsDeleted`, `CreatedBy`, `CreatedOn`, `ModifiedBy`, `ModifiedOn`
 
 ## Configuration
 
 Add the following configuration to your `appsettings.json`:
-
-```json
 {
   "PayPal": {
     "ClientId": "your-client-id",
@@ -49,21 +53,13 @@ Add the following configuration to your `appsettings.json`:
     "WebhookId": "your-webhook-id"
   }
 }
-```
-
 ## Usage
 
 ### Service Registration
 
 The service and its dependencies are registered using the extension method:
-
-```csharp
-builder.Services.AddPayoutServices(builder.Configuration);
-```
-
+builder.Services.AddPayoutServices(builder.Configuration, builder.Environment);
 ### Creating a Payout
-
-```csharp
 public class FundraiserService
 {
     private readonly IPayoutService _payoutService;
@@ -83,11 +79,7 @@ public class FundraiserService
             notes: "Monthly fundraiser payout");
     }
 }
-```
-
 ### Processing a Payout
-
-```csharp
 public class PayoutProcessor
 {
     private readonly IPayoutService _payoutService;
@@ -107,11 +99,7 @@ public class PayoutProcessor
         return await _payoutService.ProcessBatchPayoutsAsync(payoutIds);
     }
 }
-```
-
 ### Retrieving Payout History
-
-```csharp
 public class FundraiserDashboardService
 {
     private readonly IPayoutService _payoutService;
@@ -126,11 +114,7 @@ public class FundraiserDashboardService
         return await _payoutService.GetFundraiserPayoutHistoryAsync(fundraiserId, page: 1, pageSize: 10);
     }
 }
-```
-
 ### Checking Batch Payout Status
-
-```csharp
 public class PayoutMonitoringService
 {
     private readonly IPayoutService _payoutService;
@@ -165,7 +149,32 @@ public class PayoutMonitoringService
         }
     }
 }
-```
+## Repository Functionality
+
+The `IPayoutRepository` interface provides these core operations:
+
+- `GetPayoutsByStatusAsync`: Get payouts filtered by status
+- `GetPayoutsByFundraiserIdAsync`: Get payouts for a specific fundraiser
+- `GetPayoutsByBatchIdAsync`: Get payouts that are part of a specific batch
+- `GetPayoutsByIdsAsync`: Get multiple payouts by their IDs
+- `UpdateRangeAsync`: Update multiple payout entities at once
+
+## Account Types and Formats
+
+The service supports different account types and formats:
+
+- **Account Types**:
+  - PayPal
+  - Bank
+  - Venmo
+  - Other
+
+- **Account Formats**:
+  - Email
+  - Phone
+  - AccountNumber
+  - Username
+  - Other
 
 ## Batch Size Limitations
 
