@@ -1,0 +1,102 @@
+@page "/payout-tester"
+@using msih.p4g.Shared.Models.PayoutService
+@using System.ComponentModel.DataAnnotations
+@inject ILogger<PayoutTester> Logger
+@inject HttpClient Http
+
+<h1>PayPal/Venmo Payout Tester</h1>
+
+<EditForm Model="payoutModel" OnValidSubmit="HandlePayout">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="mb-3">
+        <label for="fundraiserId" class="form-label">Fundraiser ID</label>
+        <InputText id="fundraiserId" class="form-control" @bind-Value="payoutModel.FundraiserId" />
+    </div>
+    <div class="mb-3">
+        <label for="payoutAccount" class="form-label">Payout Account</label>
+        <InputText id="payoutAccount" class="form-control" @bind-Value="payoutModel.PayoutAccount" />
+    </div>
+    <div class="mb-3">
+        <label for="accountType" class="form-label">Account Type</label>
+        <InputSelect id="accountType" class="form-select" @bind-Value="payoutModel.PayoutAccountType">
+            <option value="PayPal">PayPal</option>
+            <option value="Venmo">Venmo</option>
+        </InputSelect>
+    </div>
+    <div class="mb-3">
+        <label for="accountFormat" class="form-label">Account Format</label>
+        <InputSelect id="accountFormat" class="form-select" @bind-Value="payoutModel.PayoutAccountFormat">
+            <option value="Email">Email</option>
+            <option value="Phone">Mobile</option>
+            <option value="Username">Handle</option>
+        </InputSelect>
+    </div>
+    <div class="mb-3">
+        <label for="amount" class="form-label">Amount</label>
+        <InputNumber id="amount" class="form-control" @bind-Value="payoutModel.Amount" />
+    </div>
+    <button type="submit" class="btn btn-primary">Make Payment</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div class="alert alert-info mt-3">@statusMessage</div>
+}
+
+@code {
+    private PayoutTestModel payoutModel = new();
+    private string? statusMessage;
+
+    private async Task HandlePayout()
+    {
+        statusMessage = null;
+        try
+        {
+            // 1. Create payout
+            var createResp = await Http.PostAsJsonAsync("/api/payout/create", payoutModel);
+            if (!createResp.IsSuccessStatusCode)
+            {
+                statusMessage = $"Failed to create payout: {createResp.ReasonPhrase}";
+                return;
+            }
+            var payout = await createResp.Content.ReadFromJsonAsync<PayoutResult>();
+            if (payout == null || string.IsNullOrEmpty(payout.Id))
+            {
+                statusMessage = "Failed to parse payout creation response.";
+                return;
+            }
+            // 2. Call batch payout with just this payout
+            var batchResp = await Http.PostAsJsonAsync("/api/payout/process-batch", new List<string> { payout.Id });
+            if (!batchResp.IsSuccessStatusCode)
+            {
+                statusMessage = $"Failed to process batch payout: {batchResp.ReasonPhrase}";
+                return;
+            }
+            statusMessage = "Payout and batch processed successfully.";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    public class PayoutTestModel
+    {
+        [Required]
+        public string FundraiserId { get; set; }
+        [Required]
+        public string PayoutAccount { get; set; }
+        [Required]
+        public string PayoutAccountType { get; set; } = "PayPal";
+        [Required]
+        public string PayoutAccountFormat { get; set; } = "Email";
+        [Required]
+        [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
+        public decimal Amount { get; set; }
+    }
+    public class PayoutResult
+    {
+        public string Id { get; set; }
+    }
+}
