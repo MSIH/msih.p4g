@@ -2,7 +2,7 @@
 @using msih.p4g.Shared.Models.PayoutService
 @using System.ComponentModel.DataAnnotations
 @inject ILogger<PayoutTester> Logger
-@inject HttpClient Http
+@inject Server.Features.Base.PayoutService.Interfaces.IPayoutService PayoutService
 
 <h1>PayPal/Venmo Payout Tester</h1>
 
@@ -53,27 +53,44 @@
         statusMessage = null;
         try
         {
+            // Map string to enum for AccountType and AccountFormat
+            var accountType = payoutModel.PayoutAccountType switch
+            {
+                "PayPal" => Server.Features.FundraiserService.Model.AccountType.PayPal,
+                "Venmo" => Server.Features.FundraiserService.Model.AccountType.Venmo,
+                _ => Server.Features.FundraiserService.Model.AccountType.PayPal
+            };
+            var accountFormat = payoutModel.PayoutAccountFormat switch
+            {
+                "Email" => Server.Features.FundraiserService.Model.AccountFormat.Email,
+                "Phone" => Server.Features.FundraiserService.Model.AccountFormat.Mobile,
+                "Username" => Server.Features.FundraiserService.Model.AccountFormat.Handle,
+                _ => Server.Features.FundraiserService.Model.AccountFormat.Email
+            };
+
             // 1. Create payout
-            var createResp = await Http.PostAsJsonAsync("/api/payout/create", payoutModel);
-            if (!createResp.IsSuccessStatusCode)
-            {
-                statusMessage = $"Failed to create payout: {createResp.ReasonPhrase}";
-                return;
-            }
-            var payout = await createResp.Content.ReadFromJsonAsync<PayoutResult>();
-            if (payout == null || string.IsNullOrEmpty(payout.Id))
-            {
-                statusMessage = "Failed to parse payout creation response.";
-                return;
-            }
+            payoutModel.FundraiserId = "123";
+            var payout = await PayoutService.CreatePayoutAsync(
+                payoutModel.FundraiserId,
+                payoutModel.PayoutAccount,
+                payoutModel.Amount,
+                "USD",
+                null,
+                accountType,
+                accountFormat
+            );
+
             // 2. Call batch payout with just this payout
-            var batchResp = await Http.PostAsJsonAsync("/api/payout/process-batch", new List<string> { payout.Id });
-            if (!batchResp.IsSuccessStatusCode)
+            var batchResult = await PayoutService.ProcessBatchPayoutsAsync(new List<string> { payout.Id.ToString() });
+            var processed = batchResult.FirstOrDefault();
+            if (processed != null && string.IsNullOrEmpty(processed.ErrorMessage))
             {
-                statusMessage = $"Failed to process batch payout: {batchResp.ReasonPhrase}";
-                return;
+                statusMessage = $"Payout processed! BatchId: {processed.PaypalBatchId}, Status: {processed.BatchStatus}";
             }
-            statusMessage = "Payout and batch processed successfully.";
+            else
+            {
+                statusMessage = $"Payout error: {processed?.ErrorMessage ?? "Unknown error"}";
+            }
         }
         catch (Exception ex)
         {
