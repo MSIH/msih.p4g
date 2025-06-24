@@ -49,7 +49,7 @@
 
         <div class="row">
             <div class="col-md-8 mx-auto">
-                @if (referrer != null)
+                @if (referrer.FirstName != null)
                 {
                     <div class="alert alert-info mb-4">
                         <p class="mb-0">You were referred by: <strong>@referrer.FirstName @(referrer.LastName?.Substring(0, 1)).</strong></p>
@@ -224,7 +224,7 @@
     public string? ReferralCode { get; set; }
 
     private Campaign? campaign;
-    private Profile? referrer;
+    private Profile? referrer = new Profile();
     private Organization? organization;
     private string campaignError = "";
     private string referrerError = "";
@@ -236,7 +236,7 @@
 
     private DonationRequestDto donationRequest = new DonationRequestDto
     {
-        DonationAmount = 10.00m,
+        DonationAmount = 50.00m,
         Address = new AddressModel
         {
             Street = string.Empty,
@@ -249,13 +249,13 @@
     protected override async Task OnInitializedAsync()
     {
         await Task.WhenAll(
+            ProcessReferalCode(),
             LoadCampaignAsync(),
             LoadOrganizationAsync(),
             LoadReferrerAsync()
         );
     }
-
-
+  
     private async Task LoadOrganizationAsync()
     {
         try
@@ -328,6 +328,35 @@
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private async Task ProcessReferalCode()
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(ReferralCode))
+            {
+                // first remove all trailing characters after including "-"
+                // This is to handle cases like "12345 - Some Campaign Name" and returns "12345"
+       
+                ReferralCode = ReferralCode.Split('-')[0].Trim();
+
+                // find numbers at the beginning of the referral code
+                var match = System.Text.RegularExpressions.Regex.Match(ReferralCode, @"^\d+");
+                if (match.Success)
+                {
+                    // If a number is found at the start, then remove it from the referral code
+                    ReferralCode = ReferralCode.Substring(match.Length).Trim();
+
+                    // If a number is found, treat it as a CampaignId
+                    CampaignId = int.Parse(match.Value);                  
+                }               
+            }
+        }
+        catch (Exception ex)
+        {
+            referrerError = $"Error loading referrer information: {ex.Message}";
         }
     }
 

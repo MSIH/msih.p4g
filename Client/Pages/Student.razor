@@ -39,7 +39,7 @@
 
 @if (!string.IsNullOrEmpty(referralCode))
 {
-    <h5 class="mt-2 mb-3">https://4gd.org/donate/@referralCode</h5>
+    <h5 class="mt-2 mb-3">https://4gd.org/give/@referralCode</h5>
     <p class="mb-0">
         <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
             <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
@@ -48,17 +48,7 @@
         {
             <span class="text-success ms-2">Copied!</span>
         }
-    </p>
-    <h5 class="mt-2 mb-3">https://4gd.org/d/@referralCode</h5>
-    <p class="mb-0">
-        <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
-            <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
-        </button>
-        @if (copyUrlSuccess)
-        {
-            <span class="text-success ms-2">Copied!</span>
-        }
-    </p>
+    </p>    
 }
 
 @code {
@@ -112,7 +102,7 @@
     {
         try
         {
-            string referralUrl = $"https://gd4.org/d/{referralCode}";
+            string referralUrl = $"https://gd4.org/give/{referralCode}";
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
             copyUrlSuccess = true;
             StateHasChanged();
