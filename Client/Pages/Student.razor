@@ -1,0 +1,63 @@
+@page "/student"
+
+@using System.ComponentModel.DataAnnotations
+@using msih.p4g.Server.Features.Base.ProfileService.Model
+@using msih.p4g.Server.Features.Base.UserProfileService.Interfaces
+@using msih.p4g.Server.Features.Base.UserService.Models
+
+<h3>Sign Up</h3>
+
+<EditForm Model="user" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <InputText id="email" class="form-control" @bind-Value="user.Email" />
+    </div>
+    <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+        @if (isProcessing)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span> Processing...</span>
+        }
+        else
+        {
+            <span>Sign Up</span>
+        }
+    </button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-success" role="alert">
+        @message
+    </div>
+}
+
+@code {
+    [Inject]
+    private IUserProfileService UserProfileService { get; set; }
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+
+    private User user = new() { Role = UserRole.Fundraiser }; // Default to Fundraiser
+    private Profile profile = new();
+
+    private string message;
+    private bool isProcessing;
+
+    protected override void OnInitialized()
+    {
+        // Ensure role is set to Fundraiser
+        user.Role = UserRole.Fundraiser;
+        base.OnInitialized();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var createdProfile = await UserProfileService.CreateUserWithProfileAsync(user, profile);
+
+        message = $"https://4gd.org/d{createdProfile.ReferralCode}";
+    } 
+}
