@@ -4,6 +4,9 @@
 @using msih.p4g.Server.Features.Base.ProfileService.Model
 @using msih.p4g.Server.Features.Base.UserProfileService.Interfaces
 @using msih.p4g.Server.Features.Base.UserService.Models
+@inject IUserProfileService UserProfileService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <h3>Sign Up</h3>
 
@@ -29,23 +32,46 @@
 
 @if (!string.IsNullOrEmpty(message))
 {
-    <div class="alert alert-success" role="alert">
+    <div class="alert @(message.StartsWith("Error") ? "alert-danger" : "alert-success") mb-4">
         @message
     </div>
 }
 
-@code {
-    [Inject]
-    private IUserProfileService UserProfileService { get; set; }
+@if (!string.IsNullOrEmpty(referralCode))
+{
+    <h5 class="mt-2 mb-3">https://4gd.org/donate/@referralCode</h5>
+    <p class="mb-0">
+        <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
+            <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
+        </button>
+        @if (copyUrlSuccess)
+        {
+            <span class="text-success ms-2">Copied!</span>
+        }
+    </p>
+    <h5 class="mt-2 mb-3">https://4gd.org/d/@referralCode</h5>
+    <p class="mb-0">
+        <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
+            <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
+        </button>
+        @if (copyUrlSuccess)
+        {
+            <span class="text-success ms-2">Copied!</span>
+        }
+    </p>
+}
 
-    [Inject]
-    private NavigationManager NavigationManager { get; set; }
+@code {
+
 
     private User user = new() { Role = UserRole.Fundraiser }; // Default to Fundraiser
     private Profile profile = new();
 
-    private string message;
+    private string referralCode;
     private bool isProcessing;
+    private bool copyCodeSuccess = false;
+    private bool copyUrlSuccess = false;
+    private string message = string.Empty;
 
     protected override void OnInitialized()
     {
@@ -58,6 +84,49 @@
     {
         var createdProfile = await UserProfileService.CreateUserWithProfileAsync(user, profile);
 
-        message = $"https://4gd.org/d{createdProfile.ReferralCode}";
-    } 
+        referralCode = createdProfile.ReferralCode;
+    }
+
+
+    private async Task CopyReferralCode()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralCode);
+            copyCodeSuccess = true;
+            StateHasChanged();
+
+            // Reset the success message after 3 seconds
+            await Task.Delay(3000);
+            copyCodeSuccess = false;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            // Handle clipboard error
+            message = "Unable to copy to clipboard. Please select and copy the code manually.";
+        }
+    }
+
+    private async Task CopyReferralUrl()
+    {
+        try
+        {
+            string referralUrl = $"https://gd4.org/d/{referralCode}";
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
+            copyUrlSuccess = true;
+            StateHasChanged();
+
+            // Reset the success message after 3 seconds
+            await Task.Delay(3000);
+            copyUrlSuccess = false;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            // Handle clipboard error
+            message = "Unable to copy to clipboard. Please select and copy the URL manually.";
+        }
+    }
+
 }
