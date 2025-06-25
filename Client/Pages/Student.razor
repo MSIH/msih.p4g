@@ -8,7 +8,11 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
-<h3>Sign Up</h3>
+<h3>Earn Marketing Fees for Promoting Meaningful Causes</h3>
+<h4>Promotion important causes with your network and get paid for your marketing impact.</h4>
+    <h4>
+        Just sign up, post, and get paid.
+</h4>
 
 <EditForm Model="user" OnValidSubmit="HandleValidSubmit">
     <DataAnnotationsValidator />
@@ -16,6 +20,14 @@
     <div class="mb-3">
         <label for="email" class="form-label">Email</label>
         <InputText id="email" class="form-control" @bind-Value="user.Email" />
+    </div>
+    <div class="mb-3">
+        <label for="first" class="form-label">First</label>
+        <InputText id="first" class="form-control" @bind-Value="profile.FirstName" />
+    </div>
+    <div class="mb-3">
+        <label for="last" class="form-label">Last</label>
+        <InputText id="last" class="form-control" @bind-Value="profile.LastName" />
     </div>
     <button type="submit" class="btn btn-primary" disabled="@isProcessing">
         @if (isProcessing)
@@ -50,7 +62,112 @@
         }
     </p>    
 }
+<div class="container">
+    <h2>Marketing Fee Structure Overview</h2>
 
+    <p class="description">
+        A tiered Marketing Fee structure with three initial milestones, followed by recurring $35 fees for every additional $250 in revenue. Fees are earned only when revenue thresholds are fully reached.
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Revenue Threshold</th>
+                <th>Fee Earned at This Level</th>
+                <th>Total Fees Earned</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>$25</td>
+                <td>$5</td>
+                <td>$5</td>
+            </tr>
+            <tr>
+                <td>$100</td>
+                <td>$10</td>
+                <td>$15</td>
+            </tr>
+            <tr>
+                <td>$250</td>
+                <td>$20</td>
+                <td>$35</td>
+            </tr>
+            <tr>
+                <td>$500</td>
+                <td>$35</td>
+                <td>$70</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="example">
+        The first three levels offer increasing rewards as you build momentum. Once you hit $250, the pattern becomes straightforward - you earn $35 for every additional $250 in sales. If your annual sales reach $277, you'd earn $35 because you've completed all three initial levels ($25, $100, and $250) but haven't quite reached the $500 milestone yet.
+    </div>
+</div>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f5f5f5;
+    }
+
+    .container {
+        /* max-width: 600px; */
+        margin: 0 auto;
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .description {
+        color: #666;
+        margin-bottom: 25px;
+        line-height: 1.5;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 25px;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+        color: #333;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f0f0f0;
+    }
+
+    .example {
+        background-color: #e8f4f8;
+        padding: 15px;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
+        color: #333;
+        line-height: 1.5;
+    }
+</style>
 @code {
 
 
