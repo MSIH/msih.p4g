@@ -43,11 +43,26 @@
                         @if (referralCode != null)
                         {
                             <div class="card mb-4">                  
-                                <h4 class="card-title">My Donation Referral</h4>
+                                <h4 class="card-title">Donation Referral URL</h4>
                                 <div class="card-body">
                                     <div class="alert alert-info">
                                         <p class="mb-1">Share this full URL</p>
-                                        <h5 class="mt-2 mb-3">https://gd4.org/d/@referralCode</h5>
+                                        <h5 class="mt-2 mb-3">https://gd4.org/give/@referralCode</h5>
+                                        <p class="mb-0">
+                                            <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
+                                                <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
+                                            </button>
+                                            @if (copyUrlSuccess)
+                                            {
+                                                <span class="text-success ms-2">Copied!</span>
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <p class="mb-1">Referral With Name</p>
+                                        <h5 class="mt-2 mb-3">https://gd4.org/give/@referralCode-@profile.FirstName@(profile.LastName?.Substring(0, 1))</h5>
                                         <p class="mb-0">
                                             <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
                                                 <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard

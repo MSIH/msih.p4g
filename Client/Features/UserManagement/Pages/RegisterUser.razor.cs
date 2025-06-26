@@ -5,6 +5,7 @@
 //  */
 
 using Microsoft.AspNetCore.Components;
+using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
@@ -19,6 +20,9 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
         [Inject]
         private NavigationManager NavigationManager { get; set; }
 
+        [Inject]
+        private AuthService AuthService { get; set; }
+
         private User user = new() { Role = UserRole.Fundraiser }; // Default to Fundraiser
         private Profile profile = new();
         private string message;
@@ -29,6 +33,9 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
         private int day = 1;
         private int year = DateTime.Now.Year - 13; // Default to 13 years ago
 
+        private bool isLoggingIn = false;
+        private string errorMessage = string.Empty;
+        private string successMessage = string.Empty;
 
 
         protected override void OnInitialized()
@@ -46,20 +53,55 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
             isProcessing = true;
             message = "";
 
+            isLoggingIn = true;
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+
             try
             {
                 // Create both the user and profile in a single operation
                 var createdProfile = await UserProfileService.CreateUserWithProfileAsync(user, profile);
 
-                message = $"User registered successfully! Referral code: {createdProfile.ReferralCode}";
+                message = $"User registered successfully!";
 
                 // Reset the form
-                user = new() { Role = UserRole.Fundraiser };
-                profile = new();
+                //user = new() { Role = UserRole.Fundraiser };
+                //profile = new();
 
-                // Navigate after a short delay
-                await Task.Delay(2000);
-                NavigationManager.NavigateTo("/");
+                try
+                {
+                    // Request login email with verification link if needed
+                    var (success, message) = await AuthService.RequestLoginEmailAsync(createdProfile.User.Email);
+
+                    if (success)
+                    {
+                        successMessage = message;
+                    }
+                    else
+                    {
+                        errorMessage = message;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errorMessage = $"An error occurred: {ex.Message}";
+                }
+                finally
+                {
+                    isLoggingIn = false;
+                    StateHasChanged();
+                    // wait two seconds
+                    await Task.Delay(4000);
+
+                    // If login was successful, we could redirect the user here
+                    if (!string.IsNullOrEmpty(successMessage))
+                    {
+                        // No immediate redirect for now, letting user see the message
+                        NavigationManager.NavigateTo("/verify-email");
+                    }
+                }
+
+
             }
             catch (Exception ex)
             {
