@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -16,6 +10,7 @@ using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
+using msih.p4g.Server.Features.Base.EmailService.Extensions;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.EmailService.Services;
 using msih.p4g.Server.Features.Base.MessageService.Data;
@@ -85,16 +80,8 @@ DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
 // Register generic repository for Setting using ApplicationDbContext 
 builder.Services.AddScoped<IGenericRepository<Setting>, GenericRepository<Setting, ApplicationDbContext>>();
 
-// Register Email Service - choose one implementation based on configuration or use a factory
-string emailProvider = builder.Configuration["EmailProvider"] ?? "SendGrid";
-if (emailProvider.Equals("AWS", StringComparison.OrdinalIgnoreCase))
-{
-    builder.Services.AddScoped<IEmailService, AWSSESEmailService>();
-}
-else
-{
-    builder.Services.AddScoped<IEmailService, SendGridEmailService>();
-}
+// Register Email Service using the extension method
+builder.Services.AddEmailServices(builder.Configuration);
 
 // Register SMS Service and related dependencies
 builder.Services.AddSmsServices(builder.Configuration, builder.Environment);

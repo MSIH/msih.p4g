@@ -97,7 +97,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     .Replace("{{userName}}", placeholders["UserName"])
                     .Replace("{{verificationUrl}}", placeholders["VerificationLink"]);
 
-                var emailSent = await _messageService.SendEmailAsync(user.Email, "Verify Email Address", TemplateContent, "donation@msih.org");
+                var emailSent = await _messageService.SendEmailAsync(user.Email, "Verify Email Address", TemplateContent);
                 // Send the verification email using the template
 
                 if (!emailSent)
