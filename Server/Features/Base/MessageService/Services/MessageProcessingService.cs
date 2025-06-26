@@ -21,19 +21,16 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<MessageProcessingService> _logger;
-        private readonly ISettingsService _settingsService;
         private TimeSpan _scheduledMessageInterval;
         private TimeSpan _failedMessageRetryInterval;
         private DateTime _lastFailedMessageRetryTime;
 
         public MessageProcessingService(
                 IServiceProvider serviceProvider,
-                ILogger<MessageProcessingService> logger,
-                ISettingsService settingsService)
+                ILogger<MessageProcessingService> logger)
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
             _lastFailedMessageRetryTime = DateTime.UtcNow;
         }
 
@@ -77,11 +74,14 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
         {
             try
             {
+                using var scope = _serviceProvider.CreateScope();
+                var settingsService = scope.ServiceProvider.GetRequiredService<ISettingsService>();
+
                 // Load scheduled message interval (default: 5 minutes)
                 const string scheduledIntervalKey = "MessageService:ScheduledProcessingIntervalMinutes";
                 const int defaultScheduledIntervalMinutes = 5;
 
-                var scheduledIntervalSetting = await _settingsService.GetValueAsync(scheduledIntervalKey);
+                var scheduledIntervalSetting = await settingsService.GetValueAsync(scheduledIntervalKey);
                 if (int.TryParse(scheduledIntervalSetting, out int scheduledIntervalMinutes) && scheduledIntervalMinutes > 0)
                 {
                     _scheduledMessageInterval = TimeSpan.FromMinutes(scheduledIntervalMinutes);
@@ -91,14 +91,14 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
                 {
                     _scheduledMessageInterval = TimeSpan.FromMinutes(defaultScheduledIntervalMinutes);
                     _logger.LogWarning("Invalid or missing scheduled message processing interval setting. Using default: {minutes} minutes", defaultScheduledIntervalMinutes);
-                    await _settingsService.SetValueAsync(scheduledIntervalKey, defaultScheduledIntervalMinutes.ToString(), "MessageProcessingService");
+                    await settingsService.SetValueAsync(scheduledIntervalKey, defaultScheduledIntervalMinutes.ToString(), "MessageProcessingService");
                 }
 
                 // Load failed message retry interval (default: 8 hours)
                 const string retryIntervalKey = "MessageService:FailedMessageRetryIntervalMinutes";
                 const int defaultRetryIntervalMinutes = 480;
 
-                var retryIntervalSetting = await _settingsService.GetValueAsync(retryIntervalKey);
+                var retryIntervalSetting = await settingsService.GetValueAsync(retryIntervalKey);
                 if (int.TryParse(retryIntervalSetting, out int retryIntervalMinutes) && retryIntervalMinutes > 0)
                 {
                     _failedMessageRetryInterval = TimeSpan.FromMinutes(retryIntervalMinutes);
@@ -108,7 +108,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
                 {
                     _failedMessageRetryInterval = TimeSpan.FromMinutes(defaultRetryIntervalMinutes);
                     _logger.LogWarning("Invalid or missing failed message retry interval setting. Using default: {minutes} minutes", defaultRetryIntervalMinutes);
-                    await _settingsService.SetValueAsync(retryIntervalKey, defaultRetryIntervalMinutes.ToString(), "MessageProcessingService");
+                    await settingsService.SetValueAsync(retryIntervalKey, defaultRetryIntervalMinutes.ToString(), "MessageProcessingService");
                 }
             }
             catch (Exception ex)
