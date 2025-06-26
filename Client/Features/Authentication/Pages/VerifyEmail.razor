@@ -2,6 +2,7 @@
 @namespace msih.p4g.Client.Features.Authentication.Pages
 @using msih.p4g.Client.Features.Authentication.Services
 @using msih.p4g.Server.Features.Base.UserService.Interfaces
+@using System.ComponentModel.DataAnnotations
 @inject IEmailVerificationService EmailVerificationService
 @inject NavigationManager NavigationManager
 @inject AuthService AuthService
@@ -34,18 +35,51 @@
                                 <i class="bi bi-check-circle" style="font-size: 3rem;"></i>
                             </div>
                             <h4 class="text-success">Email Verified Successfully</h4>
-                            <p class="mt-3">Your email has been verified. You will be redirected to the home page in @redirectCountdown seconds.</p>
+                            <p class="mt-3">Your email has been verified. You will be redirected to the profile page in @redirectCountdown seconds.</p>
                         </div>
                     }
                     else
-                    {                        
+                    {
                         <div class="my-4">
-                            <div class="text-danger mb-3">
-                                <i class="bi bi-x-circle" style="font-size: 3rem;"></i>
+                            @if (!string.IsNullOrEmpty(errorMessage))
+                            {
+                                <div class="text-danger mb-3">
+                                    <i class="bi bi-x-circle" style="font-size: 3rem;"></i>
+                                </div>
+                                <h4 class="text-danger">Verification Failed</h4>
+                                <p class="mt-3">@errorMessage</p>
+                            }
+
+                            <div class="mt-4">
+                                <h5>Enter Verification Code</h5>
+                                <p>If you have a verification code, you can enter it below:</p>
+
+                                <EditForm Model="@verificationModel" OnValidSubmit="HandleManualVerification" class="mt-3">
+                                    <DataAnnotationsValidator />
+
+                                    <div class="form-group mb-3">
+                                        <div class="input-group">
+                                            <InputText @bind-Value="verificationModel.Token" class="form-control" placeholder="Enter verification code" />
+                                            <button type="submit" class="btn btn-primary" disabled="@isProcessingManualVerification">
+                                                @if (isProcessingManualVerification)
+                                                {
+                                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                    <span> Verifying...</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Verify</span>
+                                                }
+                                            </button>
+                                        </div>
+                                        <ValidationMessage For="@(() => verificationModel.Token)" class="text-danger d-block mt-1" />
+                                    </div>
+                                </EditForm>
+
+                                <div class="mt-3">
+                                    <a href="/login" class="btn btn-outline-primary">Return to Login</a>
+                                </div>
                             </div>
-                            <h4 class="text-danger">Verification Failed</h4>
-                            <p class="mt-3">@errorMessage</p>
-                            <a href="/login" class="btn btn-primary mt-3">Return to Login</a>
                         </div>
                     }
                 </div>
@@ -54,37 +88,55 @@
     </div>
 </div>
 
-@code {  
-    private bool isVerifying = true;  
-    private bool isVerified = false;  
-    private string errorMessage = "We couldn't verify your email. The verification link may have expired or is invalid.";  
+@code {
+    private bool isVerifying = false;
+    private bool isVerified = false;
+    private bool isProcessingManualVerification = false;
+    private string errorMessage = string.Empty;
     private int redirectCountdown = 5;
     private System.Threading.Timer? redirectTimer;
+    private VerificationModel verificationModel = new();
 
-    protected override async Task OnInitializedAsync()  
-    {  
-        // Get the token from the URL  
-        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);  
-        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("token", out var token))  
-        {  
-            await VerifyEmailAsync(token);  
-        }  
-        else  
-        {  
-            isVerifying = false;  
-            errorMessage = "No verification token provided.";  
-        }  
-    }  
+    private class VerificationModel
+    {
+        [Required(ErrorMessage = "Verification code is required")]
+        [StringLength(50, ErrorMessage = "Code is too long")]
+        public string Token { get; set; } = string.Empty;
+    }
 
-    private async Task VerifyEmailAsync(string token)  
-    {  
-        try  
-        {  
-            isVerifying = true;  
-            isVerified = await EmailVerificationService.VerifyEmailAsync(token);  
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the token from the URL
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("token", out var token))
+        {
+            isVerifying = true;
+            await VerifyEmailAsync(token);
+        }
+        // Otherwise show the manual verification form
+    }
+
+    private async Task HandleManualVerification()
+    {
+        if (string.IsNullOrWhiteSpace(verificationModel.Token))
+            return;
+
+        isProcessingManualVerification = true;
+        await VerifyEmailAsync(verificationModel.Token);
+        isProcessingManualVerification = false;
+    }
+
+    private async Task VerifyEmailAsync(string token)
+    {
+        try
+        {
+            isVerifying = true;
+            errorMessage = string.Empty;
             
-            if (isVerified)  
-            {  
+            isVerified = await EmailVerificationService.VerifyEmailAsync(token);
+            
+            if (isVerified)
+            {
                 // Get the user by token and log them in
                 var user = await UserService.GetUserByTokenAsync(token);
                 if (user != null)
@@ -92,35 +144,36 @@
                     await AuthService.LoginAsync(user);
                 }
                 
-                isVerifying = false;
-                StartRedirectCountdown();  
-            }  
-            else  
-            {  
-                isVerifying = false;  
-                errorMessage = "Email verification failed. Please try again.";  
-            }  
-        }  
-        catch (Exception ex)  
-        {  
-            isVerifying = false;  
-            errorMessage = $"An error occurred: {ex.Message}";  
-        }  
-    }  
+                StartRedirectCountdown();
+            }
+            else
+            {
+                errorMessage = "We couldn't verify your email. The verification code may have expired or is invalid.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isVerifying = false;
+        }
+    }
     
-    private void StartRedirectCountdown()  
-    {  
-        redirectTimer = new System.Threading.Timer(async _ =>  
-        {  
-            redirectCountdown--;  
-            await InvokeAsync(StateHasChanged);  
+    private void StartRedirectCountdown()
+    {
+        redirectTimer = new System.Threading.Timer(async _ =>
+        {
+            redirectCountdown--;
+            await InvokeAsync(StateHasChanged);
 
-            if (redirectCountdown <= 0)  
-            {  
-                redirectTimer?.Dispose();  
+            if (redirectCountdown <= 0)
+            {
+                redirectTimer?.Dispose();
                 await InvokeAsync(() => NavigationManager.NavigateTo("/profile"));
-            }  
-        }, null, 0, 1000);  
+            }
+        }, null, 0, 1000);
     }
 
     public void Dispose()
