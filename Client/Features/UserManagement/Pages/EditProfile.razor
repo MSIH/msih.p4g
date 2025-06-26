@@ -62,7 +62,7 @@
                                 <div class="card-body">
                                     <div class="alert alert-info">
                                         <p class="mb-1">Referral With Name</p>
-                                        <h5 class="mt-2 mb-3">https://gd4.org/give/@referralCode-@profile.FirstName@(profile.LastName?.Substring(0, 1))</h5>
+                                        <h5 class="mt-2 mb-3">https://gd4.org/give/@referralCode-@(profile.FirstName)_@(profile.LastName?.Substring(0,1).ToUpper())</h5>
                                         <p class="mb-0">
                                             <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
                                                 <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
