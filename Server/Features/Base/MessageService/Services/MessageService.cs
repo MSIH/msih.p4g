@@ -1,19 +1,20 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.MessageService.Models;
 using msih.p4g.Server.Features.Base.MessageService.Utilities;
 using msih.p4g.Server.Features.Base.SmsService.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.Base.MessageService.Services
 {
@@ -159,11 +160,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
 
         /// <inheritdoc />
         public async Task<bool> SendTemplatedMessageAsync(
-            int templateId, 
-            string to, 
-            Dictionary<string, string> placeholderValues, 
-            string from = null, 
-            string subject = null, 
+            int templateId,
+            string to,
+            Dictionary<string, string> placeholderValues,
+            string from = null,
+            string subject = null,
             bool saveToDatabase = true)
         {
             var template = await _templateRepository.GetByIdAsync(templateId);
@@ -177,11 +178,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
 
         /// <inheritdoc />
         public async Task<bool> SendTemplatedMessageByNameAsync(
-            string templateName, 
-            string to, 
-            Dictionary<string, string> placeholderValues, 
-            string from = null, 
-            string subject = null, 
+            string templateName,
+            string to,
+            Dictionary<string, string> placeholderValues,
+            string from = null,
+            string subject = null,
             bool saveToDatabase = true)
         {
             var template = await _templateRepository.GetByNameAsync(templateName);
@@ -197,11 +198,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
         /// Internal method for sending templated messages
         /// </summary>
         private async Task<bool> SendTemplatedMessageInternalAsync(
-            MessageTemplate template, 
-            string to, 
-            Dictionary<string, string> placeholderValues, 
-            string from = null, 
-            string subject = null, 
+            MessageTemplate template,
+            string to,
+            Dictionary<string, string> placeholderValues,
+            string from = null,
+            string subject = null,
             bool saveToDatabase = true)
         {
             if (string.IsNullOrWhiteSpace(to))
@@ -218,13 +219,13 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
 
             // Process the template content
             string processedContent = TemplateProcessor.ProcessTemplate(template.TemplateContent, placeholderValues);
-            
+
             // Use the template's default sender if none provided
             string effectiveFrom = from ?? template.DefaultSender;
-            
+
             // Use the provided subject or template default for emails
-            string effectiveSubject = template.MessageType == _emailType 
-                ? (subject ?? template.DefaultSubject) 
+            string effectiveSubject = template.MessageType == _emailType
+                ? (subject ?? template.DefaultSubject)
                 : null;
 
             Message message = null;
@@ -349,11 +350,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
 
         /// <inheritdoc />
         public async Task<Message> ScheduleTemplatedMessageAsync(
-            int templateId, 
-            string to, 
-            Dictionary<string, string> placeholderValues, 
-            DateTime scheduledFor, 
-            string from = null, 
+            int templateId,
+            string to,
+            Dictionary<string, string> placeholderValues,
+            DateTime scheduledFor,
+            string from = null,
             string subject = null)
         {
             var template = await _templateRepository.GetByIdAsync(templateId);
@@ -376,10 +377,10 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
 
             // Use the template's default sender if none provided
             string effectiveFrom = from ?? template.DefaultSender;
-            
+
             // Use the provided subject or template default for emails
-            string effectiveSubject = template.MessageType == _emailType 
-                ? (subject ?? template.DefaultSubject) 
+            string effectiveSubject = template.MessageType == _emailType
+                ? (subject ?? template.DefaultSubject)
                 : null;
 
             // Create the message record
@@ -445,71 +446,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
                 {
                     try
                     {
-                        bool success = false;
-
-                        // Check if this is a templated message
-                        var templateUsage = await _messageRepository.GetContext().Set<MessageTemplateUsage>()
-                            .FirstOrDefaultAsync(tu => tu.MessageId == message.Id);
-
-                        if (templateUsage != null)
-                        {
-                            // This is a templated message, retrieve the template and process it
-                            var template = await _templateRepository.GetByIdAsync(templateUsage.TemplateId);
-                            if (template != null)
-                            {
-                                // Process the template content with the saved placeholder values
-                                string processedContent = TemplateProcessor.ProcessTemplate(
-                                    template.TemplateContent, 
-                                    templateUsage.PlaceholderValues);
-
-                                // Send based on message type
-                                if (message.MessageType == _emailType)
-                                {
-                                    success = await SendEmailAsync(
-                                        message.To, 
-                                        message.Subject, 
-                                        processedContent, 
-                                        message.From, 
-                                        false);
-                                }
-                                else if (message.MessageType == _smsType)
-                                {
-                                    success = await SendSmsAsync(
-                                        message.To, 
-                                        processedContent, 
-                                        message.From, 
-                                        false);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // This is a regular message, send it directly
-                            if (message.MessageType == _emailType)
-                            {
-                                success = await SendEmailAsync(
-                                    message.To, 
-                                    message.Subject, 
-                                    message.Content, 
-                                    message.From, 
-                                    false);
-                            }
-                            else if (message.MessageType == _smsType)
-                            {
-                                success = await SendSmsAsync(
-                                    message.To, 
-                                    message.Content, 
-                                    message.From, 
-                                    false);
-                            }
-                        }
-
-                        // Update the message status
-                        await _messageRepository.UpdateMessageStatusAsync(
-                            message.Id, 
-                            success, 
-                            success ? null : "Failed to send message");
-
+                        bool success = await ProcessSingleMessageAsync(message);
                         if (success)
                         {
                             successCount++;
@@ -529,6 +466,156 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
                 _logger.LogError(ex, "Error processing pending messages");
                 return 0;
             }
+        }
+
+        /// <inheritdoc />
+        public async Task<int> ProcessScheduledMessagesAsync(int limit = 50)
+        {
+            try
+            {
+                // Get scheduled messages that are due to be sent
+                var scheduledMessages = await _messageRepository.GetScheduledMessagesAsync(DateTime.UtcNow, limit);
+                int successCount = 0;
+
+                foreach (var message in scheduledMessages)
+                {
+                    try
+                    {
+                        bool success = await ProcessSingleMessageAsync(message);
+                        if (success)
+                        {
+                            successCount++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error processing scheduled message ID {MessageId}", message.Id);
+                        await _messageRepository.UpdateMessageStatusAsync(message.Id, false, ex.Message);
+                    }
+                }
+
+                return successCount;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing scheduled messages");
+                return 0;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<int> ProcessFailedMessagesAsync(int limit = 50)
+        {
+            try
+            {
+                // Get failed messages that are eligible for retry
+                var failedMessages = await _messageRepository.GetFailedMessagesAsync(limit);
+                int successCount = 0;
+
+                foreach (var message in failedMessages)
+                {
+                    try
+                    {
+                        _logger.LogInformation("Retrying failed message ID {MessageId} (Attempt {RetryCount})", message.Id, message.RetryCount + 1);
+
+                        bool success = await ProcessSingleMessageAsync(message);
+                        if (success)
+                        {
+                            successCount++;
+                            _logger.LogInformation("Successfully retried message ID {MessageId}", message.Id);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Retry failed for message ID {MessageId}", message.Id);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error retrying failed message ID {MessageId}", message.Id);
+                        await _messageRepository.UpdateMessageStatusAsync(message.Id, false, ex.Message);
+                    }
+                }
+
+                return successCount;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing failed messages");
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Processes a single message (handles both regular and templated messages)
+        /// </summary>
+        private async Task<bool> ProcessSingleMessageAsync(Message message)
+        {
+            bool success = false;
+
+            // Check if this is a templated message
+            var templateUsage = await _messageRepository.GetContext().Set<MessageTemplateUsage>()
+                .FirstOrDefaultAsync(tu => tu.MessageId == message.Id);
+
+            if (templateUsage != null)
+            {
+                // This is a templated message, retrieve the template and process it
+                var template = await _templateRepository.GetByIdAsync(templateUsage.TemplateId);
+                if (template != null)
+                {
+                    // Process the template content with the saved placeholder values
+                    string processedContent = TemplateProcessor.ProcessTemplate(
+                        template.TemplateContent,
+                        templateUsage.PlaceholderValues);
+
+                    // Send based on message type
+                    if (message.MessageType == _emailType)
+                    {
+                        success = await SendEmailAsync(
+                            message.To,
+                            message.Subject,
+                            processedContent,
+                            message.From,
+                            false);
+                    }
+                    else if (message.MessageType == _smsType)
+                    {
+                        success = await SendSmsAsync(
+                            message.To,
+                            processedContent,
+                            message.From,
+                            false);
+                    }
+                }
+            }
+            else
+            {
+                // This is a regular message, send it directly
+                if (message.MessageType == _emailType)
+                {
+                    success = await SendEmailAsync(
+                        message.To,
+                        message.Subject,
+                        message.Content,
+                        message.From,
+                        false);
+                }
+                else if (message.MessageType == _smsType)
+                {
+                    success = await SendSmsAsync(
+                        message.To,
+                        message.Content,
+                        message.From,
+                        false);
+                }
+            }
+
+            // Update the message status
+            await _messageRepository.UpdateMessageStatusAsync(
+                message.Id,
+                success,
+                success ? null : "Failed to send message");
+
+            return success;
         }
 
         /// <inheritdoc />

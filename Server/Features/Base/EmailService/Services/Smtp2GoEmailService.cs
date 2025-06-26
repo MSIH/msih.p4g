@@ -56,16 +56,13 @@ namespace msih.p4g.Server.Features.Base.EmailService.Services
 
             // Try to get settings from the settings service (DB first, then appsettings, then environment)
             _apiKey = await _settingsService.GetValueAsync("SMTP2GO:ApiKey")
-                ?? _configuration["SMTP2GO:ApiKey"]
                 ?? throw new Exception("SMTP2GO API key not configured");
 
             _fromEmail = await _settingsService.GetValueAsync("SMTP2GO:FromEmail")
-                ?? _configuration["SMTP2GO:FromEmail"]
                 ?? throw new Exception("SMTP2GO FromEmail not configured");
 
             _fromName = await _settingsService.GetValueAsync("SMTP2GO:FromName")
-                ?? _configuration["SMTP2GO:FromName"]
-                ?? "NoReply";
+                ?? throw new Exception("SMTP2GO FromName not configured");
 
             _settingsInitialized = true;
         }

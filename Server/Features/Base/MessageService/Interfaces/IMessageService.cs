@@ -1,12 +1,15 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Features.Base.MessageService.Models;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.Base.MessageService.Interfaces
 {
@@ -47,11 +50,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Interfaces
         /// <param name="saveToDatabase">Whether to save the message to the database</param>
         /// <returns>True if the message was sent successfully</returns>
         Task<bool> SendTemplatedMessageAsync(
-            int templateId, 
-            string to, 
-            Dictionary<string, string> placeholderValues, 
-            string from = null, 
-            string subject = null, 
+            int templateId,
+            string to,
+            Dictionary<string, string> placeholderValues,
+            string from = null,
+            string subject = null,
             bool saveToDatabase = true);
 
         /// <summary>
@@ -65,11 +68,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Interfaces
         /// <param name="saveToDatabase">Whether to save the message to the database</param>
         /// <returns>True if the message was sent successfully</returns>
         Task<bool> SendTemplatedMessageByNameAsync(
-            string templateName, 
-            string to, 
-            Dictionary<string, string> placeholderValues, 
-            string from = null, 
-            string subject = null, 
+            string templateName,
+            string to,
+            Dictionary<string, string> placeholderValues,
+            string from = null,
+            string subject = null,
             bool saveToDatabase = true);
 
         /// <summary>
@@ -83,11 +86,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Interfaces
         /// <param name="subject">Subject override (optional, uses template default if not specified)</param>
         /// <returns>The created message entity</returns>
         Task<Message> ScheduleTemplatedMessageAsync(
-            int templateId, 
-            string to, 
-            Dictionary<string, string> placeholderValues, 
-            DateTime scheduledFor, 
-            string from = null, 
+            int templateId,
+            string to,
+            Dictionary<string, string> placeholderValues,
+            DateTime scheduledFor,
+            string from = null,
             string subject = null);
 
         /// <summary>
@@ -139,6 +142,20 @@ namespace msih.p4g.Server.Features.Base.MessageService.Interfaces
         /// <param name="limit">Maximum number of messages to process</param>
         /// <returns>Number of messages successfully sent</returns>
         Task<int> ProcessPendingMessagesAsync(int limit = 50);
+
+        /// <summary>
+        /// Processes scheduled messages that are due to be sent
+        /// </summary>
+        /// <param name="limit">Maximum number of messages to process</param>
+        /// <returns>Number of messages successfully sent</returns>
+        Task<int> ProcessScheduledMessagesAsync(int limit = 50);
+
+        /// <summary>
+        /// Processes failed messages for retry
+        /// </summary>
+        /// <param name="limit">Maximum number of messages to process</param>
+        /// <returns>Number of messages successfully sent</returns>
+        Task<int> ProcessFailedMessagesAsync(int limit = 50);
 
         /// <summary>
         /// Gets all available message templates

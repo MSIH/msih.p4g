@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -8,10 +14,6 @@ using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.MessageService.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.Base.MessageService.Repositories
 {
@@ -25,10 +27,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Message>> GetPendingMessagesAsync(int limit = 50)
+        public async Task<IEnumerable<Message>> GetPendingMessagesAsync(int limit = 50, int maxRetries = 3)
         {
             return await _dbSet
                 .Where(m => !m.IsSent && m.IsActive &&
+                          m.RetryCount < maxRetries &&
                           (m.ScheduledFor == null || m.ScheduledFor <= DateTime.UtcNow))
                 .OrderBy(m => m.CreatedOn)
                 .Take(limit)
@@ -36,12 +39,25 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Message>> GetScheduledMessagesAsync(DateTime before, int limit = 50)
+        public async Task<IEnumerable<Message>> GetScheduledMessagesAsync(DateTime before, int limit = 50, int maxRetries = 3)
         {
             return await _dbSet
-                .Where(m => !m.IsSent && m.IsActive && 
-                          m.ScheduledFor != null && m.ScheduledFor <= before)
+                .Where(m => !m.IsSent && m.IsActive &&
+                          m.ScheduledFor != null && m.ScheduledFor <= before &&
+                          m.RetryCount < maxRetries)
                 .OrderBy(m => m.ScheduledFor)
+                .Take(limit)
+                .ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<IEnumerable<Message>> GetFailedMessagesAsync(int limit = 50, int maxRetries = 3)
+        {
+            return await _dbSet
+                .Where(m => !m.IsSent && m.IsActive &&
+                          m.RetryCount > 0 && m.RetryCount < maxRetries &&
+                          !string.IsNullOrEmpty(m.ErrorMessage))
+                .OrderBy(m => m.ModifiedOn ?? m.CreatedOn)
                 .Take(limit)
                 .ToListAsync();
         }
@@ -78,7 +94,9 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
             message.IsSent = isSuccess;
             message.SentOn = isSuccess ? DateTime.UtcNow : null;
             message.ErrorMessage = errorMessage;
-            
+            message.ModifiedOn = DateTime.UtcNow;
+            message.ModifiedBy = "MessageProcessingService";
+
             if (!isSuccess)
             {
                 message.RetryCount++;
