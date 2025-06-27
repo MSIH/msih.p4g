@@ -1,0 +1,148 @@
+
+@using System.ComponentModel.DataAnnotations
+@using msih.p4g.Server.Features.Base.ProfileService.Model
+@using msih.p4g.Server.Features.Base.UserProfileService.Interfaces
+@using Client.Features.UserManagement.Pages
+@using msih.p4g.Server.Features.Base.UserService.Models
+@inject NavigationManager NavigationManager
+@inject IUserProfileService UserProfileService
+@inject IJSRuntime JSRuntime
+
+
+
+@code {
+    private bool isProcessing = false;
+    private string message = string.Empty;
+    private bool isMarketer = false;
+
+    private bool isRegistered = false;
+    private string referralCode = "";
+    private bool appendName = false;
+    private string userName = "";
+    private string Title => Route switch
+    {
+        "/student" => "Student Registration",
+        "/influencer" => "Influencer Registration",
+        _ => "Register"
+    };
+
+    private string Description => Route switch
+    {
+        "/student" => "Sign up as a student and start your journey.",
+        "/influencer" => "Sign up as an influencer and earn rewards.",
+        _ => ""
+    };
+    private string Route => NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/").TrimEnd('/');
+
+    private string ReferralLink => appendName && !string.IsNullOrEmpty(userName)
+        ? $"https://4gd.org/give/{referralCode}-{userName.Replace(" ", "")}"
+        : $"https://4gd.org/give/{referralCode}";
+
+    private string InstagramUrl => $"https://www.instagram.com/?url={Uri.EscapeDataString(ReferralLink)}";
+    private string TikTokUrl => $"https://www.tiktok.com/share?url={Uri.EscapeDataString(ReferralLink)}";
+    private string FacebookUrl => $"https://www.facebook.com/sharer/sharer.php?u={Uri.EscapeDataString(ReferralLink)}";
+    private string TwitterUrl => $"https://twitter.com/intent/tweet?url={Uri.EscapeDataString(ReferralLink)}";
+
+    bool copyUrlSuccess = false;
+
+    private async Task CopyReferralUrl()
+    {
+        try
+        {
+            string referralUrl = $"https://gd4.org/give/{ReferralLink}";
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
+            copyUrlSuccess = true;
+            StateHasChanged();
+
+            // Reset the success message after 3 seconds
+            await Task.Delay(3000);
+            copyUrlSuccess = false;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            // Handle clipboard error
+            message = "Unable to copy to clipboard. Please select and copy the URL manually.";
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+        isMarketer = query.TryGetValue("type", out var type) && type == "marketer";
+    }
+
+    private async Task HandleRegister()
+    {
+        isProcessing = true;
+        // Register user and get referral code
+        // var user = new User { Email = model.Email, Role = GetRoleForRoute() };
+        // var profile = new Profile { FirstName = model.FirstName, LastName = model.LastName };
+        // var createdProfile = await UserProfileService.CreateUserWithProfileAsync(user, profile);
+        // referralCode = createdProfile.ReferralCode;
+        // userName = $"{model.FirstName}{model.LastName}";
+        isRegistered = true;
+        isProcessing = false;
+    }
+
+    private UserRole GetRoleForRoute() => Route switch
+    {
+        "/student" => UserRole.Fundraiser,
+        "/influencer" => UserRole.Fundraiser,
+        _ => UserRole.Fundraiser
+    };
+}
+
+<h3>@(isMarketer ? "Earn Marketing Fees for Promoting Meaningful Causes" : "Register")</h3>
+@if (isMarketer)
+{
+    <div>
+        <h4>Promote important causes with your network and get paid for your marketing impact.</h4>
+        <p>Just sign up, post, and get paid.</p>
+        <!-- Add your marketing fee structure table/info here -->
+    </div>
+}
+@if (!isRegistered)
+{
+    <RegistrationForm OnRegister="HandleRegister" IsProcessing="@isProcessing" />
+}
+else
+
+{
+    <div class="alert alert-success">
+        Registration successful!
+        <br />
+        <strong>Your referral code:</strong> @referralCode
+        <br />
+        <h5 class="mt-2 mb-3">https://4gd.org/give/@ReferralLink</h5>
+        <br />
+        <p class="mb-0">
+            <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
+                <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
+            </button>
+            @if (copyUrlSuccess)
+            {
+                <span class="text-success ms-2">Copied!</span>
+            }
+        </p>
+        <label>
+            <input type="checkbox" @bind="appendName" />
+            Append my name to the referral code
+        </label>
+        <br />
+        <strong>Share your code:</strong>
+        <ul>
+            <li><a href="@InstagramUrl" target="_blank">Instagram</a></li>
+            <li><a href="@TikTokUrl" target="_blank">TikTok</a></li>
+            <li><a href="@FacebookUrl" target="_blank">Facebook</a></li>
+            <li><a href="@TwitterUrl" target="_blank">Twitter</a></li>
+            <li><a href="mailto:?subject=Join%20me&body=@ReferralLink" target="_blank">Email</a></li>
+            <li><a href="sms:?body=@ReferralLink" target="_blank">Text Message</a></li>
+        </ul>
+    </div>
+}
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="alert alert-danger mt-3">@message</div>
+}
