@@ -39,6 +39,6 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Interfaces
         ///
         /// Cleans up settings by removing any that are not in the current configuration.
         /// </summary>
-        Task<SettingsCleanupResult> CleanSettingsAsync();
+        Task<SettingsCleanupResult> CleanupSettingsAsync();
     }
 }
