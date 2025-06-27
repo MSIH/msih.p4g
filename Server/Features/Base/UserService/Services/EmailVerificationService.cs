@@ -69,7 +69,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                 // Set up email placeholders
                 var placeholders = new Dictionary<string, string>
                 {
-                    { "UserName", user.Email },
+                    { "fullName", user.Profile.FullName },
                     { "VerificationLink", verificationLink },
                     { "token", token }
                 };
@@ -83,7 +83,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
 <body style=""font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;"">
     <h1 style=""color: #2c5282; margin-bottom: 20px; font-size: 24px;"">Email Verification Required</h1>
     
-    <p style=""margin-bottom: 16px;"">Dear {{userName}},</p>
+    <p style=""margin-bottom: 16px;"">Dear {{fullName}},</p>
     
     <p style=""margin-bottom: 16px;"">Please click the link below to verify your email address:</p>
     
@@ -111,7 +111,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
 
                 // Replace placeholders in the template content
                 TemplateContent = TemplateContent
-                    .Replace("{{userName}}", placeholders["UserName"])
+                    .Replace("{{fullName}}", placeholders["fullName"])
                     .Replace("{{verificationUrl}}", placeholders["VerificationLink"])
                     .Replace("{{token}}", placeholders["token"]);
 
