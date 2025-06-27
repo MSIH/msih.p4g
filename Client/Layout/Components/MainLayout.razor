@@ -4,7 +4,8 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  *@
 
-@namespace msih.p4g.Client.Layout.Components  
+@namespace msih.p4g.Client.Layout.Components
+@inject IWebHostEnvironment env
 @inherits LayoutComponentBase  
 
 <div class="page">  
@@ -24,6 +25,17 @@
 
         <article class="content px-4">  
             @Body  
-        </article>  
+        </article>
+        © @year Env:@envName | <BuildVersion />
     </main>  
 </div>
+
+@code {
+    public string? envName;
+    public int year = DateTime.Today.Year;
+
+    protected override void OnInitialized()
+    {
+        envName = env.EnvironmentName;
+    }
+}

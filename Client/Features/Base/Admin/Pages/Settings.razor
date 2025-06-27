@@ -27,10 +27,18 @@
 }
 else
 {
+    if (!string.IsNullOrEmpty(cleanSettingsNotification))
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @cleanSettingsNotification
+            <button type="button" class="btn-close" @onclick="() => cleanSettingsNotification = string.Empty"></button>
+        </div>
+    }
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>Settings</span>
             <div>
+                <button class="btn btn-primary btn-sm" @onclick="CleanSettings">Clean Setting</button>
                 <button class="btn btn-primary btn-sm" @onclick="AddNewSetting">Add New Setting</button>
                 <button class="btn btn-success btn-sm ms-2" @onclick="SaveAllChanges" disabled="@(!hasChanges)">Save All Changes</button>
             </div>
@@ -193,6 +201,10 @@ else
     private bool showDeleteModal = false;
     private Setting? settingToDelete;
 
+    private bool cleaningSettings = false;
+    private string cleanSettingsNotification = "";
+
+
     // List of sensitive settings (keys that contain these terms will mask their values)
     private readonly string[] sensitiveTerms = new[] { "key", "token", "secret", "password", "pwd", "auth" };
 
@@ -277,7 +289,7 @@ else
         try
         {
             await SettingsService.SetValueAsync(newSettingKey, newSettingValue);
-            
+
             // Add to local collection
             var newSetting = new Setting 
             { 
@@ -287,12 +299,12 @@ else
                 IsActive = true,
                 CreatedBy = "System"
             };
-            
+
             settings.Add(newSetting);
             settings = settings.OrderBy(s => s.Key).ToList();
-            
+
             CloseAddModal();
-            
+
             // Update IDs after sorting
             for (int i = 0; i < settings.Count; i++)
             {
@@ -315,6 +327,32 @@ else
     private void CancelEdit()
     {
         editingSettingId = 0;
+    }
+
+    
+
+    private async Task CleanSettings()
+    {
+        cleaningSettings = true;
+        cleanSettingsNotification = "Cleaning settings in progress...";
+        StateHasChanged();
+
+        try
+        {
+            await SettingsService.CleanupSettingsAsync();
+            cleanSettingsNotification = "Settings cleanup complete.";
+            await LoadSettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            cleanSettingsNotification = "";
+            await JSRuntime.InvokeVoidAsync("alert", $"Error cleaning settings: {ex.Message}");
+        }
+        finally
+        {
+            cleaningSettings = false;
+            StateHasChanged();
+        }
     }
 
     private async Task SaveSetting()
