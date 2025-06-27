@@ -70,7 +70,8 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                 var placeholders = new Dictionary<string, string>
                 {
                     { "UserName", user.Email },
-                    { "VerificationLink", verificationLink }
+                    { "VerificationLink", verificationLink },
+                    { "token", token }
                 };
                 var TemplateContent = @"<!DOCTYPE html>
 <html>
@@ -78,24 +79,41 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
     <meta charset=""utf-8"">
     <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
     <title>Email Verification</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-        h1 { color: #2c5282; }
-    </style>
 </head>
-<body>
-    <h1>Email Verification Required</h1>
-    <p>Dear {{userName}},</p>
-    <p>Please click the link below to verify your email address:</p>
-    <p><a href=""{{verificationUrl}}"">{{verificationUrl}}</a></p>
-    <p>If you did not request this email, please ignore it.</p>
+<body style=""font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;"">
+    <h1 style=""color: #2c5282; margin-bottom: 20px; font-size: 24px;"">Email Verification Required</h1>
+    
+    <p style=""margin-bottom: 16px;"">Dear {{userName}},</p>
+    
+    <p style=""margin-bottom: 16px;"">Please click the link below to verify your email address:</p>
+    
+    <p style=""margin-bottom: 20px;"">
+        <a href=""{{verificationUrl}}"" style=""color: #3182ce; text-decoration: underline;"">{{verificationUrl}}</a>
+    </p>
+    
+    <p style=""margin-bottom: 12px;"">Or copy and paste this code into the app:</p>
+    
+    <div style=""background: #f4f4f4; border: 1px solid #e2e8f0; border-radius: 4px; padding: 12px; font-family: 'Consolas', 'Courier New', monospace; font-size: 1.1em; margin: 16px 0; word-break: break-all; display: inline-block; min-width: 200px; text-align: center;"">
+        {{token}}
+    </div>
+    
+    <p style=""margin-top: 20px; color: #666; font-size: 0.95em;"">If you did not request this email, please ignore it.</p>
+    
+    <div style=""margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;"">
+        <p style=""margin: 0; color: #555; font-size: 0.9em;"">
+            Best regards,<br>
+            <strong>Platform for Good</strong><br>
+            <a href=""https://gd4.org"" style=""color: #3182ce; text-decoration: none;"">https://gd4.org</a>
+        </p>
+    </div>
 </body>
 </html>";
 
                 // Replace placeholders in the template content
                 TemplateContent = TemplateContent
                     .Replace("{{userName}}", placeholders["UserName"])
-                    .Replace("{{verificationUrl}}", placeholders["VerificationLink"]);
+                    .Replace("{{verificationUrl}}", placeholders["VerificationLink"])
+                    .Replace("{{token}}", placeholders["token"]);
 
                 var emailSent = await _messageService.SendEmailAsync(user.Email, "Verify Email Address", TemplateContent);
                 // Send the verification email using the template
