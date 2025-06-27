@@ -50,7 +50,16 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
 
         private bool isRegistered = false;
         private string referralCode = "";
-        private bool appendName = false;
+        private bool _appendName = false;
+        private bool appendName
+        {
+            get => _appendName;
+            set
+            {
+                _appendName = value;
+                StateHasChanged(); // Trigger UI update when checkbox changes
+            }
+        }
         private string userName = "";
 
         private string Title => Route switch
@@ -96,7 +105,7 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
         {
             try
             {
-                string referralUrl = $"https://gd4.org/give/{ReferralLink}";
+                string referralUrl = $"{ReferralLink}";
                 await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
                 copyUrlSuccess = true;
                 StateHasChanged();
@@ -124,6 +133,22 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
 
         private async Task HandleRegistration()
         {
+            // Manual validation for first and last name
+            var validationErrors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(profile.FirstName))
+                validationErrors.Add("First name is required.");
+
+            if (string.IsNullOrWhiteSpace(profile.LastName))
+                validationErrors.Add("Last name is required.");
+
+            if (validationErrors.Any())
+            {
+                message = "Error: " + string.Join(" ", validationErrors);
+                StateHasChanged();
+                return;
+            }
+
             // Set the DateOfBirth from the selected month, day, and year
             SetDateOfBirth();
 
@@ -139,10 +164,33 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
                 // Create both the user and profile in a single operation
                 var createdProfile = await UserProfileService.CreateUserWithProfileAsync(user, profile);
                 referralCode = createdProfile.ReferralCode;
+                userName = $"{profile.FirstName}-{profile.LastName.Substring(0, 1).ToUpper()}";
 
-                message = $"User registered successfully!";
-                isRegistered = true;
-                StateHasChanged();
+                try
+                {
+                    // Request login email with verification link if needed
+                    var (success, message) = await AuthService.RequestLoginEmailAsync(createdProfile.User.Email);
+
+                    if (success)
+                    {
+                        successMessage = message;
+                    }
+                    else
+                    {
+                        errorMessage = message;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errorMessage = $"An error occurred: {ex.Message}";
+                }
+                finally
+                {
+
+                    message = $"User registered successfully!";
+                    isRegistered = true;
+                    StateHasChanged();
+                }
 
                 // Reset the form
                 //user = new() { Role = UserRole.Fundraiser };
@@ -190,6 +238,7 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
             finally
             {
                 isProcessing = false;
+                StateHasChanged();
             }
         }
 

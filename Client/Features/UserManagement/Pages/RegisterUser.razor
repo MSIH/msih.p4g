@@ -14,7 +14,8 @@
                 <div class="alert alert-success">
                     Registration successful!
                     <br />
-                    <h5 class="mt-2 mb-3">https://4gd.org/give/@ReferralLink</h5>
+                </div>
+                    <h5 class="mt-2 mb-3">@ReferralLink</h5>
                     <br />
                     <p class="mb-0">
                         <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
@@ -39,7 +40,7 @@
                         <li><a href="mailto:?subject=Join%20me&body=@ReferralLink" target="_blank">Email</a></li>
                         <li><a href="sms:?body=@ReferralLink" target="_blank">Text Message</a></li>
                     </ul>
-                </div>
+                
             }
             else
             {
@@ -49,7 +50,6 @@
                 <div class="card-body">
                     <EditForm Model="@user" OnValidSubmit="HandleRegistration">
                         <DataAnnotationsValidator />
-                        <ValidationSummary />
 
                         @if (!string.IsNullOrEmpty(message))
                         {
@@ -60,17 +60,17 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                <InputText id="email" class="form-control" @bind-Value="user.Email" />
+                                <InputText id="email" class="form-control" @bind-Value="user.Email" required />
                                 <ValidationMessage For="@(() => user.Email)" />
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label for="first" class="form-label">First</label>
-                                <InputText id="first" class="form-control" @bind-Value="profile.FirstName" />
+                                <InputText id="first" class="form-control" @bind-Value="profile.FirstName" required />
                                 <ValidationMessage For="@(() => profile.FirstName)" />
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label for="last" class="form-label">Last</label>
-                                <InputText id="last" class="form-control" @bind-Value="profile.LastName" />
+                                <InputText id="last" class="form-control" @bind-Value="profile.LastName" required />
                                 <ValidationMessage For="@(() => profile.LastName)" />
                             </div>
                         </div>
