@@ -27,6 +27,13 @@
 }
 else
 {
+    if (!string.IsNullOrEmpty(cleanSettingsNotification))
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @cleanSettingsNotification
+            <button type="button" class="btn-close" @onclick="() => cleanSettingsNotification = string.Empty"></button>
+        </div>
+    }
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>Settings</span>
@@ -194,6 +201,10 @@ else
     private bool showDeleteModal = false;
     private Setting? settingToDelete;
 
+    private bool cleaningSettings = false;
+    private string cleanSettingsNotification = "";
+
+
     // List of sensitive settings (keys that contain these terms will mask their values)
     private readonly string[] sensitiveTerms = new[] { "key", "token", "secret", "password", "pwd", "auth" };
 
@@ -322,7 +333,26 @@ else
 
     private async Task CleanSettings()
     {
-        await SettingsService.CleanupSettingsAsync();
+        cleaningSettings = true;
+        cleanSettingsNotification = "Cleaning settings in progress...";
+        StateHasChanged();
+
+        try
+        {
+            await SettingsService.CleanupSettingsAsync();
+            cleanSettingsNotification = "Settings cleanup complete.";
+            await LoadSettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            cleanSettingsNotification = "";
+            await JSRuntime.InvokeVoidAsync("alert", $"Error cleaning settings: {ex.Message}");
+        }
+        finally
+        {
+            cleaningSettings = false;
+            StateHasChanged();
+        }
     }
 
     private async Task SaveSetting()
