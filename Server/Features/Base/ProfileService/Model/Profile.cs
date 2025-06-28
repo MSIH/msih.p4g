@@ -28,9 +28,9 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Model
         [DataType(DataType.Date)]
         public DateTime? DateOfBirth { get; set; }
 
-        public  string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
-        public  string LastName { get; set; }
+        public string? LastName { get; set; }
         public string FullName => $"{FirstName} {LastName}";
         public AddressModel? Address { get; set; }
         [Phone]
