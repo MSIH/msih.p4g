@@ -3,14 +3,11 @@
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  *@
-@page "/payment/braintree"
-@page "/payment/braintree/{CampaignId:int?}"
-@page "/payment/braintree/{CampaignId:int?}/{ReferralCode?}"
-@page "/d/{CampaignId:int?}"
+
 @page "/d/{ReferralCode?}"
-@page "/d/{CampaignId:int?}/{ReferralCode?}"
-@page "/give/{ReferralCode}"
-@page "/donate/{ReferralCode}"
+@page "/give/{ReferralCode?}"
+@page "/donate/{ReferralCode?}"
+@page "/donate/{CampaignId:int?}"
 
 @using msih.p4g.Server.Features.Base.PaymentService.Interfaces
 @using msih.p4g.Server.Features.Base.PaymentService.Models
@@ -60,13 +57,25 @@
                 {
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5>Campaign Information</h5>
-                            <p class="mb-0"> @organization.LegalName | Tax Type @organization.OrganizationType | TaxID @organization.TaxId | @organization.Website</p>
+                            <h5>Organization Information</h5>
+                            <p class="mb-0">
+                                @organization.LegalName | Tax Type @organization.OrganizationType | TaxID @organization.TaxId |
+                                <a href="@organization.Website" target="_blank" rel="noopener noreferrer">@organization.Website</a>
+                            </p>
+                            
+                        </div>
+                        <div class="card-body">      
+                            <p class="mb-0"> @organization.MissionStatement</p>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Campaign Information</h5>            
                         </div>
                         <div class="card-body">
-                            <h4>@campaign.Title</h4>
+                            <h6>@campaign.Title</h6>
                             <p class="mb-0">@campaign.Description</p>
-
                         </div>
                     </div>
                 }

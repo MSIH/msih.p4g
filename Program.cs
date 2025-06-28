@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -11,8 +17,6 @@ using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.EmailService.Extensions;
-using msih.p4g.Server.Features.Base.EmailService.Interfaces;
-using msih.p4g.Server.Features.Base.EmailService.Services;
 using msih.p4g.Server.Features.Base.MessageService.Data;
 using msih.p4g.Server.Features.Base.MessageService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Extensions;
@@ -32,6 +36,7 @@ using msih.p4g.Server.Features.Base.UserService.Repositories;
 using msih.p4g.Server.Features.Base.UserService.Services;
 using msih.p4g.Server.Features.Base.W9FormService.Interfaces;
 using msih.p4g.Server.Features.Base.W9FormService.Services;
+using msih.p4g.Server.Features.CampaignService.Data;
 using msih.p4g.Server.Features.CampaignService.Interfaces;
 using msih.p4g.Server.Features.CampaignService.Repositories;
 using msih.p4g.Server.Features.CampaignService.Services;
@@ -89,8 +94,7 @@ builder.Services.AddSmsServices(builder.Configuration, builder.Environment);
 // Register Message Service (for both email and SMS) and related dependencies
 builder.Services.AddMessageServices(builder.Configuration, builder.Environment);
 
-// Register the message template data seeder
-builder.Services.AddScoped<MessageTemplateDataSeeder>();
+
 
 // Register Payment Service and related dependencies
 builder.Services.AddPaymentServices(builder.Configuration, builder.Environment);
@@ -148,9 +152,11 @@ builder.Services.AddScoped<IW9FormService, W9FormService>();
 // Add to the existing service registrations in Program.cs
 builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 
-// Update appsettings.json with the secret key
 
+// Register the data seeder
+builder.Services.AddScoped<MessageTemplateDataSeeder>();
 builder.Services.AddScoped<OrganizationDataSeeder>();
+builder.Services.AddScoped<CampaignDataSeeder>();
 
 var app = builder.Build();
 
@@ -172,6 +178,9 @@ using (var scope = app.Services.CreateScope())
     // Seed message templates
     var messageTemplateSeeder = scope.ServiceProvider.GetRequiredService<MessageTemplateDataSeeder>();
     await messageTemplateSeeder.SeedAsync();
+
+    var campaignTemplateSeeder = scope.ServiceProvider.GetRequiredService<CampaignDataSeeder>();
+    await campaignTemplateSeeder.SeedAsync();
 }
 
 // Configure the HTTP request pipeline.
