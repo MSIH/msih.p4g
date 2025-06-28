@@ -1,110 +1,278 @@
 @page "/register"
+@page "/student"
+@page "/influencer"
 @namespace msih.p4g.Client.Features.UserManagement.Pages
 @using msih.p4g.Server.Features.Base.UserService.Models
 
 <PageTitle>Register New User</PageTitle>
 
 <div class="row">
-    <div class="col-md-8 offset-md-3">
+    <div class="col-md-8 offset-md-1">
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Register New User</h3>
-            </div>
-            <div class="card-body">
-                <EditForm Model="@user" OnValidSubmit="HandleRegistration">
-                    <DataAnnotationsValidator />
-                    <ValidationSummary />
+            @if (isRegistered)
+            {
+                <div class="alert alert-success">
+                    Registration successful!
+                    <br />
+                </div>
+                    <h5 class="mt-2 mb-3">@ReferralLink</h5>
+                    <br />
+                <label>
+                    <input type="checkbox" @bind="appendName" />
+                    Append my name to the referral code
+                </label>
+                    <p class="mb-0">
+                        <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
+                            <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
+                        </button>
+                        @if (copyUrlSuccess)
+                        {
+                            <span class="text-success ms-2">Copied!</span>
+                        }
+                    </p>
+                <h5>Check Your Email</h5>
+                <p>We've sent you an email to verify your email ddress. Please check your email (including spam folder).</p>
+                    <br />
+                    <strong>Share your code:</strong>
+                    <ul>
+                        <li><a href="@InstagramUrl" target="_blank">Instagram</a></li>
+                        <li><a href="@TikTokUrl" target="_blank">TikTok</a></li>
+                        <li><a href="@FacebookUrl" target="_blank">Facebook</a></li>
+                        <li><a href="@TwitterUrl" target="_blank">Twitter</a></li>
+                        <li><a href="mailto:?subject=Join%20me&body=@ReferralLink" target="_blank">Email</a></li>
+                        <li><a href="sms:?body=@ReferralLink" target="_blank">Text Message</a></li>
+                    </ul>
+                
+            }
+            else
+            {
+                <div class="card-header">
+                    <h3 class="card-title">Register New User</h3>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@user" OnValidSubmit="HandleRegistration">
+                        <DataAnnotationsValidator />
 
-                    @if (!string.IsNullOrEmpty(message))
-                    {
-                        <div class="alert @(message.StartsWith("Error") ? "alert-danger" : "alert-success")">
-                            @message
+                        @if (!string.IsNullOrEmpty(message))
+                        {
+                            <div class="alert @(message.StartsWith("Error") ? "alert-danger" : "alert-success")">
+                                @message
+                            </div>
+                        }
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <InputText id="email" class="form-control" @bind-Value="user.Email" required />
+                                <ValidationMessage For="@(() => user.Email)" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="first" class="form-label">First</label>
+                                <InputText id="first" class="form-control" @bind-Value="profile.FirstName" required />
+                                <ValidationMessage For="@(() => profile.FirstName)" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="last" class="form-label">Last</label>
+                                <InputText id="last" class="form-control" @bind-Value="profile.LastName" required />
+                                <ValidationMessage For="@(() => profile.LastName)" />
+                            </div>
                         </div>
+                        @if (!isMarketer)
+                        {
+                            <h4 class="mt-4 mb-3">Profile Information</h4>
+                            <div class="mb-3">
+                                <label for="mobileNumber" class="form-label">Mobile Number</label>
+                                <InputText id="mobileNumber" @bind-Value="profile.MobileNumber" class="form-control" />
+                                <ValidationMessage For="@(() => profile.MobileNumber)" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Date of Birth</label>
+                                <div class="d-flex gap-2">
+                                    <InputSelect @bind-Value="month" class="form-select" style="width: 33%;">
+                                        <option value="">Month</option>
+                                        @for (int m = 1; m <= 12; m++)
+                                        {
+                                            <option value="@m">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)</option>
+                                        }
+                                    </InputSelect>
+                                    <InputSelect @bind-Value="day" class="form-select" style="width: 33%;">
+                                        <option value="">Day</option>
+                                        @for (int d = 1; d <= 31; d++)
+                                        {
+                                            <option value="@d">@d</option>
+                                        }
+                                    </InputSelect>
+                                    <InputSelect @bind-Value="year" class="form-select" style="width: 33%;">
+                                        <option value="">Year</option>
+                                        @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 120; y--)
+                                        {
+                                            <option value="@y">@y</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <InputCheckbox id="consentEmail" @bind-Value="profile.ConsentReceiveEmail" class="form-check-input" />
+                                <label class="form-check-label" for="consentEmail">
+                                    I consent to receive emails
+                                </label>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <InputCheckbox id="consentText" @bind-Value="profile.ConsentReceiveText" class="form-check-input" />
+                                <label class="form-check-label" for="consentText">
+                                    I consent to receive text messages
+                                </label>
+                            </div>
+                        }
+
+                 
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                                @if (isProcessing)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span> Processing...</span>
+                                }
+                                else
+                                {
+                                    <span>Register</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                    @if (isMarketer)
+                    {
+                        <div class="mb-3">
+                        <div class="container">
+                            <h2>Marketing Fee Structure Overview</h2>
+
+                            <p class="description">
+                                A tiered Marketing Fee structure with three initial milestones, followed by recurring $35 fees for every additional $250 in revenue. Fees are earned only when revenue thresholds are fully reached.
+                            </p>
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Revenue Threshold</th>
+                                        <th>Fee Earned at This Level</th>
+                                        <th>Total Fees Earned</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>$25</td>
+                                        <td>$5</td>
+                                        <td>$5</td>
+                                    </tr>
+                                    <tr>
+                                        <td>$100</td>
+                                        <td>$10</td>
+                                        <td>$15</td>
+                                    </tr>
+                                    <tr>
+                                        <td>$250</td>
+                                        <td>$20</td>
+                                        <td>$35</td>
+                                    </tr>
+                                    <tr>
+                                        <td>$500</td>
+                                        <td>$35</td>
+                                        <td>$70</td>
+                                    </tr>
+                                    <tr>
+                                        <td>$5,000</td>
+                                        <td>$665</td>
+                                        <td>$700</td>
+                                    </tr>
+                                    <tr>
+                                        <td>$50,000</td>
+                                        <td>$6,965</td>
+                                        <td>$7,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>$150,000</td>
+                                        <td>$20,965</td>
+                                        <td>$21,000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="example">
+                                The first three levels offer increasing rewards as you build momentum. Once you hit $250, the pattern becomes straightforward - you earn $35 for every additional $250 in sales. If your annual sales reach $277, you'd earn $35 because you've completed all three initial levels ($25, $100, and $250) but haven't quite reached the $500 milestone yet.
+                            </div>
+                        </div>
+                        </div>
+
                     }
 
-                    <h4>User Information</h4>
-                    <div class="mb-6">
-                        <label for="email" class="form-label">Email</label>
-                        <InputText id="email" @bind-Value="user.Email" class="form-control" />
-                        <ValidationMessage For="@(() => user.Email)" />
-                    </div>  
-                        
-                    <h4>Profile Information</h4>
-                    <div class="mb-6">
-                        <label for="mobileNumber" class="form-label">Mobile Number</label>
-                        <InputText id="mobileNumber" @bind-Value="profile.MobileNumber" class="form-control" />
-                        <ValidationMessage For="@(() => profile.MobileNumber)" />
-                    </div>
-                    <div class="mb-6">
-                        <label for="firstName" class="form-label">First Name</label>
-                        <InputText id="firstName" @bind-Value="profile.FirstName" class="form-control" />
-                    </div>
-
-                    <div class="mb-6">
-                        <label for="lastName" class="form-label">Last Name</label>
-                        <InputText id="lastName" @bind-Value="profile.LastName" class="form-control" />
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="form-label">Date of Birth</label>
-                        <div class="d-flex gap-2">
-                            <InputSelect @bind-Value="month" class="form-select" style="width: 33%;">
-                                <option value="">Month</option>
-                                @for (int m = 1; m <= 12; m++)
-                                {
-                                    <option value="@m">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)</option>
-                                }
-                            </InputSelect>
-                            <InputSelect @bind-Value="day" class="form-select" style="width: 33%;">
-                                <option value="">Day</option>
-                                @for (int d = 1; d <= 31; d++)
-                                {
-                                    <option value="@d">@d</option>
-                                }
-                            </InputSelect>
-                            <InputSelect @bind-Value="year" class="form-select" style="width: 33%;">
-                                <option value="">Year</option>
-                                @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 120; y--)
-                                {
-                                    <option value="@y">@y</option>
-                                }
-                            </InputSelect>
-                        </div>                  
-                    </div>
-
-             
-                    <div class="mb-6 form-check">
-                        <InputCheckbox id="consentEmail" @bind-Value="profile.ConsentReceiveEmail" class="form-check-input" />
-                        <label class="form-check-label" for="consentEmail">
-                            I consent to receive emails
-                        </label>
-                    </div>
-
-                    <div class="mb-6 form-check">
-                        <InputCheckbox id="consentText" @bind-Value="profile.ConsentReceiveText" class="form-check-input" />
-                        <label class="form-check-label" for="consentText">
-                            I consent to receive text messages
-                        </label>
-                    </div>
-
-                    <div class="mb-6">
-                        <label for="role" class="form-label">Role</label>
-                        <input id="role" class="form-control" value="Fundraiser" readonly />
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" disabled="@isProcessing">
-                        @if (isProcessing)
-                        {
-                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            <span> Processing...</span>
-                        }
-                        else
-                        {
-                            <span>Register</span>
-                        }
-                    </button>
-                </EditForm>
-            </div>
+                </div>
+            }
         </div>
     </div>
 </div>
+
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f5f5f5;
+    }
+
+    .container {
+        /* max-width: 600px; */
+        margin: 0 auto;
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .description {
+        color: #666;
+        margin-bottom: 25px;
+        line-height: 1.5;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 25px;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+        color: #333;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f0f0f0;
+    }
+
+    .example {
+        background-color: #e8f4f8;
+        padding: 15px;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
+        color: #333;
+        line-height: 1.5;
+    }
+</style>

@@ -5,6 +5,7 @@
 //  */
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
@@ -23,6 +24,9 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
         [Inject]
         private AuthService AuthService { get; set; }
 
+        [Inject]
+        public IJSRuntime JSRuntime { get; set; }
+
         private User user = new() { Role = UserRole.Fundraiser }; // Default to Fundraiser
         private Profile profile = new();
         private string message;
@@ -37,6 +41,88 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
         private string errorMessage = string.Empty;
         private string successMessage = string.Empty;
 
+        private bool isMarketer => Route switch
+        {
+            "/student" => true,
+            "/influencer" => true,
+            _ => false
+        };
+
+        private bool isRegistered = false;
+        private string referralCode = "";
+        private bool _appendName = false;
+        private bool appendName
+        {
+            get => _appendName;
+            set
+            {
+                _appendName = value;
+                StateHasChanged(); // Trigger UI update when checkbox changes
+            }
+        }
+        private string userName = "";
+
+        private string Title => Route switch
+        {
+            "/student" => "Student Registration",
+            "/influencer" => "Influencer Registration",
+            _ => "Register"
+        };
+
+        private string Description => Route switch
+        {
+            "/student" => "Sign up as a student and start your journey.",
+            "/influencer" => "Sign up as an influencer and earn rewards.",
+            _ => ""
+        };
+        private string Route => NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/").TrimEnd('/');
+        private string RouteName => Route switch
+        {
+            "/student" => "Student",
+            "/influencer" => "Influencer",
+            _ => "User"
+        };
+
+        private UserRole GetRoleForRoute() => Route switch
+        {
+            "/student" => UserRole.Fundraiser,
+            "/influencer" => UserRole.Fundraiser,
+            _ => UserRole.Fundraiser
+        };
+
+        private string ReferralLink => appendName && !string.IsNullOrEmpty(userName)
+        ? $"https://gd4.org/give/{referralCode}-{userName.Replace(" ", "")}"
+        : $"https://gd4.org/give/{referralCode}";
+
+        private string InstagramUrl => $"https://www.instagram.com/?url={Uri.EscapeDataString(ReferralLink)}";
+        private string TikTokUrl => $"https://www.tiktok.com/share?url={Uri.EscapeDataString(ReferralLink)}";
+        private string FacebookUrl => $"https://www.facebook.com/sharer/sharer.php?u={Uri.EscapeDataString(ReferralLink)}";
+        private string TwitterUrl => $"https://twitter.com/intent/tweet?url={Uri.EscapeDataString(ReferralLink)}";
+
+        bool copyUrlSuccess = false;
+
+        private async Task CopyReferralUrl()
+        {
+            try
+            {
+                string referralUrl = $"{ReferralLink}";
+                await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
+                copyUrlSuccess = true;
+                StateHasChanged();
+
+                // Reset the success message after 3 seconds
+                await Task.Delay(3000);
+                copyUrlSuccess = false;
+                StateHasChanged();
+            }
+            catch (Exception)
+            {
+                // Handle clipboard error
+                message = "Unable to copy to clipboard. Please select and copy the URL manually.";
+            }
+        }
+
+
 
         protected override void OnInitialized()
         {
@@ -47,6 +133,22 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
 
         private async Task HandleRegistration()
         {
+            // Manual validation for first and last name
+            var validationErrors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(profile.FirstName))
+                validationErrors.Add("First name is required.");
+
+            if (string.IsNullOrWhiteSpace(profile.LastName))
+                validationErrors.Add("Last name is required.");
+
+            if (validationErrors.Any())
+            {
+                message = "Error: " + string.Join(" ", validationErrors);
+                StateHasChanged();
+                return;
+            }
+
             // Set the DateOfBirth from the selected month, day, and year
             SetDateOfBirth();
 
@@ -61,12 +163,8 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
             {
                 // Create both the user and profile in a single operation
                 var createdProfile = await UserProfileService.CreateUserWithProfileAsync(user, profile);
-
-                message = $"User registered successfully!";
-
-                // Reset the form
-                //user = new() { Role = UserRole.Fundraiser };
-                //profile = new();
+                referralCode = createdProfile.ReferralCode;
+                userName = $"{profile.FirstName}-{profile.LastName.Substring(0, 1).ToUpper()}";
 
                 try
                 {
@@ -88,18 +186,48 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
                 }
                 finally
                 {
-                    isLoggingIn = false;
-                    StateHasChanged();
-                    // wait two seconds
-                    await Task.Delay(4000);
 
-                    // If login was successful, we could redirect the user here
-                    if (!string.IsNullOrEmpty(successMessage))
-                    {
-                        // No immediate redirect for now, letting user see the message
-                        NavigationManager.NavigateTo("/verify-email");
-                    }
+                    message = $"User registered successfully!";
+                    isRegistered = true;
+                    StateHasChanged();
                 }
+
+                // Reset the form
+                //user = new() { Role = UserRole.Fundraiser };
+                //profile = new();
+
+                //try
+                //{
+                //    // Request login email with verification link if needed
+                //    var (success, message) = await AuthService.RequestLoginEmailAsync(createdProfile.User.Email);
+
+                //    if (success)
+                //    {
+                //        successMessage = message;
+                //    }
+                //    else
+                //    {
+                //        errorMessage = message;
+                //    }
+                //}
+                //catch (Exception ex)
+                //{
+                //    errorMessage = $"An error occurred: {ex.Message}";
+                //}
+                //finally
+                //{
+                //    isLoggingIn = false;
+                //    StateHasChanged();
+                //    // wait two seconds
+                //    await Task.Delay(4000);
+
+                //    // If login was successful, we could redirect the user here
+                //    if (!string.IsNullOrEmpty(successMessage))
+                //    {
+                //        // No immediate redirect for now, letting user see the message
+                //        NavigationManager.NavigateTo("/verify-email");
+                //    }
+                //}
 
 
             }
@@ -110,6 +238,7 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
             finally
             {
                 isProcessing = false;
+                StateHasChanged();
             }
         }
 
