@@ -55,7 +55,7 @@ namespace msih.p4g.Server.Features.OrganizationService.Data
                         EmailAddress = "ithappens@msih.org",
                         Website = "https://www.msih.org",
                         ShortDescription = "Make Sure It Happens, Inc. provide charitable and educational assistance to the general public to help them make a positive impact on the world.",
-                        MissionStatement = "Our mission is to empower students and communities through educational initiatives and research projects that address real-world problems.",
+                        MissionStatement = "Provide charitable and educational assistance to the general public to help them make a positive impact on the world.",
                         IsActive = true,
                         CreatedOn = DateTime.UtcNow,
                         CreatedBy = "System"
