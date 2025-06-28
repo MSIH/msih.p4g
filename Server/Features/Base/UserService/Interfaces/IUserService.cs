@@ -20,6 +20,13 @@ namespace msih.p4g.Server.Features.Base.UserService.Interfaces
         /// <returns>The found user or null if not found</returns>
         Task<User?> GetByEmailAsync(string email);
 
+        Task<User?> GetByEmailAsync(
+            string email,
+            bool includeProfile = false,
+            bool includeAddress = false,
+            bool includeDonor = false,
+            bool includeFundraiser = false);
+
         /// <summary>
         /// Retrieves a user by their ID
         /// </summary>

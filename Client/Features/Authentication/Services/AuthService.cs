@@ -63,7 +63,7 @@ namespace msih.p4g.Client.Features.Authentication.Services
         {
             try
             {
-                var user = await _userService.GetByEmailAsync(email);
+                var user = await _userService.GetByEmailAsync(email, includeProfile: true);
 
                 if (user == null)
                 {
