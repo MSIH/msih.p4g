@@ -62,24 +62,34 @@
                                 @organization.LegalName | Tax Type @organization.OrganizationType | TaxID @organization.TaxId |
                                 <a href="@organization.Website" target="_blank" rel="noopener noreferrer">@organization.Website</a>
                             </p>
-                            
+
                         </div>
-                        <div class="card-body">      
+                        <div class="card-body">
                             <p class="mb-0"> @organization.MissionStatement</p>
                         </div>
                     </div>
 
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5>Campaign Information</h5>            
+                            <h5>Campaign Information</h5>
+                        </div>
+                        <!-- Campaign Drop-down -->
+                        <div class="mb-4">
+                            <small class="text-muted">Select the campaign for this fundraiser</small>
+                            <InputSelect id="campaignSelect" class="form-control" @bind-Value="selectedCampaignId">
+                                <option value="">-- Select Campaign --</option>
+                                @foreach (var c in campaigns)
+                                {
+                                    <option value="@c.Id">@c.Title</option>
+                                }
+                            </InputSelect>                            
                         </div>
                         <div class="card-body">
-                            <h6>@campaign.Title</h6>
-                            <p class="mb-0">@campaign.Description</p>
+                            <p class="mb-3">@campaign.Description</p>
                         </div>
                     </div>
                 }
-               @*  else if (!string.IsNullOrEmpty(campaignError))
+                @*  else if (!string.IsNullOrEmpty(campaignError))
                 {
                     <div class="alert alert-danger mb-4">
                         @campaignError
@@ -263,6 +273,57 @@
     private string paymentError = "";
     private bool isProcessing = false;
     private bool isPaymentFormReady = false;
+    private IEnumerable<Campaign> campaigns = Enumerable.Empty<Campaign>();
+    private int? _selectedCampaignId;
+    private int? selectedCampaignId
+    {
+        get => _selectedCampaignId;
+        set
+        {
+            if (_selectedCampaignId != value)
+            {
+                _selectedCampaignId = value;
+                UpdateSelectedCampaign();
+            }
+        }
+    }
+
+    private void UpdateSelectedCampaign()
+    {
+        if (selectedCampaignId.HasValue)
+        {
+            campaign = campaigns.FirstOrDefault(c => c.Id == selectedCampaignId.Value);
+            if (campaign != null)
+            {
+                donationRequest.CampaignCode = campaign.Id.ToString();
+            }
+        }
+        else
+        {
+            campaign = null;
+            donationRequest.CampaignCode = null;
+        }
+        StateHasChanged();
+    }
+
+    private async Task OnCampaignChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var id))
+        {
+            // selectedCampaignId is already updated by @bind-Value
+            campaign = campaigns.FirstOrDefault(c => c.Id == id);
+            if (campaign != null)
+            {
+                donationRequest.CampaignCode = campaign.Id.ToString();
+            }
+        }
+        else
+        {
+            campaign = null;
+            donationRequest.CampaignCode = null;
+        }
+        StateHasChanged(); // Ensure UI updates
+    }
 
     private void SetAnnual(bool value)
     {
@@ -300,10 +361,32 @@
     {
         await Task.WhenAll(
             ProcessReferalCode(),
-            LoadCampaignAsync(),
-            LoadOrganizationAsync(),
-            LoadReferrerAsync()
-        );
+        LoadAllCampaignAsync(),
+        LoadOrganizationAsync(),
+        LoadReferrerAsync()
+    );
+
+        // After all campaigns are loaded, set the selected campaign if CampaignId is present
+        if (CampaignId.HasValue && campaigns.Any())
+        {
+            selectedCampaignId = CampaignId.Value;
+            campaign = campaigns.FirstOrDefault(c => c.Id == CampaignId.Value);
+            if (campaign != null)
+            {
+                donationRequest.CampaignCode = campaign.Id.ToString();
+            }
+        }
+        else if (campaigns.Any())
+        {
+            // Optionally, select the default campaign if no CampaignId is provided
+            campaign = campaigns.FirstOrDefault(c => c.IsDefault) ?? campaigns.First();
+            selectedCampaignId = campaign?.Id;
+            if (campaign != null)
+            {
+                donationRequest.CampaignCode = campaign.Id.ToString();
+            }
+        }
+        StateHasChanged();
     }
 
     private async Task LoadOrganizationAsync()
@@ -326,6 +409,28 @@
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private async Task LoadAllCampaignAsync()
+    {
+        try
+        {
+            campaigns = await CampaignService.GetAllAsync();
+            if (campaigns == null || !campaigns.Any())
+            {
+                campaignError = "No campaigns available.";
+            }
+
+        }
+        catch (Exception ex)
+        {
+            campaignError = $"Error loading campaign: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged(); // Fixed the method call syntax
         }
     }
 
