@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
+using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
 
@@ -26,6 +27,11 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
 
         [Inject]
         public IJSRuntime JSRuntime { get; set; }
+
+        [Inject]
+        private ISettingsService _settingsService { get; set; }
+        [Inject]
+        private IConfiguration _configuration { get; set; }
 
         private User user = new() { Role = UserRole.Fundraiser }; // Default to Fundraiser
         private Profile profile = new();
@@ -90,8 +96,10 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
             _ => UserRole.Fundraiser
         };
 
+        private string? donationUrl = "";
+
         private string ReferralLink => appendName && !string.IsNullOrEmpty(userName)
-        ? $"https://gd4.org/give/{referralCode}-{userName.Replace(" ", "")}"
+        ? $"{donationUrl}/{referralCode}-{userName.Replace(" ", "")}"
         : $"https://gd4.org/give/{referralCode}";
 
         private string InstagramUrl => $"https://www.instagram.com/?url={Uri.EscapeDataString(ReferralLink)}";
@@ -165,6 +173,10 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
                 var createdProfile = await UserProfileService.CreateUserWithProfileAsync(user, profile);
                 referralCode = createdProfile.ReferralCode;
                 userName = $"{profile.FirstName}-{profile.LastName.Substring(0, 1).ToUpper()}";
+
+                var donationUrl = await _settingsService.GetValueAsync("DonationURL")
+                   ?? _configuration["DonationURL"]
+                   ?? "https://gd4.org/donate";
 
                 try
                 {

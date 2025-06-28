@@ -28,6 +28,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         private const string _eMAIL_VERIFICATION_TEMPLATE = "Email Verification";
         private const string _eMAIL_VERIFICATION_SECRET_KEY = "EmailVerification:SecretKey";
         private const string _bASE_URL_SETTING = "EmailVerification:BaseUrl";
+        private const string _dONATION_URL_SETTING = "DonationURL";
 
         public EmailVerificationService(
             IUserService userService,
@@ -55,6 +56,10 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     ?? _configuration["BaseUrl"]
                     ?? "https://localhost:7265";
 
+                var donationUrl = await _settingsService.GetValueAsync(_dONATION_URL_SETTING)
+                    ?? _configuration["DonationURL"]
+                    ?? "https://gd4.org/donate";
+
                 // based on the current time get number in format of HHmmss
                 var currentTime = DateTime.UtcNow.ToString("HHmmss");
                 // covert to int
@@ -66,12 +71,16 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                 // Create the verification link
                 var verificationLink = $"{baseUrl}/verify-email?token={token}";
 
+                var referalURL = $"{donationUrl}/{user.Profile.ReferralCode}-{user.Profile.FirstName}-{user.Profile.LastName.Substring(0, 1).ToUpper()}"; // Updated to define referalURL
+
+
                 // Set up email placeholders
                 var placeholders = new Dictionary<string, string>
                 {
                     { "fullName", user.Profile.FullName },
                     { "VerificationLink", verificationLink },
-                    { "token", token }
+                    { "token", token },
+                    { "referalURL", referalURL} // Updated to use the new DonationURL
                 };
                 var TemplateContent = @"<!DOCTYPE html>
 <html>
@@ -81,7 +90,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
     <title>Email Verification</title>
 </head>
 <body style=""font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;"">
-    <h1 style=""color: #2c5282; margin-bottom: 20px; font-size: 24px;"">Email Verification Required</h1>
+    <h1 style=""color: #2c5282; margin-bottom: 20px; font-size: 16px;"">Email Verification Required</h1>
     
     <p style=""margin-bottom: 16px;"">Dear {{fullName}},</p>
     
@@ -99,6 +108,8 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
     
     <p style=""margin-top: 20px; color: #666; font-size: 0.95em;"">If you did not request this email, please ignore it.</p>
     
+    <p style=""margin-top: 20px; color: #666; font-size: 0.95em;"">Use this donation referral URL for any sharing: {{referalURL}}</p>
+    
     <div style=""margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;"">
         <p style=""margin: 0; color: #555; font-size: 0.9em;"">
             Best regards,<br>
@@ -113,7 +124,8 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                 TemplateContent = TemplateContent
                     .Replace("{{fullName}}", placeholders["fullName"])
                     .Replace("{{verificationUrl}}", placeholders["VerificationLink"])
-                    .Replace("{{token}}", placeholders["token"]);
+                    .Replace("{{token}}", placeholders["token"])
+                    .Replace("{{referalURL}}", placeholders["referalURL"]);
 
                 var emailSent = await _messageService.SendEmailAsync(user.Email, "Verify Email Address", TemplateContent);
                 // Send the verification email using the template

@@ -1,12 +1,15 @@
 @page "/profile"
 @namespace msih.p4g.Client.Features.UserManagement.Pages
 @using msih.p4g.Server.Features.Base.ProfileService.Model
+@using msih.p4g.Server.Features.Base.SettingsService.Interfaces
 @using msih.p4g.Server.Features.Base.UserProfileService.Interfaces
 @using msih.p4g.Server.Features.Base.UserService.Interfaces
 @using msih.p4g.Client.Features.Authentication.Services
 @inject IUserProfileService UserProfileService
 @inject AuthService AuthService
 @inject IJSRuntime JSRuntime
+@inject ISettingsService _settingsService;
+@inject IConfiguration _configuration;
 
 <PageTitle>Edit Profile</PageTitle>
 
@@ -47,7 +50,7 @@
                                 <div class="card-body">
                                     <div class="alert alert-info">
                                         <p class="mb-1">Share this full URL</p>
-                                        <h5 class="mt-2 mb-3">https://gd4.org/give/@referralCode</h5>
+                                        <h5 class="mt-2 mb-3">@donationURL/@referralCode</h5>
                                         <p class="mb-0">
                                             <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
                                                 <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
@@ -62,7 +65,7 @@
                                 <div class="card-body">
                                     <div class="alert alert-info">
                                         <p class="mb-1">Referral With Name</p>
-                                        <h5 class="mt-2 mb-3">https://gd4.org/give/@referralCode-@(profile.FirstName)-@(profile.LastName?.Substring(0,1).ToUpper())</h5>
+                                        <h5 class="mt-2 mb-3">@donationURL/@referralCode-@(profile.FirstName)-@(profile.LastName?.Substring(0, 1).ToUpper())</h5>
                                         <p class="mb-0">
                                             <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
                                                 <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
@@ -351,9 +354,14 @@
         // Add more countries as needed
     };
 
+    private string donationURL = string.Empty; // Fixed variable declaration
+
     protected override async Task OnInitializedAsync()
     {
         await LoadUserProfileAsync();
+        donationURL = await _settingsService.GetValueAsync("DonationURL") // Updated variable name from donationUrl to donationURL
+                   ?? _configuration["DonationURL"]
+                   ?? "https://gd4.org/donate";
     }
 
     private async Task LoadUserProfileAsync()
