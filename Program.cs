@@ -69,8 +69,9 @@ builder.Services.AddControllers(); // Add this line to enable API controllers
 
 // Register the AuthService as a scoped service so it's created per user session
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<AuthenticationStateProvider, AuthorizationProvider>();
-builder.Services.AddAuthorizationCore();
+
+builder.Services.AddScoped<AuthorizationProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthorizationProvider>());
 
 
 // Add HttpContextAccessor for accessing current user information

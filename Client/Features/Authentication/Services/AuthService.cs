@@ -11,6 +11,7 @@
  */
 
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using msih.p4g.Server.Features.Base.AuthorizationService;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
 
@@ -22,7 +23,9 @@ namespace msih.p4g.Client.Features.Authentication.Services
         private readonly ProtectedLocalStorage _localStorage;
         private readonly IUserService _userService;
         private readonly IEmailVerificationService _emailVerificationService;
+        private readonly AuthorizationProvider _authorizationProvider;
         private User? _currentUser;
+
 
         public event Action? AuthStateChanged;
         public User? CurrentUser => _currentUser;
@@ -31,11 +34,12 @@ namespace msih.p4g.Client.Features.Authentication.Services
         public AuthService(
             ProtectedLocalStorage localStorage,
             IUserService userService,
-            IEmailVerificationService emailVerificationService)
+            IEmailVerificationService emailVerificationService, AuthorizationProvider authorizationProvider)
         {
             _localStorage = localStorage;
             _userService = userService;
             _emailVerificationService = emailVerificationService;
+            _authorizationProvider = authorizationProvider;
         }
 
         public async Task InitializeAuthenticationStateAsync()
@@ -98,6 +102,10 @@ namespace msih.p4g.Client.Features.Authentication.Services
             {
                 await _localStorage.SetAsync("userId", user.Id);
                 _currentUser = user;
+
+                // After successful login
+                _authorizationProvider.Login(user); // Sets claims and notifies Blazor
+
                 NotifyAuthStateChanged();
             }
         }
@@ -107,6 +115,8 @@ namespace msih.p4g.Client.Features.Authentication.Services
             var emailSent = await _userService.LogOutUserByIdAsync(_currentUser.Id);
             await _localStorage.DeleteAsync("userId");
             _currentUser = null;
+            // On logout
+            _authorizationProvider.Logout(); // Clears claims and notifies Blazor
 
             NotifyAuthStateChanged();
         }
