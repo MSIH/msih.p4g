@@ -11,8 +11,10 @@
  */
 
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using msih.p4g;
 using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
@@ -28,7 +30,7 @@ using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Repositories;
 using msih.p4g.Server.Features.Base.ProfileService.Services;
 using msih.p4g.Server.Features.Base.SettingsService.Extensions;
-using msih.p4g.Server.Features.Base.SettingsService.Model; // Add this using for EF Core migrations
+using msih.p4g.Server.Features.Base.SettingsService.Model;
 using msih.p4g.Server.Features.Base.SettingsService.Services;
 using msih.p4g.Server.Features.Base.SmsService.Extensions;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
@@ -58,14 +60,20 @@ using msih.p4g.Server.Features.OrganizationService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Add services to the container.
+builder.Logging.AddConsole();
+builder.Logging.SetMinimumLevel(LogLevel.Debug);
+
+// Add services to the container - Updated for .NET 9 Blazor
 builder.Services.AddRazorPages(options =>
 {
     options.RootDirectory = "/Server/Pages";
 });
-//builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
-builder.Services.AddControllers(); // Add this line to enable API controllers
+
+// .NET 9 Blazor Server registration (replaces AddServerSideBlazor)
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+//builder.Services.AddControllers();
 
 // Register the AuthService as a scoped service so it's created per user session
 builder.Services.AddScoped<AuthService>();
@@ -73,14 +81,26 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AuthorizationProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthorizationProvider>());
 
-
 // Add HttpContextAccessor for accessing current user information
 builder.Services.AddHttpContextAccessor();
 
 // Add Data Protection services for sensitive data encryption
-builder.Services.AddDataProtection()
-    .SetApplicationName("msih.p4g")
-    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "keys")));
+if (builder.Environment.IsDevelopment())
+{
+    // For development, use in-memory key storage
+    builder.Services.AddDataProtection()
+        .SetApplicationName("msih.p4g");
+}
+else
+{
+    // For production, ensure the keys directory exists and has proper permissions
+    var keysPath = Path.Combine(builder.Environment.ContentRootPath, "keys");
+    Directory.CreateDirectory(keysPath); // Ensure directory exists
+
+    builder.Services.AddDataProtection()
+        .SetApplicationName("msih.p4g")
+        .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+}
 
 // Add Entity Framework with the unified ApplicationDbContext
 DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
@@ -99,8 +119,6 @@ builder.Services.AddSmsServices(builder.Configuration, builder.Environment);
 
 // Register Message Service (for both email and SMS) and related dependencies
 builder.Services.AddMessageServices(builder.Configuration, builder.Environment);
-
-
 
 // Register Payment Service and related dependencies
 builder.Services.AddPaymentServices(builder.Configuration, builder.Environment);
@@ -158,11 +176,14 @@ builder.Services.AddScoped<IW9FormService, W9FormService>();
 // Add to the existing service registrations in Program.cs
 builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 
-
 // Register the data seeder
 builder.Services.AddScoped<MessageTemplateDataSeeder>();
 builder.Services.AddScoped<OrganizationDataSeeder>();
 builder.Services.AddScoped<CampaignDataSeeder>();
+
+builder.Services.AddScoped<ProtectedLocalStorage>();
+
+builder.Services.AddScoped<SettingsInitializer>();
 
 var app = builder.Build();
 
@@ -201,10 +222,16 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// Add antiforgery for .NET 9 security enhancements
+app.UseAntiforgery();
+
 app.MapRazorPages();
-app.MapBlazorHub();
-app.MapControllers(); // Add this line to map API controllers
+
+// .NET 9 Blazor component mapping (replaces MapBlazorHub)
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+
 // Update the fallback route to point to your new location
-app.MapFallbackToPage("/_Host");
+//app.MapFallbackToPage("/_Host");
 
 app.Run();

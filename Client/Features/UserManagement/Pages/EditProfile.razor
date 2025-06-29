@@ -8,14 +8,27 @@
 @inject IUserProfileService UserProfileService
 @inject AuthService AuthService
 @inject IJSRuntime JSRuntime
-@inject ISettingsService _settingsService;
-@inject IConfiguration _configuration;
+@inject ISettingsService _settingsService
+@inject IConfiguration _configuration
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Edit Profile</PageTitle>
 
 <div class="container">
     <div class="row">
         <div class="col-md-8 offset-md-2">
+            @if (userClaims != null)
+            {
+                <div class="alert alert-info mb-3">
+                    <strong>User Claims:</strong>
+                    <ul>
+                        @foreach (var claim in userClaims)
+                        {
+                            <li><b>@claim.Type</b>: @claim.Value</li>
+                        }
+                    </ul>
+                </div>
+            }
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">My Profile</h3>
@@ -237,6 +250,9 @@
 </div>
 
 @code {
+    private IEnumerable<System.Security.Claims.Claim> userClaims;
+
+
     private string referralCode;
     private bool copyCodeSuccess = false;
     private bool copyUrlSuccess = false;
@@ -362,6 +378,9 @@
         donationURL = await _settingsService.GetValueAsync("DonationURL") // Updated variable name from donationUrl to donationURL
                    ?? _configuration["DonationURL"]
                    ?? "https://gd4.org/donate";
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        userClaims = authState.User.Claims;
     }
 
     private async Task LoadUserProfileAsync()
