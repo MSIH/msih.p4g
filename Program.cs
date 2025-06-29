@@ -10,12 +10,14 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
+using msih.p4g.Server.Features.Base.AuthorizationService;
 using msih.p4g.Server.Features.Base.EmailService.Extensions;
 using msih.p4g.Server.Features.Base.MessageService.Data;
 using msih.p4g.Server.Features.Base.MessageService.Extensions;
@@ -67,6 +69,9 @@ builder.Services.AddControllers(); // Add this line to enable API controllers
 
 // Register the AuthService as a scoped service so it's created per user session
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AuthenticationStateProvider, AuthorizationProvider>();
+builder.Services.AddAuthorizationCore();
+
 
 // Add HttpContextAccessor for accessing current user information
 builder.Services.AddHttpContextAccessor();
