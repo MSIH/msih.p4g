@@ -39,18 +39,18 @@
 <div class="dropdown">
     <button class="btn user-menu-btn dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
         <span class="oi oi-person" aria-hidden="true"></span>
-        @(AuthService.CurrentUser?.Email ?? "Account")
+        @(userWithProfile?.Profile?.FullName ?? AuthService.CurrentUser?.Email ?? "Account")
     </button>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
         @if (AuthService.IsAuthenticated)
         {
             <li><a class="dropdown-item" href="/profile">My Profile</a></li>
             <li><a class="dropdown-item" href="/donations">My Donations</a></li>
-            @if (AuthService.CurrentUser?.Role == UserRole.Fundraiser)
+            @if (userWithProfile?.Role == UserRole.Fundraiser || userWithProfile?.Role == UserRole.Admin) // Updated to use userWithProfile
             {
                 <li><a class="dropdown-item" href="/fundraiser">My Fundraiser</a></li>
             }
-            @if (AuthService.CurrentUser?.Role == UserRole.Admin)
+            @if (userWithProfile?.Role == UserRole.Admin) // Updated to use userWithProfile
             {
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="/users">User Management</a></li>
@@ -68,6 +68,8 @@
 </div>
 
 @code {
+    private User? userWithProfile;
+
     protected override async Task OnInitializedAsync()
     {
         AuthService.AuthStateChanged += OnAuthStateChanged;
@@ -76,6 +78,29 @@
         if (!AuthService.IsAuthenticated)
         {
             await AuthService.InitializeAuthenticationStateAsync();
+        }
+        // Load user with profile data if authenticated
+        await LoadUserWithProfileAsync();
+    }
+
+    private async Task LoadUserWithProfileAsync()
+    {
+        if (AuthService.IsAuthenticated && !string.IsNullOrEmpty(AuthService.CurrentUser?.Email))
+        {
+            try
+            {
+                userWithProfile = await UserService.GetByEmailAsync(
+                    AuthService.CurrentUser.Email,
+                    includeProfile: true,
+                    includeAddress: false,
+                    includeDonor: false,
+                    includeFundraiser: false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading user profile: {ex.Message}");
+                // Fall back to using AuthService.CurrentUser if profile loading fails
+            }
         }
     }
 

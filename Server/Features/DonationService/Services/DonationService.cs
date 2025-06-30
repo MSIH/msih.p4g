@@ -200,6 +200,20 @@ namespace msih.p4g.Server.Features.DonationService.Services
             }
 
             donation = await _donationRepository.AddAsync(donation, "DonationService");
+
+            // 5. send email notification to donor
+            if (isNewUser)
+            {
+                // Send welcome email to new donor
+
+            }
+            else
+            {
+                // Send thank you email for donation
+
+            }
+
+
             return donation;
         }
 
