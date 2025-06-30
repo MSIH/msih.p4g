@@ -62,4 +62,3 @@ jobs:
           app-name: 'dev-pg4-org'
           slot-name: 'Production'
           package: .
-          

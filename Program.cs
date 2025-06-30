@@ -132,6 +132,7 @@ builder.Services.AddScoped<IDonationService, DonationService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 
+
 // Register UserProfileService for coordinating User and Profile operations
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
@@ -158,6 +159,9 @@ builder.Services.AddScoped<MessageTemplateDataSeeder>();
 builder.Services.AddScoped<OrganizationDataSeeder>();
 builder.Services.AddScoped<CampaignDataSeeder>();
 
+builder.Services.AddScoped<AdminInitializationService>();
+
+
 var app = builder.Build();
 
 // Apply pending migrations and create database/tables if needed
@@ -182,6 +186,13 @@ using (var scope = app.Services.CreateScope())
     var campaignTemplateSeeder = scope.ServiceProvider.GetRequiredService<CampaignDataSeeder>();
     await campaignTemplateSeeder.SeedAsync();
 }
+
+using (var scope = app.Services.CreateScope())
+{
+    var adminInitService = scope.ServiceProvider.GetRequiredService<AdminInitializationService>();
+    await adminInitService.InitializeDefaultAdminAsync();
+}
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
