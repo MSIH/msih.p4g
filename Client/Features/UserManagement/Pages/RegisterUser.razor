@@ -60,7 +60,7 @@
                             </div>
                         }
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label for="email" class="form-label">Email</label>
                                 <InputText id="email" class="form-control" @bind-Value="user.Email" required />
                                 <ValidationMessage For="@(() => user.Email)" />
@@ -146,18 +146,18 @@
                     {
                         <div class="mb-3">
                         <div class="container">
-                            <h2>Marketing Fee Structure Overview</h2>
+                            <h2>Marketing Fee Structure </h2>
 
                             <p class="description">
-                                A tiered Marketing Fee structure with three initial milestones, followed by recurring $35 fees for every additional $250 in revenue. Fees are earned only when revenue thresholds are fully reached.
+                                A tiered Marketing Fee structure with three initial milestones, followed by recurring $35 fees for every additional $250 in donations. Fees are earned only when donation thresholds are fully reached.
                             </p>
 
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Revenue Threshold</th>
-                                        <th>Fee Earned at This Level</th>
-                                        <th>Total Fees Earned</th>
+                                        <th>Donation Threshold</th>
+                                        <th>Marketing Fees</th>
+                                            <th>Total Marketing Fees</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -180,33 +180,18 @@
                                         <td>$500</td>
                                         <td>$35</td>
                                         <td>$70</td>
-                                    </tr>
-                                    <tr>
-                                        <td>$5,000</td>
-                                        <td>$665</td>
-                                        <td>$700</td>
-                                    </tr>
-                                    <tr>
-                                        <td>$50,000</td>
-                                        <td>$6,965</td>
-                                        <td>$7,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>$150,000</td>
-                                        <td>$20,965</td>
-                                        <td>$21,000</td>
-                                    </tr>
+                                    </tr>                                    
                                 </tbody>
                             </table>
 
                             <div class="example">
-                                The first three levels offer increasing rewards as you build momentum. Once you hit $250, the pattern becomes straightforward - you earn $35 for every additional $250 in sales. If your annual sales reach $277, you'd earn $35 because you've completed all three initial levels ($25, $100, and $250) but haven't quite reached the $500 milestone yet.
+                                <p>The first three levels offer increasing rewards as you build momentum. Once you hit $250, the pattern becomes straightforward - you receive a marketing fee of $35 for every additional $250 in donations. </p>
+                                <p>If you generate an annual donation of $777, you will receive a marketing fee of $105 because you've completed all three initial levels ($25, $100, and $250) and two $250 levels but haven't reached the $1000 milestone yet.</p>
+                                <p>If you generate an annual donation of $5000, you will receive a marketing fee of $700. If you generate an annual donation of $50,000, you will receive a marketing fee of $7,000. If you generate an annual donation of $150,000, you will receive a marketing fee of $21,000.</p>
+                                </div>
                             </div>
                         </div>
-                        </div>
-
                     }
-
                 </div>
             }
         </div>
