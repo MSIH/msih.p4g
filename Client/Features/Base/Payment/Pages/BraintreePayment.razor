@@ -42,10 +42,13 @@
     }
     else
     {
-        <h2>Donation</h2>
-
         <div class="row">
             <div class="col-md-8 mx-auto">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Donate</h5>
+                    </div>
+                </div>
                 @if (referrer.FirstName != null)
                 {
                     <div class="alert alert-info mb-4">
@@ -130,7 +133,7 @@
                             <div class="row">
                             </div>
 
-                            <div class="row">
+                            @* <div class="row">
                                 <div class="col-md-5 mb-3">
                                     <label for="street" class="form-label">Street</label>
                                     <InputText id="street" class="form-control" @bind-Value="donationRequest.Address.Street" />
@@ -149,18 +152,13 @@
                                             <option value="@state.Abbreviation">@state.Name</option>
                                         }
                                     </InputSelect>
-                                </div>
-                                @*       <div class="col-md-4 mb-3">
-                                    <label for="state" class="form-label">State</label>
-                                    <InputText id="state" class="form-control" @bind-Value="donationRequest.Address.State" />
-                                    <ValidationMessage For="@(() => donationRequest.Address.State)" />
-                                </div> *@
+                                </div>                  
                                 <div class="col-md-2 mb-3">
                                     <label for="postal" class="form-label">Postal Code</label>
                                     <InputText id="postal" class="form-control" @bind-Value="donationRequest.Address.PostalCode" />
                                     <ValidationMessage For="@(() => donationRequest.Address.PostalCode)" />
                                 </div>
-                            </div>
+                            </div> *@
                         </div>
 
                     </div>
