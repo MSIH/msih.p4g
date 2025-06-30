@@ -6,10 +6,14 @@
 
 @page "/admin/settings"
 @namespace msih.p4g.Client.Features.Base.Admin.Pages
+@using msih.p4g.Client.Common.Components
+@using msih.p4g.Client.Common.Services
 @using msih.p4g.Server.Features.Base.SettingsService.Interfaces
 @using msih.p4g.Server.Features.Base.SettingsService.Model
 @inject ISettingsService SettingsService
 @inject IJSRuntime JSRuntime
+@inject AuthorizationService AuthorizationService
+
 
 <h3>Application Settings</h3>
 
@@ -210,6 +214,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+       await AuthorizationService.AdminAccessOnlyAsync();
         await LoadSettingsAsync();
     }
 

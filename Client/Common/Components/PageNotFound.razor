@@ -1,0 +1,52 @@
+@page "/404"
+@inject NavigationManager NavigationManager
+
+<div class="container-fluid vh-100 d-flex align-items-center justify-content-center">
+    <div class="text-center">
+        <div class="mb-4">
+            <i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+        </div>
+        <h1 class="mb-3 text-danger">404 - Page Not Found</h1>
+        <p class="mb-4 text-muted">The page you are looking for does not exist.</p>
+        <p class="text-muted">Redirecting to home page in <strong>@countdown</strong> seconds...</p>
+        <div class="mt-4">
+            <button class="btn btn-primary" @onclick="RedirectToHome">
+                Go to Home Page Now
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Redirect URL when access is denied (defaults to home page)
+    /// </summary>
+    [Parameter] public string RedirectUrl { get; set; } = "/";
+
+    /// <summary>
+    /// Delay in seconds before auto-redirect (defaults to 3 seconds)
+    /// </summary>
+    [Parameter] public int RedirectDelay { get; set; } = 3;
+
+    private int countdown;
+    private bool showPageNotFound = true;
+    protected override void OnInitialized()
+    {
+        countdown = RedirectDelay;
+        StartCountdown();
+    }
+    private async void StartCountdown()
+    {
+        while (countdown > 0)
+        {
+            await Task.Delay(1000);
+            countdown--;
+            StateHasChanged();
+        }
+        RedirectToHome();
+    }
+    private void RedirectToHome()
+    {
+        NavigationManager.NavigateTo(RedirectUrl);
+    }
+}
