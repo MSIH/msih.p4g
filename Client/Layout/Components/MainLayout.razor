@@ -1,4 +1,4 @@
-@* 
+@*
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
@@ -6,28 +6,108 @@
 
 @namespace msih.p4g.Client.Layout.Components
 @inject IWebHostEnvironment env
-@inherits LayoutComponentBase  
+@inherits LayoutComponentBase
 
-<div class="page">  
-    <div class="sidebar">  
-        <NavMenu />  
-    </div>  
+<style>
+    .orange-motif {
+        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffab00 100%);
+        color: white;
+    }
 
-    <main class="container-fluid px-0">  
-        <div class="top-row px-4 d-flex justify-content-between">
-            <div>
-                <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-            </div>
+    .orange-accent {
+        border-left: 4px solid #ff6b35;
+        background: linear-gradient(90deg, rgba(255, 107, 53, 0.1) 0%, transparent 100%);
+    }
+
+    .footer {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        margin-top: auto;
+        border-top: 3px solid #ff6b35;
+    }
+
+    .footer-link {
+        color: #ffab00;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+        .footer-link:hover {
+            color: #ff6b35;
+            text-decoration: underline;
+        }
+
+    .page {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .main-content {
+        flex: 1;
+    }
+
+    .orange-divider {
+        height: 2px;
+        background: linear-gradient(90deg, #ff6b35 0%, #f7931e 50%, #ffab00 100%);
+        margin: 1rem 0;
+    }
+</style>
+
+<div class="page">
+    @*<div class="sidebar">
+        <NavMenu />
+    </div>*@
+
+    <main class="container-fluid px-0 main-content">
+        <div class="top-row px-4 d-flex justify-content-between orange-accent">
             <div>
                 <UserMenu />
             </div>
-        </div>  
+        </div>
 
-        <article class="content px-4">  
-            @Body  
+        <article class="content px-4">
+            @Body
         </article>
-        © @year Env:@envName | <BuildVersion />
-    </main>  
+    </main>
+
+    <footer class="footer">
+        <div class="orange-divider"></div>
+        <div class="container-fluid px-4 py-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="orange-motif d-inline-block px-3 py-1 rounded">Make Sure It Happens Inc.</h6>
+                    <p class="mb-2 mt-2">
+                        <small>Provide charitable and educational assistance to the general public to help them make a positive impact on the world.</small>
+                    </p>
+                    <p class="mb-0">
+                        <small>© @year MSIH LLC. All rights reserved. | Env: @envName</small>
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="text-uppercase fw-bold mb-3">
+                        <span style="color: #ff6b35;">Quick Links</span>
+                    </h6>
+                    <ul class="list-unstyled mb-0">
+                        <li><a href="/" class="footer-link">Home</a></li>
+                        <li><a href="/donate" class="footer-link">Donate</a></li>
+                        <li><a href="/login" class="footer-link">Login/Register</a></li>                        
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="text-uppercase fw-bold mb-3">
+                        <span style="color: #ff6b35;">Support</span>
+                    </h6>
+                    <ul class="list-unstyled mb-0">
+                        <li><a href="/terms" target="_blank" class="footer-link">Terms</a></li>
+                        <li><a href="/privacy" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Contact Us</a></li>
+                        <li class="mt-2"><BuildVersion /></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
 </div>
 
 @code {
