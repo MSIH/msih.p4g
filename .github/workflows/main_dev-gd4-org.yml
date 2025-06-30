@@ -6,7 +6,7 @@ name: Build and deploy ASP.Net Core app to Azure Web App - dev-gd4-org
 on:
   push:
     branches:
-      - main
+      - development
   workflow_dispatch:
 
 jobs:
@@ -62,4 +62,3 @@ jobs:
           app-name: 'dev-gd4-org'
           slot-name: 'Production'
           package: .
-          
