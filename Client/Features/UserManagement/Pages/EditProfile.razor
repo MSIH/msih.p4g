@@ -84,6 +84,12 @@
                             <DataAnnotationsValidator />
                             <ValidationSummary />
 
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input id="email" type="email" value="@(AuthService.CurrentUser?.Email ?? "")" class="form-control" readonly />
+                                <small class="form-text text-muted">Email address cannot be changed from this page.</small>
+                            </div>
+
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <div class="mb-3">
