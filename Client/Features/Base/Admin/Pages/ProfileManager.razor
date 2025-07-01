@@ -1,6 +1,10 @@
 @page "/admin/profiles"
+@layout AdminLayout
+@using msih.p4g.Client.Layout.Components
+@using msih.p4g.Client.Common.Services
 @using msih.p4g.Server.Features.Base.ProfileService.Model
 @inject msih.p4g.Server.Features.Base.ProfileService.Interfaces.IProfileService ProfileService
+@inject AuthorizationService AuthorizationService
 
 <h3>Profile Management</h3>
 
@@ -66,6 +70,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+       
         isLoading = true;
         profiles = (await ProfileService.GetAllAsync(includeInactive: true)).ToList();
         isLoading = false;

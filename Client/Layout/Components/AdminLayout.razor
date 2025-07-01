@@ -1,0 +1,53 @@
+@using msih.p4g.Client.Common.Services
+@using msih.p4g.Server.Features.Base.UserService.Models
+@inject AuthorizationService AuthorizationService
+@inherits LayoutComponentBase
+
+@if (isAuthorized)
+{
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+
+        <main>
+            <div class="top-row px-4">
+                <UserMenu />
+            </div>
+
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+}
+else if (isLoading)
+{
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Checking permissions...</span>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isAuthorized = false;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isAuthorized = await AuthorizationService.AdminAccessOnlyAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking admin authorization: {ex.Message}");
+            isAuthorized = false;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

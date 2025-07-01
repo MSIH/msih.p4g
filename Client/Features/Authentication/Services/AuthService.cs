@@ -23,10 +23,12 @@ namespace msih.p4g.Client.Features.Authentication.Services
         private readonly IUserService _userService;
         private readonly IEmailVerificationService _emailVerificationService;
         private User? _currentUser;
+        private bool _isInitialized = false;
 
         public event Action? AuthStateChanged;
         public User? CurrentUser => _currentUser;
         public bool IsAuthenticated => _currentUser != null;
+        public bool IsInitialized => _isInitialized;
 
         public AuthService(
             ProtectedLocalStorage localStorage,
@@ -51,10 +53,19 @@ namespace msih.p4g.Client.Features.Authentication.Services
                     await GetUserByIdAsync(userId);
                 }
             }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop calls cannot be issued"))
+            {
+                // This is expected during prerendering - skip initialization for now
+                Console.WriteLine("Auth initialization skipped during prerendering");
+            }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error initializing auth state: {ex.Message}");
                 // Continue without authentication if there's an error
+            }
+            finally
+            {
+                _isInitialized = true;
             }
         }
 
@@ -118,7 +129,7 @@ namespace msih.p4g.Client.Features.Authentication.Services
 
         public async Task<User?> GetCurrentUserAsync()
         {
-            if (_currentUser == null)
+            if (_currentUser == null && _isInitialized)
             {
                 await InitializeAuthenticationStateAsync();
             }

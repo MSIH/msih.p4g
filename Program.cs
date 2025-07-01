@@ -131,6 +131,7 @@ builder.Services.AddScoped<IDonationService, DonationService>();
 // Register UserRepository and UserService for DI
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<msih.p4g.Client.Common.Services.AuthorizationService>();
 
 
 // Register UserProfileService for coordinating User and Profile operations

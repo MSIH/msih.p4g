@@ -5,13 +5,17 @@
  *@
 
 @page "/admin/message-templates"
+@layout AdminLayout
+@using msih.p4g.Client.Layout.Components
 @namespace msih.p4g.Client.Features.Base.Admin.Pages
+@using msih.p4g.Client.Common.Services
 @using msih.p4g.Server.Features.Base.MessageService.Models
 @using msih.p4g.Server.Features.Base.MessageService.Interfaces
 @using msih.p4g.Server.Features.Base.MessageService.Utilities
 @inject IMessageService MessageService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject AuthorizationService AuthorizationService
 
 <h3>Message Templates</h3>
 
@@ -243,6 +247,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+  
         await LoadTemplatesAsync();
     }
 
