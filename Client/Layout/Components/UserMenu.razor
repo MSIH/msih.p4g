@@ -55,6 +55,16 @@
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="/users">User Management</a></li>
                 <li><a class="dropdown-item" href="/admin/donors">Donor Management</a></li>
+                <li><a class="dropdown-item" href="/admin/profiles">Profile Management</a></li> @* Added Profile Management link *@
+                <li><a class="dropdown-item" href="/admin/campaigns">Campaign Management</a></li>
+                <li><a class="dropdown-item" href="/admin/settings">Admin Settings</a></li>
+                <li><a class="dropdown-item" href="/admin/phone-validation">Phone Validation</a></li>
+                <li><a class="dropdown-item" href="/admin/organizations">Organizations</a></li>        
+                <li><a class="dropdown-item" href="/admin/message-templates">Message Templates</a></li>            
+                <li><a class="dropdown-item" href="/admin/payouts">Payouts</a></li>
+
+
+
             }
             <li><hr class="dropdown-divider"></li>
             <li><button class="dropdown-item" @onclick="LogoutAsync">Logout</button></li>
@@ -74,13 +84,23 @@
     {
         AuthService.AuthStateChanged += OnAuthStateChanged;
 
-        // Only try to restore authentication if not already authenticated
-        if (!AuthService.IsAuthenticated)
-        {
-            await AuthService.InitializeAuthenticationStateAsync();
-        }
-        // Load user with profile data if authenticated
+        // Don't try to initialize auth state here during prerendering
+        // Load user with profile data if already authenticated
         await LoadUserWithProfileAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Only try to restore authentication after the first render when JS is available
+            if (!AuthService.IsAuthenticated && !AuthService.IsInitialized)
+            {
+                await AuthService.InitializeAuthenticationStateAsync();
+                await LoadUserWithProfileAsync();
+                StateHasChanged(); // Trigger a re-render if auth state changed
+            }
+        }
     }
 
     private async Task LoadUserWithProfileAsync()

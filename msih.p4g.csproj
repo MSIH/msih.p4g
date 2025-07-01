@@ -53,6 +53,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Client\Features\Base\Payment\Services\" />
+    <Folder Include="Client\Features\Base\SmsService\Pages\" />
     <Folder Include="Client\Features\Base\W9FormManagement\Components\" />
     <Folder Include="Client\Features\DonationService\Pages\" />
     <Folder Include="Server\Common\Data\Migrations\" />

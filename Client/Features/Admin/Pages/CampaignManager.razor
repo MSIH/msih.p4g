@@ -2,10 +2,14 @@
    This file is developed for Make Sure It Happens Inc.
    Unauthorized copying, modification, distribution, or use is prohibited. *@
 @page "/admin/campaigns"
+@layout AdminLayout
+@using msih.p4g.Client.Layout.Components
+@using msih.p4g.Client.Common.Services
 @using msih.p4g.Server.Features.CampaignService.Model
 @using msih.p4g.Server.Features.CampaignService.Interfaces
 @inject ICampaignService CampaignService
 @inject NavigationManager Navigation
+@inject AuthorizationService AuthorizationService
 
 <h3>Manage Donation Campaigns</h3>
 

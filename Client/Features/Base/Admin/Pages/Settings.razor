@@ -5,6 +5,8 @@
  *@
 
 @page "/admin/settings"
+@layout AdminLayout
+@using msih.p4g.Client.Layout.Components
 @namespace msih.p4g.Client.Features.Base.Admin.Pages
 @using msih.p4g.Client.Common.Components
 @using msih.p4g.Client.Common.Services
@@ -214,7 +216,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-       await AuthorizationService.AdminAccessOnlyAsync();
+  
         await LoadSettingsAsync();
     }
 
