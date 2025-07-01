@@ -56,7 +56,7 @@
                     </div>
                 }
 
-                @if (campaign != null)
+                @if (campaign != null && organization != null)
                 {
                     <div class="card mb-4">
                         <div class="card-header">
@@ -85,7 +85,7 @@
                                 {
                                     <option value="@c.Id">@c.Title</option>
                                 }
-                            </InputSelect>                            
+                            </InputSelect>
                         </div>
                         <div class="card-body">
                             <p class="mb-3">@campaign.Description</p>
@@ -357,34 +357,47 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(
-            ProcessReferalCode(),
-        LoadAllCampaignAsync(),
-        LoadOrganizationAsync(),
-        LoadReferrerAsync()
-    );
+        try
+        {
+            // Process referral code first (doesn't require DB calls)
+            await ProcessReferalCode();
 
-        // After all campaigns are loaded, set the selected campaign if CampaignId is present
-        if (CampaignId.HasValue && campaigns.Any())
-        {
-            selectedCampaignId = CampaignId.Value;
-            campaign = campaigns.FirstOrDefault(c => c.Id == CampaignId.Value);
-            if (campaign != null)
+            // Execute database operations sequentially to avoid DbContext concurrency issues
+            await LoadOrganizationAsync();
+            await LoadAllCampaignAsync();
+            await LoadReferrerAsync();
+
+            // After all campaigns are loaded, set the selected campaign if CampaignId is present
+            if (CampaignId.HasValue && campaigns.Any())
             {
-                donationRequest.CampaignCode = campaign.Id.ToString();
+                selectedCampaignId = CampaignId.Value;
+                campaign = campaigns.FirstOrDefault(c => c.Id == CampaignId.Value);
+                if (campaign != null)
+                {
+                    donationRequest.CampaignCode = campaign.Id.ToString();
+                }
+            }
+            else if (campaigns.Any())
+            {
+                // Optionally, select the default campaign if no CampaignId is provided
+                campaign = campaigns.FirstOrDefault(c => c.IsDefault) ?? campaigns.First();
+                selectedCampaignId = campaign?.Id;
+                if (campaign != null)
+                {
+                    donationRequest.CampaignCode = campaign.Id.ToString();
+                }
             }
         }
-        else if (campaigns.Any())
+        catch (Exception ex)
         {
-            // Optionally, select the default campaign if no CampaignId is provided
-            campaign = campaigns.FirstOrDefault(c => c.IsDefault) ?? campaigns.First();
-            selectedCampaignId = campaign?.Id;
-            if (campaign != null)
-            {
-                donationRequest.CampaignCode = campaign.Id.ToString();
-            }
+            // Log the exception and show user-friendly error
+            paymentError = $"Failed to load page data: {ex.Message}";
         }
-        StateHasChanged();
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
 
     private async Task LoadOrganizationAsync()
@@ -404,10 +417,6 @@
         {
             organizationError = $"Error loading organization: {ex.Message}";
         }
-        finally
-        {
-            isLoading = false;
-        }
     }
 
     private async Task LoadAllCampaignAsync()
@@ -424,11 +433,6 @@
         catch (Exception ex)
         {
             campaignError = $"Error loading campaign: {ex.Message}";
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged(); // Fixed the method call syntax
         }
     }
 
@@ -478,10 +482,6 @@
         {
             campaignError = $"Error loading campaign: {ex.Message}";
         }
-        finally
-        {
-            isLoading = false;
-        }
     }
 
     private async Task ProcessReferalCode()
@@ -509,7 +509,7 @@
         }
         catch (Exception ex)
         {
-            referrerError = $"Error loading referrer information: {ex.Message}";
+            referrerError = $"Error processing referral code: {ex.Message}";
         }
     }
 

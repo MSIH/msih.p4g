@@ -1,14 +1,15 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using System;
-using MySql.EntityFrameworkCore.Extensions;
 
 namespace msih.p4g.Server.Common.Data.Extensions
 {
@@ -30,30 +31,20 @@ namespace msih.p4g.Server.Common.Data.Extensions
             IHostEnvironment hostEnvironment)
             where TContext : DbContext
         {
-            // Determine if we should use SQLite based on configuration
-            var useLocalDb = hostEnvironment.IsDevelopment() && configuration.GetValue<bool>("UseLocalSqlite", false);
+            var databaseProvider = GetDatabaseProvider(configuration, hostEnvironment);
 
-            if (useLocalDb)
+            switch (databaseProvider)
             {
-                // Use SQLite for local development
-                var connectionString = configuration.GetConnectionString("SqliteConnection") ?? "Data Source=msih_p4g.db";
-                services.AddDbContext<TContext>(options =>
-                    options.UseSqlite(
-                        connectionString,
-                        sqliteOptions => sqliteOptions.MigrationsAssembly("msih.p4g")
-                    ));
-            }
-            else
-            {
-                // Use Oracle's MySQL provider
-                var connectionString = configuration.GetConnectionString("DefaultConnection") 
-                    ?? throw new InvalidOperationException("MySQL connection string 'DefaultConnection' is not configured.");
-                
-                services.AddDbContext<TContext>(options =>
-                    options.UseMySQL(
-                        connectionString,
-                        mySqlOptions => mySqlOptions.MigrationsAssembly("msih.p4g")
-                    ));
+                case DatabaseProvider.SQLite:
+                    AddSqliteDbContext<TContext>(services, configuration);
+                    break;
+                case DatabaseProvider.SqlServer:
+                    AddSqlServerDbContext<TContext>(services, configuration);
+                    break;
+                case DatabaseProvider.MySQL:
+                default:
+                    AddMySqlDbContext<TContext>(services, configuration);
+                    break;
             }
         }
 
@@ -70,28 +61,20 @@ namespace msih.p4g.Server.Common.Data.Extensions
             IHostEnvironment hostEnvironment)
             where TContext : DbContext
         {
-            // Determine if we should use SQLite based on configuration
-            var useLocalDb = hostEnvironment.IsDevelopment() && configuration.GetValue<bool>("UseLocalSqlite", false);
+            var databaseProvider = GetDatabaseProvider(configuration, hostEnvironment);
 
-            if (useLocalDb)
+            switch (databaseProvider)
             {
-                // Use SQLite for local development
-                var connectionString = configuration.GetConnectionString("SqliteConnection") ?? "Data Source=msih_p4g.db";
-                optionsBuilder.UseSqlite(
-                    connectionString,
-                    sqliteOptions => sqliteOptions.MigrationsAssembly("msih.p4g")
-                );
-            }
-            else
-            {
-                // Use Oracle's MySQL provider
-                var connectionString = configuration.GetConnectionString("DefaultConnection")
-                    ?? throw new InvalidOperationException("MySQL connection string 'DefaultConnection' is not configured.");
-                
-                optionsBuilder.UseMySQL(
-                    connectionString,
-                    mySqlOptions => mySqlOptions.MigrationsAssembly("msih.p4g")
-                );
+                case DatabaseProvider.SQLite:
+                    ConfigureSqliteOptions(optionsBuilder, configuration);
+                    break;
+                case DatabaseProvider.SqlServer:
+                    ConfigureSqlServerOptions(optionsBuilder, configuration);
+                    break;
+                case DatabaseProvider.MySQL:
+                default:
+                    ConfigureMySqlOptions(optionsBuilder, configuration);
+                    break;
             }
         }
 
@@ -102,29 +85,125 @@ namespace msih.p4g.Server.Common.Data.Extensions
             bool isDevelopment)
             where TContext : DbContext
         {
-            // Determine if we should use SQLite based on configuration
-            var useLocalDb = isDevelopment && configuration.GetValue<bool>("UseLocalSqlite", false);
+            var databaseProvider = GetDatabaseProvider(configuration, isDevelopment);
 
-            if (useLocalDb)
+            switch (databaseProvider)
             {
-                // Use SQLite for local development
-                var connectionString = configuration.GetConnectionString("SqliteConnection") ?? "Data Source=msih_p4g.db";
-                optionsBuilder.UseSqlite(
-                    connectionString,
-                    sqliteOptions => sqliteOptions.MigrationsAssembly("msih.p4g")
-                );
-            }
-            else
-            {
-                // Use Oracle's MySQL provider
-                var connectionString = configuration.GetConnectionString("DefaultConnection")
-                    ?? throw new InvalidOperationException("MySQL connection string 'DefaultConnection' is not configured.");
-                
-                optionsBuilder.UseMySQL(
-                    connectionString,
-                    mySqlOptions => mySqlOptions.MigrationsAssembly("msih.p4g")
-                );
+                case DatabaseProvider.SQLite:
+                    ConfigureSqliteOptions(optionsBuilder, configuration);
+                    break;
+                case DatabaseProvider.SqlServer:
+                    ConfigureSqlServerOptions(optionsBuilder, configuration);
+                    break;
+                case DatabaseProvider.MySQL:
+                default:
+                    ConfigureMySqlOptions(optionsBuilder, configuration);
+                    break;
             }
         }
+
+        private static DatabaseProvider GetDatabaseProvider(IConfiguration configuration, IHostEnvironment hostEnvironment)
+        {
+            return GetDatabaseProvider(configuration, hostEnvironment.IsDevelopment());
+        }
+
+        private static DatabaseProvider GetDatabaseProvider(IConfiguration configuration, bool isDevelopment)
+        {
+            // Check for SQLite first (local development)
+            if (isDevelopment && configuration.GetValue<bool>("UseLocalSqlite", false))
+            {
+                return DatabaseProvider.SQLite;
+            }
+
+            // Check for SQL Server
+            if (configuration.GetValue<bool>("UseSqlServer", false))
+            {
+                return DatabaseProvider.SqlServer;
+            }
+
+            // Default to MySQL
+            return DatabaseProvider.MySQL;
+        }
+
+        private static void AddSqliteDbContext<TContext>(IServiceCollection services, IConfiguration configuration)
+            where TContext : DbContext
+        {
+            var connectionString = configuration.GetConnectionString("SqliteConnection") ?? "Data Source=msih_p4g.db";
+            services.AddDbContext<TContext>(options =>
+                options.UseSqlite(
+                    connectionString,
+                    sqliteOptions => sqliteOptions.MigrationsAssembly("msih.p4g")
+                ));
+        }
+
+        private static void AddSqlServerDbContext<TContext>(IServiceCollection services, IConfiguration configuration)
+            where TContext : DbContext
+        {
+            var connectionString = configuration.GetConnectionString("SqlServerConnection")
+                ?? throw new InvalidOperationException("SQL Server connection string 'SqlServerConnection' is not configured.");
+
+            services.AddDbContext<TContext>(options =>
+                options.UseSqlServer(
+                    connectionString,
+                    sqlServerOptions => sqlServerOptions.MigrationsAssembly("msih.p4g")
+                ));
+        }
+
+        private static void AddMySqlDbContext<TContext>(IServiceCollection services, IConfiguration configuration)
+            where TContext : DbContext
+        {
+            var connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("MySQL connection string 'DefaultConnection' is not configured.");
+
+            services.AddDbContext<TContext>(options =>
+                options.UseMySQL(
+                    connectionString,
+                    mySqlOptions => mySqlOptions.MigrationsAssembly("msih.p4g")
+                ));
+        }
+
+        private static void ConfigureSqliteOptions<TContext>(DbContextOptionsBuilder<TContext> optionsBuilder, IConfiguration configuration)
+            where TContext : DbContext
+        {
+            var connectionString = configuration.GetConnectionString("SqliteConnection") ?? "Data Source=msih_p4g.db";
+            optionsBuilder.UseSqlite(
+                connectionString,
+                sqliteOptions => sqliteOptions.MigrationsAssembly("msih.p4g")
+            );
+        }
+
+        private static void ConfigureSqlServerOptions<TContext>(DbContextOptionsBuilder<TContext> optionsBuilder, IConfiguration configuration)
+            where TContext : DbContext
+        {
+            var connectionString = configuration.GetConnectionString("SqlServerConnection")
+                ?? throw new InvalidOperationException("SQL Server connection string 'SqlServerConnection' is not configured.");
+
+            optionsBuilder.UseSqlServer(
+                connectionString,
+                sqlServerOptions => sqlServerOptions.MigrationsAssembly("msih.p4g")
+            );
+        }
+
+        private static void ConfigureMySqlOptions<TContext>(DbContextOptionsBuilder<TContext> optionsBuilder, IConfiguration configuration)
+            where TContext : DbContext
+        {
+            var connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("MySQL connection string 'DefaultConnection' is not configured.");
+
+            optionsBuilder.UseMySQL(
+                connectionString,
+                mySqlOptions => mySqlOptions.MigrationsAssembly("msih.p4g")
+            );
+        }
+    }
+
+    /// <summary>
+    /// Enumeration of supported database providers
+    /// </summary>
+    public enum DatabaseProvider
+    {
+        MySQL,
+        SqlServer,
+        SQLite
     }
 }
