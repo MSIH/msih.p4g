@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -129,7 +123,7 @@ namespace msih.p4g.Server.Common.Data.Extensions
             where TContext : DbContext
         {
             var connectionString = configuration.GetConnectionString("SqliteConnection") ?? "Data Source=msih_p4g.db";
-            services.AddDbContext<TContext>(options =>
+            services.AddDbContextFactory<TContext>(options =>
                 options.UseSqlite(
                     connectionString,
                     sqliteOptions => sqliteOptions.MigrationsAssembly("msih.p4g")
@@ -142,7 +136,7 @@ namespace msih.p4g.Server.Common.Data.Extensions
             var connectionString = configuration.GetConnectionString("SqlServerConnection")
                 ?? throw new InvalidOperationException("SQL Server connection string 'SqlServerConnection' is not configured.");
 
-            services.AddDbContext<TContext>(options =>
+            services.AddDbContextFactory<TContext>(options =>
                 options.UseSqlServer(
                     connectionString,
                     sqlServerOptions => sqlServerOptions.MigrationsAssembly("msih.p4g")
@@ -155,7 +149,7 @@ namespace msih.p4g.Server.Common.Data.Extensions
             var connectionString = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("MySQL connection string 'DefaultConnection' is not configured.");
 
-            services.AddDbContext<TContext>(options =>
+            services.AddDbContextFactory<TContext>(options =>
                 options.UseMySQL(
                     connectionString,
                     mySqlOptions => mySqlOptions.MigrationsAssembly("msih.p4g")

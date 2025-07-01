@@ -55,13 +55,28 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
                         _lastFailedMessageRetryTime = DateTime.UtcNow;
                     }
                 }
+                catch (OperationCanceledException)
+                {
+                    // Expected when the service is stopping - break out of the loop gracefully
+                    _logger.LogDebug("Message processing service stopping - cancellation requested during processing");
+                    break;
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error occurred while processing messages");
                 }
 
-                // Wait for the shorter interval (scheduled messages)
-                await Task.Delay(_scheduledMessageInterval, stoppingToken);
+                // Wait for the shorter interval (scheduled messages) or until cancellation is requested
+                try
+                {
+                    await Task.Delay(_scheduledMessageInterval, stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected when the service is stopping - break out of the loop gracefully
+                    _logger.LogDebug("Message processing service stopping - cancellation requested during delay");
+                    break;
+                }
             }
 
             _logger.LogInformation("Message processing service stopped at: {time}", DateTimeOffset.Now);
@@ -124,6 +139,10 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
         /// </summary>
         private async Task ProcessScheduledMessagesAsync(CancellationToken stoppingToken)
         {
+            // Early return if cancellation is already requested
+            if (stoppingToken.IsCancellationRequested)
+                return;
+
             using var scope = _serviceProvider.CreateScope();
             var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
 
@@ -137,6 +156,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
                     _logger.LogInformation("Successfully processed {count} scheduled messages", processedCount);
                 }
             }
+            catch (OperationCanceledException)
+            {
+                _logger.LogDebug("Processing scheduled messages was cancelled");
+                throw; // Re-throw to allow proper cancellation handling
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing scheduled messages");
@@ -148,6 +172,10 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
         /// </summary>
         private async Task ProcessFailedMessagesAsync(CancellationToken stoppingToken)
         {
+            // Early return if cancellation is already requested
+            if (stoppingToken.IsCancellationRequested)
+                return;
+
             using var scope = _serviceProvider.CreateScope();
             var messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
 
@@ -160,6 +188,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
                 {
                     _logger.LogInformation("Successfully processed {count} failed messages for retry", processedCount);
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogDebug("Processing failed messages was cancelled");
+                throw; // Re-throw to allow proper cancellation handling
             }
             catch (Exception ex)
             {

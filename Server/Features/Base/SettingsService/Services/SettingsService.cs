@@ -1,31 +1,23 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
-using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.SettingsService.Model;
 
 namespace msih.p4g.Server.Features.Base.SettingsService.Services
 {
     /// <summary>
-    /// Implementation of ISettingsService using the generic repository
+    /// Implementation of ISettingsService using the setting repository
     /// </summary>
     public class SettingsService : ISettingsService
     {
-        private readonly IGenericRepository<Setting> _settingsRepository;
+        private readonly ISettingRepository _settingsRepository;
         private readonly IConfiguration _configuration;
         private readonly ILogger<SettingsService> _logger;
 
-
-        public SettingsService(IGenericRepository<Setting> settingsRepository, IConfiguration configuration, ILogger<SettingsService> logger)
+        public SettingsService(ISettingRepository settingsRepository, IConfiguration configuration, ILogger<SettingsService> logger)
         {
             _settingsRepository = settingsRepository;
             _configuration = configuration;
@@ -166,7 +158,7 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Services
 
                 foreach (var entry in entriesToRemove)
                 {
-                    // Since IGenericRepository doesn't have Remove methods, we'll deactivate instead
+                    // Since ISettingRepository doesn't have Remove methods, we'll deactivate instead
                     await _settingsRepository.SetActiveStatusAsync(entry.Id, false, "System");
                     removedCount++;
                 }
