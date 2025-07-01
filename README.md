@@ -52,6 +52,24 @@ The application follows a feature-based organization:
   - Models/DTOs
   - Utilities
 
+
+## Azure 
+
+### Apps
+- gd4-org-abhyagf2dygvffa3.westcentralus-01.azurewebsites.net
+- dev-gd4-org-f6avh3bzcfcbe8gr.westcentralus-01.azurewebsites.net
+- test-gd4-org-hfecfhemeqgfepbp.westcentralus-01.azurewebsites.net
+
+#### Environment Variables
+- `ASPNETCORE_ENVIRONMENT`: Set to `Development`, `Staging`, or `Production` as needed.
+- `ConnectionStrings:DefaultConnection`: Set to your database connection string.
+- UseSqlServer = true
+
+### Databases
+- nonprod-gd4.database.windows.net / msihadmin
+- Server=tcp:nonprod-gd4.database.windows.net,1433;Initial Catalog=test-gd4;Persist Security Info=False;User ID=msihadmin;Password={your_password};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+- Server=tcp:nonprod-gd4.database.windows.net,1433;Initial Catalog=nonprod-pg4;Persist Security Info=False;User ID=msihadmin;Password={your_password};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+- 
 ## Development
 
 ### Prerequisites
