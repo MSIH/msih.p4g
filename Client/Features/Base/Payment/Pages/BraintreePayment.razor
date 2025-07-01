@@ -227,8 +227,16 @@
                                 <InputTextArea id="donationMessage" class="form-control" @bind-Value="donationRequest.DonationMessage" rows="1" />
                             </div>
 
+                        </div>
+                    </div>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Payment Method</h5>
+                        </div>
+                        <div class="card-body">
+
                             <div class="mb-3">
-                                <label class="form-label">Payment Method</label>
+                                <label class="form-label"></label>
                                 <div id="dropin-container"></div>
                                 <div class="text-danger">@paymentError</div>
                             </div>
