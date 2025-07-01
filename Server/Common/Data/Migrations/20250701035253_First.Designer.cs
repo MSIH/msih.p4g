@@ -12,7 +12,7 @@ using msih.p4g.Server.Common.Data;
 namespace msih.p4g.Server.Common.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250701030823_First")]
+    [Migration("20250701035253_First")]
     partial class First
     {
         /// <inheritdoc />
