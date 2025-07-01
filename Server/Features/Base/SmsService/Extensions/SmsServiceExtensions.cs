@@ -27,7 +27,6 @@ namespace msih.p4g.Server.Features.Base.SmsService.Extensions
         /// <param name="configuration">The configuration</param>
         /// <param name="hostEnvironment">The hosting environment</param>
         /// <returns>The service collection for chaining</returns>
-
         public static IServiceCollection AddSmsServices(
             this IServiceCollection services,
             IConfiguration configuration,
@@ -38,8 +37,9 @@ namespace msih.p4g.Server.Features.Base.SmsService.Extensions
             services.AddScoped<IValidatedPhoneNumberRepository, ValidatedPhoneNumberRepository>();
             services.AddScoped<PhoneValidationService>();
 
-            // Register generic repositories
-            services.AddScoped<IGenericRepository<ValidatedPhoneNumber>, GenericRepository<ValidatedPhoneNumber, ApplicationDbContext>>();
+            // Register generic repository using the concrete implementation
+            services.AddScoped<IGenericRepository<ValidatedPhoneNumber>>(provider => 
+                (IGenericRepository<ValidatedPhoneNumber>)provider.GetRequiredService<IValidatedPhoneNumberRepository>());
 
             // Register migration applier as a hosted service
             services.AddHostedService<MigrationApplier>();

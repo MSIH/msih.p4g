@@ -42,8 +42,9 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Extensions
             // Register the payment service factory
             services.AddScoped<IPaymentServiceFactory, PaymentServiceFactory>();
             
-            // Register generic repositories
-            services.AddScoped<IGenericRepository<PaymentTransaction>, GenericRepository<PaymentTransaction, ApplicationDbContext>>();
+            // Register the concrete repository for generic use (PaymentTransactionRepository already inherits from GenericRepository)
+            services.AddScoped<IGenericRepository<PaymentTransaction>>(provider => 
+                (IGenericRepository<PaymentTransaction>)provider.GetRequiredService<IPaymentTransactionRepository>());
             
             // Register migration applier as a hosted service
             services.AddHostedService<MigrationApplier>();

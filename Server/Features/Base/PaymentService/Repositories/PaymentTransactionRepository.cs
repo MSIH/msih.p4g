@@ -18,9 +18,9 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
     /// <summary>
     /// Repository for managing payment transactions
     /// </summary>
-    public class PaymentTransactionRepository : GenericRepository<PaymentTransaction, ApplicationDbContext>, IPaymentTransactionRepository
+    public class PaymentTransactionRepository : GenericRepository<PaymentTransaction>, IPaymentTransactionRepository
     {
-        public PaymentTransactionRepository(ApplicationDbContext context) : base(context)
+        public PaymentTransactionRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
         }
         
@@ -31,7 +31,8 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         /// <returns>The payment transaction, or null if not found</returns>
         public async Task<PaymentTransaction> GetByTransactionIdAsync(string transactionId)
         {
-            return await _dbSet
+            using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Set<PaymentTransaction>()
                 .Where(t => t.TransactionId == transactionId && t.IsActive)
                 .FirstOrDefaultAsync();
         }
@@ -43,7 +44,8 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         /// <returns>A collection of payment transactions with the specified status</returns>
         public async Task<IEnumerable<PaymentTransaction>> GetByStatusAsync(PaymentStatus status)
         {
-            return await _dbSet
+            using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Set<PaymentTransaction>()
                 .Where(t => t.Status == status && t.IsActive)
                 .OrderByDescending(t => t.ProcessedOn)
                 .ToListAsync();
@@ -56,7 +58,8 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         /// <returns>A collection of payment transactions for the specified order</returns>
         public async Task<IEnumerable<PaymentTransaction>> GetByOrderReferenceAsync(string orderReference)
         {
-            return await _dbSet
+            using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Set<PaymentTransaction>()
                 .Where(t => t.OrderReference == orderReference && t.IsActive)
                 .OrderByDescending(t => t.ProcessedOn)
                 .ToListAsync();
@@ -69,7 +72,8 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         /// <returns>A collection of payment transactions for the specified customer</returns>
         public async Task<IEnumerable<PaymentTransaction>> GetByCustomerEmailAsync(string email)
         {
-            return await _dbSet
+            using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Set<PaymentTransaction>()
                 .Where(t => t.CustomerEmail == email && t.IsActive)
                 .OrderByDescending(t => t.ProcessedOn)
                 .ToListAsync();
@@ -83,7 +87,8 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         /// <returns>A collection of payment transactions within the specified date range</returns>
         public async Task<IEnumerable<PaymentTransaction>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
-            return await _dbSet
+            using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Set<PaymentTransaction>()
                 .Where(t => t.ProcessedOn >= startDate && t.ProcessedOn <= endDate && t.IsActive)
                 .OrderByDescending(t => t.ProcessedOn)
                 .ToListAsync();
@@ -99,7 +104,8 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         /// <returns>True if the transaction was updated, false otherwise</returns>
         public async Task<bool> UpdateStatusAsync(int id, PaymentStatus status, string? errorMessage = null, string modifiedBy = "System")
         {
-            var transaction = await _dbSet.FindAsync(id);
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var transaction = await context.Set<PaymentTransaction>().FindAsync(id);
             if (transaction == null || !transaction.IsActive)
             {
                 return false;
@@ -115,7 +121,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
             transaction.ModifiedOn = DateTime.UtcNow;
             transaction.ModifiedBy = modifiedBy;
             
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             
             return true;
         }

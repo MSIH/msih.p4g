@@ -14,32 +14,34 @@ namespace msih.p4g.Server.Features.CampaignService.Repositories
     /// <summary>
     /// Repository implementation for Campaign entity
     /// </summary>
-    public class CampaignRepository : GenericRepository<Campaign, ApplicationDbContext>, ICampaignRepository
+    public class CampaignRepository : GenericRepository<Campaign>, ICampaignRepository
     {
         /// <summary>
         /// Initializes a new instance of the CampaignRepository class
         /// </summary>
-        /// <param name="context">The database context</param>
-        public CampaignRepository(ApplicationDbContext context) : base(context)
+        /// <param name="contextFactory">The database context factory</param>
+        public CampaignRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
         }
 
         /// <inheritdoc />
         public async Task<Campaign?> GetDefaultCampaignAsync()
         {
-            return await _context.Campaigns
+            using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Campaigns
                 .FirstOrDefaultAsync(c => c.IsDefault && c.IsActive);
         }
 
         /// <inheritdoc />
         public async Task SetDefaultCampaignAsync(int campaignId)
         {
-            var campaigns = await _context.Campaigns.ToListAsync();
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var campaigns = await context.Campaigns.ToListAsync();
             foreach (var campaign in campaigns)
             {
                 campaign.IsDefault = campaign.Id == campaignId;
             }
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
         // Add Campaign-specific repository methods here if needed

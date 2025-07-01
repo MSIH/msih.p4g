@@ -18,9 +18,9 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
     /// <summary>
     /// Repository implementation for MessageTemplate entities
     /// </summary>
-    public class MessageTemplateRepository : GenericRepository<MessageTemplate, ApplicationDbContext>, IMessageTemplateRepository
+    public class MessageTemplateRepository : GenericRepository<MessageTemplate>, IMessageTemplateRepository
     {
-        public MessageTemplateRepository(ApplicationDbContext context) : base(context)
+        public MessageTemplateRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
         }
 
@@ -32,7 +32,8 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
                 throw new ArgumentException("Category cannot be null or empty", nameof(category));
             }
 
-            var query = _dbSet
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var query = context.Set<MessageTemplate>()
                 .Where(t => t.Category == category && t.IsActive);
 
             if (!string.IsNullOrWhiteSpace(messageType))
@@ -56,8 +57,10 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
                 throw new ArgumentException("MessageType cannot be null or empty", nameof(messageType));
             }
 
+            using var context = await _contextFactory.CreateDbContextAsync();
+
             // Try to find a template marked as default
-            var defaultTemplate = await _dbSet
+            var defaultTemplate = await context.Set<MessageTemplate>()
                 .Where(t => t.Category == category && 
                            t.MessageType == messageType && 
                            t.IsDefault && 
@@ -67,7 +70,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
             // If no default is found, return the first active template in the category
             if (defaultTemplate == null)
             {
-                defaultTemplate = await _dbSet
+                defaultTemplate = await context.Set<MessageTemplate>()
                     .Where(t => t.Category == category && 
                                t.MessageType == messageType && 
                                t.IsActive)
@@ -86,7 +89,8 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
                 throw new ArgumentException("Name cannot be null or empty", nameof(name));
             }
 
-            return await _dbSet
+            using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Set<MessageTemplate>()
                 .Where(t => t.Name == name && t.IsActive)
                 .FirstOrDefaultAsync();
         }
@@ -94,19 +98,20 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
         /// <inheritdoc />
         public async Task<bool> SetAsDefaultAsync(int templateId)
         {
-            var template = await _dbSet.FindAsync(templateId);
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var template = await context.Set<MessageTemplate>().FindAsync(templateId);
             if (template == null || !template.IsActive)
             {
                 return false;
             }
 
             // Begin transaction to ensure consistency
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction = await context.Database.BeginTransactionAsync();
 
             try
             {
                 // Clear default flag from all templates in the same category and message type
-                var templates = await _dbSet
+                var templates = await context.Set<MessageTemplate>()
                     .Where(t => t.Category == template.Category && 
                                t.MessageType == template.MessageType && 
                                t.IsDefault && 
@@ -125,7 +130,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
                 template.ModifiedOn = DateTime.UtcNow;
                 template.ModifiedBy = "System";
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 return true;
             }

@@ -37,9 +37,11 @@ namespace msih.p4g.Server.Features.Base.MessageService.Extensions
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IMessageTemplateRepository, MessageTemplateRepository>();
 
-            // Register generic repositories
-            services.AddScoped<IGenericRepository<Message>, GenericRepository<Message, ApplicationDbContext>>();
-            services.AddScoped<IGenericRepository<MessageTemplate>, GenericRepository<MessageTemplate, ApplicationDbContext>>();
+            // Register generic repositories using the concrete implementations
+            services.AddScoped<IGenericRepository<Message>>(provider => 
+                (IGenericRepository<Message>)provider.GetRequiredService<IMessageRepository>());
+            services.AddScoped<IGenericRepository<MessageTemplate>>(provider => 
+                (IGenericRepository<MessageTemplate>)provider.GetRequiredService<IMessageTemplateRepository>());
 
             // Register the message service
             services.AddScoped<IMessageService, MessageService.Services.MessageService>();

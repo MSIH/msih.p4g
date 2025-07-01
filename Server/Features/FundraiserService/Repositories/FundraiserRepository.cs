@@ -15,14 +15,17 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
     /// <summary>
     /// Repository implementation for Fundraiser entity
     /// </summary>
-    public class FundraiserRepository : GenericRepository<Fundraiser, ApplicationDbContext>, IFundraiserRepository
+    public class FundraiserRepository : GenericRepository<Fundraiser>, IFundraiserRepository
     {
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+
         /// <summary>
         /// Initializes a new instance of the FundraiserRepository class
         /// </summary>
-        /// <param name="context">The database context</param>
-        public FundraiserRepository(ApplicationDbContext context) : base(context)
+        /// <param name="contextFactory">The database context factory</param>
+        public FundraiserRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
+            _contextFactory = contextFactory;
         }
         
         /// <summary>
@@ -32,7 +35,8 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
         /// <returns>The fundraiser if found, otherwise null</returns>
         public async Task<Fundraiser?> GetByUserIdAsync(int userId)
         {
-            return await _context.Set<Fundraiser>()
+            using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Set<Fundraiser>()
                 .FirstOrDefaultAsync(f => f.UserId == userId && f.IsActive);
         }
     }

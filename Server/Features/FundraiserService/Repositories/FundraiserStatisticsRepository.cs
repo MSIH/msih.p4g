@@ -17,22 +17,24 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
     /// </summary>
     public class FundraiserStatisticsRepository : IFundraiserStatisticsRepository
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
         
         /// <summary>
         /// Initializes a new instance of the FundraiserStatisticsRepository class
         /// </summary>
-        /// <param name="dbContext">The application database context</param>
-        public FundraiserStatisticsRepository(ApplicationDbContext dbContext)
+        /// <param name="contextFactory">The application database context factory</param>
+        public FundraiserStatisticsRepository(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _dbContext = dbContext;
+            _contextFactory = contextFactory;
         }
         
         /// <inheritdoc />
         public async Task<FundraiserStatistics> GetStatisticsAsync(int fundraiserId)
         {
+            using var context = await _contextFactory.CreateDbContextAsync();
+            
             // Get the fundraiser to retrieve the user ID
-            var fundraiser = await _dbContext.Fundraisers
+            var fundraiser = await context.Fundraisers
                 .Include(f => f.User)
                 .FirstOrDefaultAsync(f => f.Id == fundraiserId);
 
@@ -42,7 +44,7 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
             }
 
             // Get the profile to get the referral code
-            var profile = await _dbContext.Profiles
+            var profile = await context.Profiles
                 .FirstOrDefaultAsync(p => p.UserId == fundraiser.UserId);
                 
             if (profile == null || string.IsNullOrEmpty(profile.ReferralCode))
@@ -51,7 +53,7 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
             }
 
             // Get all donations that used this fundraiser's referral code
-            var donations = await _dbContext.Donations
+            var donations = await context.Donations
                 .Include(d => d.Donor)
                 .ThenInclude(d => d.User)
                 .ThenInclude(u => u.Profile)
@@ -81,7 +83,8 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
         /// <inheritdoc />
         public async Task<string?> GetReferralCodeAsync(int userId)
         {
-            var profile = await _dbContext.Profiles
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var profile = await context.Profiles
                 .FirstOrDefaultAsync(p => p.UserId == userId);
                 
             return profile?.ReferralCode;

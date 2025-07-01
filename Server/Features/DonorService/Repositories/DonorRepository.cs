@@ -16,20 +16,21 @@ namespace msih.p4g.Server.Features.DonorService.Repositories
     /// <summary>
     /// Repository implementation for Donor entity
     /// </summary>
-    public class DonorRepository : GenericRepository<Donor, ApplicationDbContext>, IDonorRepository
+    public class DonorRepository : GenericRepository<Donor>, IDonorRepository
     {
         /// <summary>
         /// Initializes a new instance of the DonorRepository class
         /// </summary>
-        /// <param name="context">The database context</param>
-        public DonorRepository(ApplicationDbContext context) : base(context)
+        /// <param name="contextFactory">The database context factory</param>
+        public DonorRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
         }
 
         /// <inheritdoc />
         public async Task<List<Donor>> SearchAsync(string searchTerm)
         {
-            return await _dbSet
+            using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Set<Donor>()
                 .Where(d => d.PaymentProcessorDonorId != null && 
                        d.PaymentProcessorDonorId.Contains(searchTerm) && 
                        d.IsActive)
