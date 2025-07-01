@@ -6,7 +6,7 @@ name: Build and deploy ASP.Net Core app to Azure Web App - dev-gd4-org
 on:
   push:
     branches:
-      - main
+      - development
   workflow_dispatch:
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.x'
+          dotnet-version: 'v9.0'
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
@@ -51,9 +51,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A16AE84DE24A44B9BE37B058EE3ABCB6 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B8EBA03AF71C415FAF2EC881D7F3EDF8 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_310131D92C534DF19CE261CF7B8DCE86 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_0AE65A74605A4EFAAAF8DD5E4D5C9A6F }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_AD7B651F19C448F8B9D95C38C13D184A }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_99C58FBE4DB54DF8B8DB7B11E1C75000 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
