@@ -55,9 +55,17 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_621C30B798944B9FB3923F7F869E8EE4 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_28A6899745364054AF80E7781E995019 }}
 
+      - name: Create deployment config
+        run: |
+          cat > .deployment << EOF
+          [config]
+          SCM_DO_BUILD_DURING_DEPLOYMENT=true
+          SCM_SCRIPT_GENERATOR_ARGS=--excludeFiles msih_gd4.db
+          EOF
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@v2
         with:
           app-name: 'dev-gd4-org'
           slot-name: 'Production'
