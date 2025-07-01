@@ -360,7 +360,7 @@
         try
         {
             // Process referral code first (doesn't require DB calls)
-            await ProcessReferalCode();
+            await ProcessReferralCode();
 
             // Execute database operations sequentially to avoid DbContext concurrency issues
             await LoadOrganizationAsync();
@@ -484,7 +484,7 @@
         }
     }
 
-    private async Task ProcessReferalCode()
+    private async Task ProcessReferralCode()
     {
         try
         {
