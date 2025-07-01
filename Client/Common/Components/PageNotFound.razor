@@ -47,6 +47,10 @@
     }
     private void RedirectToHome()
     {
-        NavigationManager.NavigateTo(RedirectUrl);
+        _ = Task.Run(async () =>
+      {
+          await Task.Delay(100); // Small delay to ensure render cycle completes
+          NavigationManager.NavigateTo(RedirectUrl, forceLoad: true);
+      });        
     }
 }

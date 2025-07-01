@@ -260,6 +260,14 @@
             // Get the current user using the AuthService
             var userPrincipal = await AuthService.GetCurrentUserAsync();
 
+            // Check if user principal is null or has no valid ID
+            if (userPrincipal == null || userPrincipal.Id <= 0)
+            {
+                message = "Error: User not authenticated or invalid user ID. Please log in again.";
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
 
             // Get the fundraiser for this user
             fundraiser = await FundraiserService.GetByUserIdAsync(userPrincipal.Id);

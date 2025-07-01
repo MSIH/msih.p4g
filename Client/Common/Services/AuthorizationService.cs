@@ -84,7 +84,12 @@ namespace msih.p4g.Client.Common.Services
                 return true;
             }
 
-            _navigationManager.NavigateTo("/404");
+            // Use Task.Run to avoid NavigationException during initialization
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(100); // Small delay to ensure render cycle completes
+                _navigationManager.NavigateTo("/404", forceLoad: true);
+            });
             return false;
         }
 
