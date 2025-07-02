@@ -12,6 +12,7 @@ using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
 
+
 namespace msih.p4g.Client.Features.UserManagement.Pages
 {
     public partial class RegisterUser : ComponentBase
@@ -137,7 +138,6 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
                 // Create both the user and profile in a single operation
                 var createdProfile = await UserProfileService.CreateUserWithProfileAsync(user, profile);
                 referralCode = createdProfile.ReferralCode;
-                userName = $"{profile.FirstName}-{profile.LastName.Substring(0, 1).ToUpper()}";
 
                 // Update the donation URL from settings
                 donationUrl = await _settingsService.GetValueAsync("DonationURL")

@@ -1,5 +1,6 @@
 @using Microsoft.JSInterop
 @using msih.p4g.Server.Features.Base.SettingsService.Interfaces
+@using msih.p4g.Server.Features.Base.ProfileService.Model
 @inject IJSRuntime JSRuntime
 @inject ISettingsService SettingsService
 
@@ -43,13 +44,18 @@
 }
 
 @code {
-    /// <summary>
-    /// The referral code to append to the URL
-    /// </summary>
-    [Parameter] public string ReferralCode { get; set; } = string.Empty;
 
     /// <summary>
-    /// The user's name to append when appendName is enabled
+    /// The user profile containing first and last name for generating the personalized referral link.
+    /// When provided, the component will compute the username format as "{FirstName}-{LastNameInitial}"
+    /// (e.g., "John-D") to ensure consistency across the application.
+    /// </summary>
+    [Parameter] public Profile? Profile { get; set; }
+
+    /// <summary>
+    /// [DEPRECATED] Use Profile parameter instead.
+    /// The user's name to append when appendName is enabled.
+    /// This parameter is maintained for backward compatibility but should not be used in new code.
     /// </summary>
     [Parameter] public string UserName { get; set; } = string.Empty;
 
@@ -61,7 +67,7 @@
     /// <summary>
     /// Whether to show the social media sharing links
     /// </summary>
-    [Parameter] public bool ShowSocialMediaLinks { get; set; } = true;
+    [Parameter] public bool ShowSocialMediaLinks { get; set; } = false;
 
     /// <summary>
     /// Event callback fired when an error occurs (e.g., clipboard copy fails)
@@ -84,20 +90,45 @@
         }
     }
 
+    [Parameter] public string ReferralCode { get; set; } = string.Empty;
+
     private bool copyUrlSuccess = false;
     private string donationUrl = "https://gd4.org/donate"; // Default fallback value
+
+    /// <summary>
+    /// Computes the consistent username format from the Profile object.
+    /// Format: "{FirstName}-{LastNameInitial}" (e.g., "John-D")
+    /// </summary>
+    private string ComputedUserName
+    {
+        get
+        {
+            if (Profile?.FirstName != null && Profile?.LastName != null)
+            {
+                return $"{Profile.FirstName}";
+            }
+
+            // Fallback to UserName parameter for backward compatibility
+            return UserName;
+        }
+    } 
 
     protected override async Task OnInitializedAsync()
     {
         // Load the donation URL from settings service
         donationUrl = await SettingsService.GetValueAsync("DonationURL") ?? "https://gd4.org/donate";
+        // Ensure the referral code is generated if not already set
+        if (Profile != null && !string.IsNullOrEmpty(Profile.ReferralCode))
+        {
+            ReferralCode = Profile.ReferralCode;
+        }
     }
 
     /// <summary>
     /// Gets the generated referral link based on current settings
     /// </summary>
-    private string GeneratedReferralLink => appendName && !string.IsNullOrEmpty(UserName)
-        ? $"{donationUrl}/{ReferralCode}-{UserName.Replace(" ", "")}"
+    private string GeneratedReferralLink => appendName && !string.IsNullOrEmpty(ComputedUserName)
+        ? $"{donationUrl}/{ReferralCode}-{ComputedUserName.Replace(" ", "")}"
         : $"{donationUrl}/{ReferralCode}";
 
     /// <summary>
@@ -134,7 +165,7 @@
         {
             // Handle clipboard error
             var errorMessage = "Unable to copy to clipboard. Please select and copy the URL manually.";
-            
+
             if (OnError.HasDelegate)
             {
                 await OnError.InvokeAsync(errorMessage);
