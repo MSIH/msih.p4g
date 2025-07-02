@@ -12,8 +12,8 @@ using msih.p4g.Server.Common.Data;
 namespace msih.p4g.Server.Common.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250702214021_AddOrganizationEntity")]
-    partial class AddOrganizationEntity
+    [Migration("20250702231852_first")]
+    partial class first
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
