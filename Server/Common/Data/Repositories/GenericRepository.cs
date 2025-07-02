@@ -1,168 +1,173 @@
-/**
- * Copyright (c) 2025 MSIH LLC. All rights reserved.
- * This file is developed for Make Sure It Happens Inc.
- * Unauthorized copying, modification, distribution, or use is prohibited.
- */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Models;
+using System.Linq.Expressions;
 
 namespace msih.p4g.Server.Common.Data.Repositories
 {
     /// <summary>
-    /// Generic repository implementation for CRUD operations with support for active status
+    /// Base repository implementation using DbContextFactory for thread-safe operations
     /// </summary>
-    /// <typeparam name="TEntity">The entity type</typeparam>
-    /// <typeparam name="TContext">The DbContext type</typeparam>
-    public class GenericRepository<TEntity, TContext> : IGenericRepository<TEntity> 
-        where TEntity : BaseEntity
-        where TContext : DbContext
+    public abstract class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        protected readonly TContext _context;
-        protected readonly DbSet<TEntity> _dbSet;
-        
-        public GenericRepository(TContext context)
+        protected readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+
+        public GenericRepository(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _dbSet = context.Set<TEntity>();
+            _contextFactory = contextFactory;
         }
-        
-        /// <inheritdoc />
-        public virtual async Task<IEnumerable<TEntity>> GetAllAsync(bool includeInactive = false)
+
+        public virtual async Task<T?> GetByIdAsync(int id, bool includeInactive = false)
         {
-            var query = _dbSet.AsQueryable();
-            
-            // Apply filter for IsActive
-            if (!includeInactive)
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Set<T>().FindAsync(id);
+
+            if (entity != null && entity is IAuditableEntity auditableEntity && !includeInactive && !auditableEntity.IsActive)
             {
-                query = query.Where(e => e.IsActive);
+                return null;
             }
-            
-            return await query.ToListAsync();
-        }
-        
-        /// <inheritdoc />
-        public virtual async Task<IEnumerable<TEntity>> FindAsync(
-            Expression<Func<TEntity, bool>> predicate, 
-            bool includeInactive = false)
-        {
-            var query = _dbSet.Where(predicate);
-            
-            // Apply filter for IsActive
-            if (!includeInactive)
-            {
-                query = query.Where(e => e.IsActive);
-            }
-            
-            return await query.ToListAsync();
-        }
-        
-        /// <inheritdoc />
-        public virtual async Task<TEntity> GetByIdAsync(int id, bool includeInactive = false)
-        {
-            var query = _dbSet.Where(e => e.Id == id);
-            
-            // Apply filter for IsActive
-            if (!includeInactive)
-            {
-                query = query.Where(e => e.IsActive);
-            }
-            
-            return await query.FirstOrDefaultAsync();
-        }
-        
-        /// <inheritdoc />
-        public virtual async Task<TEntity> AddAsync(TEntity entity, string createdBy = "System")
-        {
-            if (entity == null)
-            {
-                throw new ArgumentNullException(nameof(entity));
-            }
-            
-            // Set audit properties
-            entity.CreatedOn = DateTime.UtcNow;
-            entity.CreatedBy = createdBy;
-            entity.IsActive = true;
-            
-            await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
-            
+
             return entity;
         }
-        
-        /// <inheritdoc />
-        public virtual async Task<TEntity> UpdateAsync(TEntity entity, string modifiedBy = "System")
+
+        public virtual async Task<IEnumerable<T>> GetAllAsync(bool includeInactive = false)
         {
-            if (entity == null)
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var query = context.Set<T>().AsQueryable();
+
+            if (!includeInactive && typeof(IAuditableEntity).IsAssignableFrom(typeof(T)))
             {
-                throw new ArgumentNullException(nameof(entity));
+                query = query.Where(e => ((IAuditableEntity)e).IsActive);
             }
-            
-            // Set audit properties
-            entity.ModifiedOn = DateTime.UtcNow;
-            entity.ModifiedBy = modifiedBy;
-            
-            _context.Entry(entity).State = EntityState.Modified;
-            
-            // Preserve created properties
-            _context.Entry(entity).Property(e => e.CreatedOn).IsModified = false;
-            _context.Entry(entity).Property(e => e.CreatedBy).IsModified = false;
-            
-            await _context.SaveChangesAsync();
-            
+
+            return await query.ToListAsync();
+        }
+
+        public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, bool includeInactive = false)
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var query = context.Set<T>().Where(predicate);
+
+            if (!includeInactive && typeof(IAuditableEntity).IsAssignableFrom(typeof(T)))
+            {
+                query = query.Where(e => ((IAuditableEntity)e).IsActive);
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public virtual async Task<T> AddAsync(T entity, string createdBy = "System")
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            if (entity is IAuditableEntity auditableEntity)
+            {
+                auditableEntity.CreatedBy = createdBy;
+                auditableEntity.CreatedOn = DateTime.UtcNow;
+                auditableEntity.IsActive = true;
+            }
+
+            context.Set<T>().Add(entity);
+            await context.SaveChangesAsync();
             return entity;
         }
-        
-        /// <inheritdoc />
+
+        public virtual async Task<T> UpdateAsync(T entity, string modifiedBy = "System")
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            if (entity is IAuditableEntity auditableEntity)
+            {
+                auditableEntity.ModifiedBy = modifiedBy;
+                auditableEntity.ModifiedOn = DateTime.UtcNow;
+            }
+
+            context.Set<T>().Update(entity);
+            await context.SaveChangesAsync();
+            return entity;
+        }
+
         public virtual async Task<bool> SetActiveStatusAsync(int id, bool isActive, string modifiedBy = "System")
         {
-            var entity = await _dbSet.FindAsync(id);
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Set<T>().FindAsync(id);
+
+            if (entity == null || entity is not IAuditableEntity auditableEntity)
+            {
+                return false;
+            }
+
+            auditableEntity.IsActive = isActive;
+            auditableEntity.ModifiedBy = modifiedBy;
+            auditableEntity.ModifiedOn = DateTime.UtcNow;
+
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        public virtual async Task<IEnumerable<T>> GetActiveOnlyAsync()
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var query = context.Set<T>().AsQueryable();
+
+            if (typeof(IAuditableEntity).IsAssignableFrom(typeof(T)))
+            {
+                query = query.Where(e => ((IAuditableEntity)e).IsActive);
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public virtual async Task<IEnumerable<T>> GetInactiveOnlyAsync()
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var query = context.Set<T>().AsQueryable();
+
+            if (typeof(IAuditableEntity).IsAssignableFrom(typeof(T)))
+            {
+                query = query.Where(e => !((IAuditableEntity)e).IsActive);
+            }
+            else
+            {
+                // If entity doesn't implement IAuditableEntity, return empty collection
+                return new List<T>();
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public virtual async Task<bool> ExistsAsync(int id, bool includeInactive = false)
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Set<T>().FindAsync(id);
+
             if (entity == null)
             {
                 return false;
             }
-            
-            entity.IsActive = isActive;
-            entity.ModifiedOn = DateTime.UtcNow;
-            entity.ModifiedBy = modifiedBy;
-            
-            await _context.SaveChangesAsync();
-            
+
+            if (!includeInactive && entity is IAuditableEntity auditableEntity && !auditableEntity.IsActive)
+            {
+                return false;
+            }
+
             return true;
         }
-        
-        /// <inheritdoc />
-        public virtual async Task<IEnumerable<TEntity>> GetActiveOnlyAsync()
+
+        public virtual async Task DeleteAsync(int id)
         {
-            return await _dbSet
-                .Where(e => e.IsActive)
-                .ToListAsync();
-        }
-        
-        /// <inheritdoc />
-        public virtual async Task<IEnumerable<TEntity>> GetInactiveOnlyAsync()
-        {
-            return await _dbSet
-                .Where(e => !e.IsActive)
-                .ToListAsync();
-        }
-        
-        /// <inheritdoc />
-        public virtual async Task<bool> ExistsAsync(int id, bool includeInactive = false)
-        {
-            var query = _dbSet.Where(e => e.Id == id);
-            
-            // Apply filter for IsActive
-            if (!includeInactive)
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var entity = await context.Set<T>().FindAsync(id);
+            if (entity != null)
             {
-                query = query.Where(e => e.IsActive);
+                context.Set<T>().Remove(entity);
+                await context.SaveChangesAsync();
             }
-            
-            return await query.AnyAsync();
         }
     }
 }

@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -21,7 +15,7 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Repositories
     /// <summary>
     /// Repository implementation for PayPal Payouts
     /// </summary>
-    public class PayoutRepository : GenericRepository<Payout, ApplicationDbContext>, IPayoutRepository
+    public class PayoutRepository : GenericRepository<Payout>, IPayoutRepository
     {
         private readonly ILogger<PayoutRepository> _logger;
 
@@ -29,9 +23,9 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Repositories
         /// Constructor
         /// </summary>
         public PayoutRepository(
-            ApplicationDbContext dbContext,
+            IDbContextFactory<ApplicationDbContext> contextFactory,
             ILogger<PayoutRepository> logger)
-            : base(dbContext)
+            : base(contextFactory)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -43,7 +37,8 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Repositories
         {
             try
             {
-                return await _dbSet
+                using var context = await _contextFactory.CreateDbContextAsync();
+                return await context.Set<Payout>()
                     .Where(p => p.TransactionStatus == status)
                     .OrderByDescending(p => p.CreatedAt)
                     .Skip((page - 1) * pageSize)
@@ -64,7 +59,8 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Repositories
         {
             try
             {
-                return await _dbSet
+                using var context = await _contextFactory.CreateDbContextAsync();
+                return await context.Set<Payout>()
                     .Where(p => p.FundraiserId == fundraiserId)
                     .OrderByDescending(p => p.CreatedAt)
                     .Skip((page - 1) * pageSize)
@@ -85,7 +81,8 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Repositories
         {
             try
             {
-                return await _dbSet
+                using var context = await _contextFactory.CreateDbContextAsync();
+                return await context.Set<Payout>()
                     .Where(p => p.PaypalBatchId == batchId)
                     .OrderByDescending(p => p.CreatedAt)
                     .ToListAsync();
@@ -104,13 +101,14 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Repositories
         {
             try
             {
+                using var context = await _contextFactory.CreateDbContextAsync();
                 // Convert string IDs to integers
                 var ids = payoutIds
                     .Select(id => int.TryParse(id, out int result) ? result : -1)
                     .Where(id => id != -1)
                     .ToList();
 
-                return await _dbSet
+                return await context.Set<Payout>()
                     .Where(p => ids.Contains(p.Id))
                     .ToListAsync();
             }
@@ -128,8 +126,9 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Repositories
         {
             try
             {
-                _context.UpdateRange(payouts);
-                await _context.SaveChangesAsync();
+                using var context = await _contextFactory.CreateDbContextAsync();
+                context.UpdateRange(payouts);
+                await context.SaveChangesAsync();
             }
             catch (Exception ex)
             {

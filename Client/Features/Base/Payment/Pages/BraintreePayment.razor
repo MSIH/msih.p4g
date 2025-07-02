@@ -32,7 +32,7 @@
 @inject IOrganizationService OrganizationService
 
 <div class="container">
-    @if (isLoading)
+    @if (@isLoading)
     {
         <div class="d-flex justify-content-center my-5">
             <div class="spinner-border" role="status">
@@ -42,10 +42,16 @@
     }
     else
     {
-        <h2>Donation</h2>
-
         <div class="row">
             <div class="col-md-8 mx-auto">
+                <!-- Page Header Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Donate</h5>
+                    </div>
+                </div>
+
+                <!-- Referral Alert -->
                 @if (referrer.FirstName != null)
                 {
                     <div class="alert alert-info mb-4">
@@ -53,56 +59,54 @@
                     </div>
                 }
 
-                @if (campaign != null)
+                <!-- Organization Information Card -->
+                @if (campaign != null && organization != null)
                 {
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5>Organization Information</h5>
-                            <p class="mb-0">
+                            <h5 class="mb-0">Organization Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">
                                 @organization.LegalName | Tax Type @organization.OrganizationType | TaxID @organization.TaxId |
                                 <a href="@organization.Website" target="_blank" rel="noopener noreferrer">@organization.Website</a>
                             </p>
-
-                        </div>
-                        <div class="card-body">
-                            <p class="mb-0"> @organization.MissionStatement</p>
+                            <p class="mb-0">@organization.MissionStatement</p>
                         </div>
                     </div>
 
+                    <!-- Campaign Information Card -->
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5>Campaign Information</h5>
-                        </div>
-                        <!-- Campaign Drop-down -->
-                        <div class="mb-4">
-                            <small class="text-muted">Select the campaign for this fundraiser</small>
-                            <InputSelect id="campaignSelect" class="form-control" @bind-Value="selectedCampaignId">
-                                <option value="">-- Select Campaign --</option>
-                                @foreach (var c in campaigns)
-                                {
-                                    <option value="@c.Id">@c.Title</option>
-                                }
-                            </InputSelect>                            
+                            <h5 class="mb-0">Campaign Information</h5>
                         </div>
                         <div class="card-body">
-                            <p class="mb-3">@campaign.Description</p>
+                            <div class="mb-3">
+                                <label for="campaignSelect" class="form-label">
+                                    <small class="text-muted">Select the campaign for this fundraiser</small>
+                                </label>
+                                <InputSelect id="campaignSelect" class="form-control" @bind-Value="selectedCampaignId">
+                                    <option value="">-- Select Campaign --</option>
+                                    @foreach (var c in campaigns)
+                                    {
+                                        <option value="@c.Id">@c.Title</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <p class="mb-0">@campaign.Description</p>
                         </div>
                     </div>
                 }
-                @*  else if (!string.IsNullOrEmpty(campaignError))
-                {
-                    <div class="alert alert-danger mb-4">
-                        @campaignError
-                    </div>
-                } *@
 
+                <!-- Donation Form -->
                 <EditForm Model="@donationRequest" OnValidSubmit="@HandleValidSubmit">
                     <DataAnnotationsValidator />
                     <ValidationSummary />
 
+                    <!-- Donor Information Card -->
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5>Donor Information</h5>
+                            <h5 class="mb-0">Donor Information</h5>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -116,63 +120,39 @@
                                     <InputText id="lastName" class="form-control" @bind-Value="donationRequest.LastName" />
                                     <ValidationMessage For="@(() => donationRequest.LastName)" />
                                 </div>
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-5 mb-3">
                                     <label for="email" class="form-label">Email*</label>
                                     <InputText id="email" class="form-control" @bind-Value="donationRequest.Email" />
                                     <ValidationMessage For="@(() => donationRequest.Email)" />
                                 </div>
-                                <div class="col-md-2 mb-3">
-                                    <label for="mobile" class="form-label">Mobile</label>
-                                    <InputText id="mobile" class="form-control" @bind-Value="donationRequest.Mobile" />
-                                    <ValidationMessage For="@(() => donationRequest.Mobile)" />
-                                </div>
-                            </div>
-                            <div class="row">
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-5 mb-3">
-                                    <label for="street" class="form-label">Street</label>
-                                    <InputText id="street" class="form-control" @bind-Value="donationRequest.Address.Street" />
-                                    <ValidationMessage For="@(() => donationRequest.Address.Street)" />
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="city" class="form-label">City</label>
-                                    <InputText id="city" class="form-control" @bind-Value="donationRequest.Address.City" />
-                                    <ValidationMessage For="@(() => donationRequest.Address.City)" />
-                                </div>
-                                <div class="col-md-2">
-                                    <label for="state" class="form-label">State/Province</label>
-                                    <InputSelect id="state" @bind-Value="donationRequest.Address.State" class="form-control">
-                                        @foreach (var state in UsStates)
-                                        {
-                                            <option value="@state.Abbreviation">@state.Name</option>
-                                        }
-                                    </InputSelect>
-                                </div>
-                                @*       <div class="col-md-4 mb-3">
-                                    <label for="state" class="form-label">State</label>
-                                    <InputText id="state" class="form-control" @bind-Value="donationRequest.Address.State" />
-                                    <ValidationMessage For="@(() => donationRequest.Address.State)" />
-                                </div> *@
-                                <div class="col-md-2 mb-3">
-                                    <label for="postal" class="form-label">Postal Code</label>
-                                    <InputText id="postal" class="form-control" @bind-Value="donationRequest.Address.PostalCode" />
-                                    <ValidationMessage For="@(() => donationRequest.Address.PostalCode)" />
-                                </div>
                             </div>
                         </div>
-
                     </div>
 
+                    <!-- Donation Information Card -->
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5>Donation Information</h5>
+                            <h5 class="mb-0">Donation Information</h5>
                         </div>
                         <div class="card-body">
+                            @if (showButtons) {
+                            <div class="mb-3">
+                                <label class="form-label">Quick Amount Selection:</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="button" class="btn btn-outline-primary" @onclick="() => SetDonationAmount(50)">$50</button>
+                                    <button type="button" class="btn btn-outline-primary" @onclick="() => SetDonationAmount(100)">$100</button>
+                                    <button type="button" class="btn btn-outline-primary" @onclick="() => SetDonationAmount(250)">$250</button>
+                                    <button type="button" class="btn btn-outline-primary" @onclick="() => SetDonationAmount(500)">$500</button>
+                                    <button type="button" class="btn btn-outline-primary" @onclick="() => SetDonationAmount(1000)">$1,000</button>
+                                    <button type="button" class="btn btn-outline-primary" @onclick="() => SetDonationAmount(2000)">$2,000</button>
+                                    <button type="button" class="btn btn-outline-primary" @onclick="() => SetDonationAmount(5000)">$5,000</button>
+                                </div>
+                            </div>
+                            }
+
                             <div class="row mb-3">
                                 <div class="col-md-4">
-                                    <label>Amount You Want To Donate:</label>
+                                    <label class="form-label">Amount You Want To Donate:</label>
                                     <div class="input-group">
                                         <span class="input-group-text">$</span>
                                         <InputNumber id="amount" class="form-control" @bind-Value="donationRequest.DonationAmount" />
@@ -180,14 +160,14 @@
                                     <ValidationMessage For="@(() => donationRequest.DonationAmount)" />
                                 </div>
                                 <div class="col-md-4">
-                                    <label>Fees we pay @(donationRequest.PayTransactionFee ? "😀" : "😠")</label>
+                                    <label class="form-label">Fees we pay @(donationRequest.PayTransactionFee ? "😀" : "😠")</label>
                                     <div class="input-group">
                                         <span class="input-group-text">$</span>
                                         <input type="text" class="form-control" value="@(donationRequest.PayTransactionFee ? "0" : @CalculateTransactionFee().ToString("F2"))" disabled />
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <label>Amount we receive:</label>
+                                    <label class="form-label">Amount we receive:</label>
                                     <div class="input-group">
                                         <span class="input-group-text">$</span>
                                         <input type="text" class="form-control"
@@ -197,8 +177,6 @@
                                     </div>
                                 </div>
                             </div>
-
-
 
                             <div class="mb-3 form-check">
                                 <InputCheckbox id="payTransactionFee" class="form-check-input" @bind-Value="donationRequest.PayTransactionFee" />
@@ -215,6 +193,7 @@
                                     Make this an annual recurring donation
                                 </label>
                             </div>
+
                             <div class="mb-3 form-check">
                                 <input type="checkbox" id="isMonthly" class="form-check-input"
                                        checked="@donationRequest.IsMonthly"
@@ -224,18 +203,25 @@
                                 </label>
                             </div>
 
-                            <div class="mb-3">
+                            <div class="mb-0">
                                 <label for="donationMessage" class="form-label">Message (Optional)</label>
                                 <InputTextArea id="donationMessage" class="form-control" @bind-Value="donationRequest.DonationMessage" rows="1" />
                             </div>
+                        </div>
+                    </div>
 
+                    <!-- Payment Method Card -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Payment Method</h5>
+                        </div>
+                        <div class="card-body">
                             <div class="mb-3">
-                                <label class="form-label">Payment Method</label>
                                 <div id="dropin-container"></div>
                                 <div class="text-danger">@paymentError</div>
                             </div>
 
-                            <div class="mt-4">
+                            <div class="d-grid">
                                 <button type="submit" class="btn btn-primary" disabled="@(!isPaymentFormReady || isProcessing)">
                                     @if (isProcessing)
                                     {
@@ -262,6 +248,8 @@
 
     [Parameter]
     public string? ReferralCode { get; set; }
+
+    private bool showButtons = true;
 
     private Campaign? campaign;
     private Profile? referrer = new Profile();
@@ -347,7 +335,7 @@
 
     private DonationRequestDto donationRequest = new DonationRequestDto
     {
-        DonationAmount = 50.00m,
+        DonationAmount = 100m,
         Address = new AddressModel
         {
             Street = string.Empty,
@@ -359,34 +347,47 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(
-            ProcessReferalCode(),
-        LoadAllCampaignAsync(),
-        LoadOrganizationAsync(),
-        LoadReferrerAsync()
-    );
+        try
+        {
+            // Process referral code first (doesn't require DB calls)
+            await ProcessReferralCode();
 
-        // After all campaigns are loaded, set the selected campaign if CampaignId is present
-        if (CampaignId.HasValue && campaigns.Any())
-        {
-            selectedCampaignId = CampaignId.Value;
-            campaign = campaigns.FirstOrDefault(c => c.Id == CampaignId.Value);
-            if (campaign != null)
+            // Execute database operations sequentially to avoid DbContext concurrency issues
+            await LoadOrganizationAsync();
+            await LoadAllCampaignAsync();
+            await LoadReferrerAsync();
+
+            // After all campaigns are loaded, set the selected campaign if CampaignId is present
+            if (CampaignId.HasValue && campaigns.Any())
             {
-                donationRequest.CampaignCode = campaign.Id.ToString();
+                selectedCampaignId = CampaignId.Value;
+                campaign = campaigns.FirstOrDefault(c => c.Id == CampaignId.Value);
+                if (campaign != null)
+                {
+                    donationRequest.CampaignCode = campaign.Id.ToString();
+                }
+            }
+            else if (campaigns.Any())
+            {
+                // Optionally, select the default campaign if no CampaignId is provided
+                campaign = campaigns.FirstOrDefault(c => c.IsDefault) ?? campaigns.First();
+                selectedCampaignId = campaign?.Id;
+                if (campaign != null)
+                {
+                    donationRequest.CampaignCode = campaign.Id.ToString();
+                }
             }
         }
-        else if (campaigns.Any())
+        catch (Exception ex)
         {
-            // Optionally, select the default campaign if no CampaignId is provided
-            campaign = campaigns.FirstOrDefault(c => c.IsDefault) ?? campaigns.First();
-            selectedCampaignId = campaign?.Id;
-            if (campaign != null)
-            {
-                donationRequest.CampaignCode = campaign.Id.ToString();
-            }
+            // Log the exception and show user-friendly error
+            paymentError = $"Failed to load page data: {ex.Message}";
         }
-        StateHasChanged();
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
 
     private async Task LoadOrganizationAsync()
@@ -406,10 +407,6 @@
         {
             organizationError = $"Error loading organization: {ex.Message}";
         }
-        finally
-        {
-            isLoading = false;
-        }
     }
 
     private async Task LoadAllCampaignAsync()
@@ -426,11 +423,6 @@
         catch (Exception ex)
         {
             campaignError = $"Error loading campaign: {ex.Message}";
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged(); // Fixed the method call syntax
         }
     }
 
@@ -480,13 +472,9 @@
         {
             campaignError = $"Error loading campaign: {ex.Message}";
         }
-        finally
-        {
-            isLoading = false;
-        }
     }
 
-    private async Task ProcessReferalCode()
+    private async Task ProcessReferralCode()
     {
         try
         {
@@ -511,7 +499,7 @@
         }
         catch (Exception ex)
         {
-            referrerError = $"Error loading referrer information: {ex.Message}";
+            referrerError = $"Error processing referral code: {ex.Message}";
         }
     }
 
@@ -624,7 +612,7 @@
                 // Reset form
                 donationRequest = new DonationRequestDto
                 {
-                    DonationAmount = 10.00m,
+                    DonationAmount = 100m,
                     Address = new AddressModel
                     {
                         Street = string.Empty,
@@ -651,6 +639,16 @@
             isProcessing = false;
             StateHasChanged();
         }
+    }
+
+    /// <summary>
+    /// Sets the donation amount to the specified value when a quick amount button is clicked.
+    /// </summary>
+    /// <param name="amount">The donation amount to set</param>
+    private void SetDonationAmount(decimal amount)
+    {
+        donationRequest.DonationAmount = amount;
+        StateHasChanged();
     }
 
     // US States list with abbreviations

@@ -12,30 +12,32 @@ using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
 
+
 namespace msih.p4g.Client.Features.UserManagement.Pages
 {
     public partial class RegisterUser : ComponentBase
     {
         [Inject]
-        private IUserProfileService UserProfileService { get; set; }
+        private IUserProfileService UserProfileService { get; set; } = null!;
 
         [Inject]
-        private NavigationManager NavigationManager { get; set; }
+        private NavigationManager NavigationManager { get; set; } = null!;
 
         [Inject]
-        private AuthService AuthService { get; set; }
+        private AuthService AuthService { get; set; } = null!;
 
         [Inject]
-        public IJSRuntime JSRuntime { get; set; }
+        public IJSRuntime JSRuntime { get; set; } = null!;
 
         [Inject]
-        private ISettingsService _settingsService { get; set; }
+        private ISettingsService _settingsService { get; set; } = null!;
+
         [Inject]
-        private IConfiguration _configuration { get; set; }
+        private IConfiguration _configuration { get; set; } = null!;
 
         private User user = new() { Role = UserRole.Fundraiser }; // Default to Fundraiser
         private Profile profile = new();
-        private string message;
+        private string message = string.Empty;
         private bool isProcessing;
 
         // Date of birth fields
@@ -56,17 +58,8 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
 
         private bool isRegistered = false;
         private string referralCode = "";
-        private bool _appendName = false;
-        private bool appendName
-        {
-            get => _appendName;
-            set
-            {
-                _appendName = value;
-                StateHasChanged(); // Trigger UI update when checkbox changes
-            }
-        }
         private string userName = "";
+        private string donationUrl = "https://gd4.org/donate"; // Default value
 
         private string Title => Route switch
         {
@@ -96,47 +89,20 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
             _ => UserRole.Fundraiser
         };
 
-        private string? donationUrl = "";
-
-        private string ReferralLink => appendName && !string.IsNullOrEmpty(userName)
-        ? $"{donationUrl}/{referralCode}-{userName.Replace(" ", "")}"
-        : $"https://gd4.org/give/{referralCode}";
-
-        private string InstagramUrl => $"https://www.instagram.com/?url={Uri.EscapeDataString(ReferralLink)}";
-        private string TikTokUrl => $"https://www.tiktok.com/share?url={Uri.EscapeDataString(ReferralLink)}";
-        private string FacebookUrl => $"https://www.facebook.com/sharer/sharer.php?u={Uri.EscapeDataString(ReferralLink)}";
-        private string TwitterUrl => $"https://twitter.com/intent/tweet?url={Uri.EscapeDataString(ReferralLink)}";
-
-        bool copyUrlSuccess = false;
-
-        private async Task CopyReferralUrl()
-        {
-            try
-            {
-                string referralUrl = $"{ReferralLink}";
-                await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
-                copyUrlSuccess = true;
-                StateHasChanged();
-
-                // Reset the success message after 3 seconds
-                await Task.Delay(3000);
-                copyUrlSuccess = false;
-                StateHasChanged();
-            }
-            catch (Exception)
-            {
-                // Handle clipboard error
-                message = "Unable to copy to clipboard. Please select and copy the URL manually.";
-            }
-        }
-
-
-
         protected override void OnInitialized()
         {
             // Ensure role is set to Fundraiser
             user.Role = UserRole.Fundraiser;
             base.OnInitialized();
+        }
+
+        /// <summary>
+        /// Handles errors from the referral link component
+        /// </summary>
+        private void HandleReferralError(string errorMessage)
+        {
+            message = errorMessage;
+            StateHasChanged();
         }
 
         private async Task HandleRegistration()
@@ -172,24 +138,24 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
                 // Create both the user and profile in a single operation
                 var createdProfile = await UserProfileService.CreateUserWithProfileAsync(user, profile);
                 referralCode = createdProfile.ReferralCode;
-                userName = $"{profile.FirstName}-{profile.LastName.Substring(0, 1).ToUpper()}";
 
-                var donationUrl = await _settingsService.GetValueAsync("DonationURL")
+                // Update the donation URL from settings
+                donationUrl = await _settingsService.GetValueAsync("DonationURL")
                    ?? _configuration["DonationURL"]
                    ?? "https://gd4.org/donate";
 
                 try
                 {
                     // Request login email with verification link if needed
-                    var (success, message) = await AuthService.RequestLoginEmailAsync(createdProfile.User.Email);
+                    var (success, messageResult) = await AuthService.RequestLoginEmailAsync(user.Email);
 
                     if (success)
                     {
-                        successMessage = message;
+                        successMessage = messageResult;
                     }
                     else
                     {
-                        errorMessage = message;
+                        errorMessage = messageResult;
                     }
                 }
                 catch (Exception ex)
@@ -198,50 +164,10 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
                 }
                 finally
                 {
-
                     message = $"User registered successfully!";
                     isRegistered = true;
                     StateHasChanged();
                 }
-
-                // Reset the form
-                //user = new() { Role = UserRole.Fundraiser };
-                //profile = new();
-
-                //try
-                //{
-                //    // Request login email with verification link if needed
-                //    var (success, message) = await AuthService.RequestLoginEmailAsync(createdProfile.User.Email);
-
-                //    if (success)
-                //    {
-                //        successMessage = message;
-                //    }
-                //    else
-                //    {
-                //        errorMessage = message;
-                //    }
-                //}
-                //catch (Exception ex)
-                //{
-                //    errorMessage = $"An error occurred: {ex.Message}";
-                //}
-                //finally
-                //{
-                //    isLoggingIn = false;
-                //    StateHasChanged();
-                //    // wait two seconds
-                //    await Task.Delay(4000);
-
-                //    // If login was successful, we could redirect the user here
-                //    if (!string.IsNullOrEmpty(successMessage))
-                //    {
-                //        // No immediate redirect for now, letting user see the message
-                //        NavigationManager.NavigateTo("/verify-email");
-                //    }
-                //}
-
-
             }
             catch (Exception ex)
             {

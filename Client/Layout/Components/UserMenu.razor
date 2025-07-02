@@ -13,25 +13,82 @@
 @inject AuthService AuthService
 @implements IDisposable
 
+<style>
+    .user-menu-btn {
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: #ff6b35;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+    }
+
+        .user-menu-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(255, 255, 255, 0.8);
+            color: #e55a2b;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-menu-btn:focus {
+            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
+            color: #e55a2b;
+            background: rgba(255, 255, 255, 1);
+        }
+
+    /* Alternative orange button style for non-orange backgrounds */
+    .user-menu-btn.orange-style {
+        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffab00 100%);
+        border: 2px solid #ff6b35;
+        color: white;
+        font-weight: 500;
+    }
+
+        .user-menu-btn.orange-style:hover {
+            background: linear-gradient(135deg, #e55a2b 0%, #e8851a 50%, #e69900 100%);
+            border-color: #e55a2b;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+        }
+
+        .user-menu-btn.orange-style:focus {
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.5);
+            color: white;
+        }
+</style>
+
 <div class="dropdown">
-    <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+    <button class="btn user-menu-btn dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
         <span class="oi oi-person" aria-hidden="true"></span>
-        @(AuthService.CurrentUser?.Email ?? "Account")
+        @(userWithProfile?.Profile?.FullName ?? AuthService.CurrentUser?.Email ?? "Account")
     </button>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
         @if (AuthService.IsAuthenticated)
         {
             <li><a class="dropdown-item" href="/profile">My Profile</a></li>
             <li><a class="dropdown-item" href="/donations">My Donations</a></li>
-            @if (AuthService.CurrentUser?.Role == UserRole.Fundraiser)
+            @if (userWithProfile?.Role == UserRole.Fundraiser || userWithProfile?.Role == UserRole.Admin) // Updated to use userWithProfile
             {
                 <li><a class="dropdown-item" href="/fundraiser">My Fundraiser</a></li>
             }
-            @if (AuthService.CurrentUser?.Role == UserRole.Admin)
+            @if (userWithProfile?.Role == UserRole.Admin) // Updated to use userWithProfile
             {
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="/users">User Management</a></li>
                 <li><a class="dropdown-item" href="/admin/donors">Donor Management</a></li>
+                <li><a class="dropdown-item" href="/admin/profiles">Profile Management</a></li>
+         @* Added Profile Management link *@
+                <li><a class="dropdown-item" href="/admin/campaigns">Campaign Management</a></li>
+                <li><a class="dropdown-item" href="/admin/settings">Admin Settings</a></li>
+                <li><a class="dropdown-item" href="/admin/phone-validation">Phone Validation</a></li>
+                <li><a class="dropdown-item" href="/admin/organizations">Organizations</a></li>
+                <li><a class="dropdown-item" href="/admin/message-templates">Message Templates</a></li>
+                <li><a class="dropdown-item" href="/admin/payouts">Payouts</a></li>
+
+
+
             }
             <li><hr class="dropdown-divider"></li>
             <li><button class="dropdown-item" @onclick="LogoutAsync">Logout</button></li>
@@ -45,19 +102,61 @@
 </div>
 
 @code {
+    private User? userWithProfile;
+
     protected override async Task OnInitializedAsync()
     {
         AuthService.AuthStateChanged += OnAuthStateChanged;
 
-        // Only try to restore authentication if not already authenticated
-        if (!AuthService.IsAuthenticated)
+        // Don't try to initialize auth state here during prerendering
+        // Load user with profile data if already authenticated
+        await LoadUserWithProfileAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
         {
-            await AuthService.InitializeAuthenticationStateAsync();
+            // Only try to restore authentication after the first render when JS is available
+            if (!AuthService.IsAuthenticated && !AuthService.IsInitialized)
+            {
+                await AuthService.InitializeAuthenticationStateAsync();
+                await LoadUserWithProfileAsync();
+                StateHasChanged(); // Trigger a re-render if auth state changed
+            }
         }
     }
 
-    private void OnAuthStateChanged()
+    private async Task LoadUserWithProfileAsync()
     {
+        if (AuthService.IsAuthenticated && !string.IsNullOrEmpty(AuthService.CurrentUser?.Email))
+        {
+            try
+            {
+                userWithProfile = await UserService.GetByEmailAsync(
+                    AuthService.CurrentUser.Email,
+                    includeProfile: true,
+                    includeAddress: false,
+                    includeDonor: false,
+                    includeFundraiser: false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading user profile: {ex.Message}");
+                // Fall back to using AuthService.CurrentUser if profile loading fails
+            }
+        }
+        else
+        {
+            // Clear user profile when not authenticated
+            userWithProfile = null;
+        }
+    }
+
+    private async void OnAuthStateChanged()
+    {
+        // Reload user profile when auth state changes
+        await LoadUserWithProfileAsync();
         // This will trigger a UI refresh when the auth state changes
         StateHasChanged();
     }

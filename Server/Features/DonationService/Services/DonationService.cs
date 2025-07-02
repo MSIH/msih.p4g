@@ -200,6 +200,20 @@ namespace msih.p4g.Server.Features.DonationService.Services
             }
 
             donation = await _donationRepository.AddAsync(donation, "DonationService");
+
+            // 5. send email notification to donor
+            if (isNewUser)
+            {
+                // Send welcome email to new donor
+
+            }
+            else
+            {
+                // Send thank you email for donation
+
+            }
+
+
             return donation;
         }
 
@@ -339,6 +353,133 @@ namespace msih.p4g.Server.Features.DonationService.Services
         {
             var donations = await GetByDonorIdAsync(donorId);
             return donations.Sum(d => d.DonationAmount);
+        }
+
+        /// <summary>
+        /// Gets donations for a specific user by email.
+        /// </summary>
+        public async Task<List<Donation>> GetByUserEmailAsync(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+                return new List<Donation>();
+
+            try
+            {
+                // Get user and their donor information
+                var user = await _userRepository.GetByEmailAsync(email, includeDonor: true);
+                if (user?.Donor == null)
+                    return new List<Donation>();
+
+                // Get donations for this donor
+                return await GetByDonorIdAsync(user.Donor.Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting donations for user {email}: {ex.Message}");
+                return new List<Donation>();
+            }
+        }
+
+        /// <summary>
+        /// Searches for donations for a specific user by email.
+        /// </summary>
+        public async Task<List<Donation>> SearchByUserEmailAsync(string email, string searchTerm)
+        {
+            if (string.IsNullOrEmpty(email))
+                return new List<Donation>();
+
+            try
+            {
+                // Get all user donations first
+                var userDonations = await GetByUserEmailAsync(email);
+
+                if (string.IsNullOrWhiteSpace(searchTerm))
+                    return userDonations;
+
+                // Filter donations based on search term
+                return userDonations.Where(d =>
+                    (d.DonationMessage?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (d.ReferralCode?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (d.CampaignCode?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    d.DonationAmount.ToString().Contains(searchTerm)
+                ).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error searching donations for user {email}: {ex.Message}");
+                return new List<Donation>();
+            }
+        }
+
+        /// <summary>
+        /// Updates a recurring donation for a specific user.
+        /// </summary>
+        public async Task<bool> UpdateRecurringDonationAsync(string userEmail, int donationId, decimal newAmount, bool isActive)
+        {
+            if (string.IsNullOrEmpty(userEmail))
+                return false;
+
+            try
+            {
+                // Verify the donation belongs to the current user
+                var user = await _userRepository.GetByEmailAsync(userEmail, includeDonor: true);
+                if (user?.Donor == null)
+                    return false;
+
+                var donation = await GetByIdAsync(donationId);
+                if (donation == null || donation.DonorId != user.Donor.Id)
+                    return false;
+
+                // Only allow updating recurring donations
+                if (!donation.IsMonthly && !donation.IsAnnual)
+                    return false;
+
+                // Update the donation
+                donation.DonationAmount = newAmount;
+                donation.IsActive = isActive;
+                donation.ModifiedBy = userEmail;
+                donation.ModifiedOn = DateTime.UtcNow;
+
+                return await UpdateAsync(donation);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating recurring donation: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Cancels a recurring donation for a specific user.
+        /// </summary>
+        public async Task<bool> CancelRecurringDonationAsync(string userEmail, int donationId)
+        {
+            if (string.IsNullOrEmpty(userEmail))
+                return false;
+
+            try
+            {
+                // Verify the donation belongs to the current user
+                var user = await _userRepository.GetByEmailAsync(userEmail, includeDonor: true);
+                if (user?.Donor == null)
+                    return false;
+
+                var donation = await GetByIdAsync(donationId);
+                if (donation == null || donation.DonorId != user.Donor.Id)
+                    return false;
+
+                // Only allow canceling recurring donations
+                if (!donation.IsMonthly && !donation.IsAnnual)
+                    return false;
+
+                // Set the donation as inactive
+                return await SetActiveAsync(donationId, false, userEmail);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error canceling recurring donation: {ex.Message}");
+                return false;
+            }
         }
     }
 }

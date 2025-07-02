@@ -12,21 +12,23 @@ using msih.p4g.Server.Features.Base.UserService.Models;
 
 namespace msih.p4g.Server.Features.Base.UserService.Repositories
 {
-    public class UserRepository : GenericRepository<User, ApplicationDbContext>, IUserRepository
+    public class UserRepository : GenericRepository<User>, IUserRepository
     {
-        public UserRepository(ApplicationDbContext context) : base(context)
+        public UserRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
         }
 
         public async Task<User?> GetByEmailAsync(string email)
         {
-            return await _dbSet.FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+            using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Set<User>().FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
         }
         // All other CRUD methods are inherited from GenericRepository
 
         public async Task<User?> GetByEmailAsync(string email, bool includeProfile = false, bool includeAddress = false, bool includeDonor = false, bool includeFundraiser = false)
         {
-            var query = _dbSet.AsQueryable();
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var query = context.Set<User>().AsQueryable();
 
             // If we need to include the profile
             if (includeProfile)
@@ -51,7 +53,10 @@ namespace msih.p4g.Server.Features.Base.UserService.Repositories
 
         public async Task<User?> GetUserByTokenAsync(string token)
         {
-            var user = await _dbSet.FirstOrDefaultAsync(u => u.EmailVerificationToken == token && u.IsActive);
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var user = await context.Set<User>()
+                .Include(u => u.Profile)  // Include the Profile
+                .FirstOrDefaultAsync(u => u.EmailVerificationToken == token && u.IsActive);
             return user;
         }
     }

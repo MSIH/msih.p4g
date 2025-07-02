@@ -1,0 +1,16 @@
+@*
+ * Copyright (c) 2025 MSIH LLC. All rights reserved.
+ * This file is developed for Make Sure It Happens Inc.
+ * Unauthorized copying, modification, distribution, or use is prohibited.
+ *@
+
+@page "/"
+@inject NavigationManager NavigationManager
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Redirect home page to donations page
+        NavigationManager.NavigateTo("/donate", replace: true);
+    }
+}

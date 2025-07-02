@@ -6,13 +6,17 @@
 
 @page "/admin/message-templates/new"
 @page "/admin/message-templates/edit/{Id:int}"
+@layout AdminLayout
+@using msih.p4g.Client.Layout.Components
 @namespace msih.p4g.Client.Features.Base.Admin.Pages
+@using msih.p4g.Client.Common.Services
 @using msih.p4g.Server.Features.Base.MessageService.Models
 @using msih.p4g.Server.Features.Base.MessageService.Interfaces
 @using msih.p4g.Server.Features.Base.MessageService.Utilities
 @inject IMessageService MessageService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject AuthorizationService AuthorizationService
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h3>@(IsNewTemplate ? "Create Message Template" : "Edit Message Template")</h3>
@@ -312,6 +316,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+       
         await LoadDataAsync();
     }
 

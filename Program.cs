@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -82,8 +76,12 @@ DatabaseConfigurationHelper.AddConfiguredDbContext<ApplicationDbContext>(
     builder.Configuration,
     builder.Environment);
 
-// Register generic repository for Setting using ApplicationDbContext 
-builder.Services.AddScoped<IGenericRepository<Setting>, GenericRepository<Setting, ApplicationDbContext>>();
+// Also register ApplicationDbContext directly for migration and seeding operations
+builder.Services.AddScoped<ApplicationDbContext>(serviceProvider =>
+{
+    var contextFactory = serviceProvider.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
+    return contextFactory.CreateDbContext();
+});
 
 // Register Email Service using the extension method
 builder.Services.AddEmailServices(builder.Configuration);
@@ -93,8 +91,6 @@ builder.Services.AddSmsServices(builder.Configuration, builder.Environment);
 
 // Register Message Service (for both email and SMS) and related dependencies
 builder.Services.AddMessageServices(builder.Configuration, builder.Environment);
-
-
 
 // Register Payment Service and related dependencies
 builder.Services.AddPaymentServices(builder.Configuration, builder.Environment);
@@ -131,6 +127,7 @@ builder.Services.AddScoped<IDonationService, DonationService>();
 // Register UserRepository and UserService for DI
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<msih.p4g.Client.Common.Services.AuthorizationService>();
 
 // Register UserProfileService for coordinating User and Profile operations
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
@@ -152,11 +149,12 @@ builder.Services.AddScoped<IW9FormService, W9FormService>();
 // Add to the existing service registrations in Program.cs
 builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 
-
 // Register the data seeder
 builder.Services.AddScoped<MessageTemplateDataSeeder>();
 builder.Services.AddScoped<OrganizationDataSeeder>();
 builder.Services.AddScoped<CampaignDataSeeder>();
+
+builder.Services.AddScoped<AdminInitializationService>();
 
 var app = builder.Build();
 
@@ -181,6 +179,12 @@ using (var scope = app.Services.CreateScope())
 
     var campaignTemplateSeeder = scope.ServiceProvider.GetRequiredService<CampaignDataSeeder>();
     await campaignTemplateSeeder.SeedAsync();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var adminInitService = scope.ServiceProvider.GetRequiredService<AdminInitializationService>();
+    await adminInitService.InitializeDefaultAdminAsync();
 }
 
 // Configure the HTTP request pipeline.

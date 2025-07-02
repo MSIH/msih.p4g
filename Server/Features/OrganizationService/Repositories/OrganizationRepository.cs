@@ -16,20 +16,21 @@ namespace msih.p4g.Server.Features.OrganizationService.Repositories
     /// <summary>
     /// Repository implementation for Organization entity
     /// </summary>
-    public class OrganizationRepository : GenericRepository<Organization, ApplicationDbContext>, IOrganizationRepository
+    public class OrganizationRepository : GenericRepository<Organization>, IOrganizationRepository
     {
         /// <summary>
         /// Initializes a new instance of the OrganizationRepository class
         /// </summary>
-        /// <param name="context">The database context</param>
-        public OrganizationRepository(ApplicationDbContext context) : base(context)
+        /// <param name="contextFactory">The database context factory</param>
+        public OrganizationRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
         }
 
         /// <inheritdoc />
         public async Task<Organization?> GetByTaxIdAsync(string taxId, bool includeInactive = false)
         {
-            var query = _dbSet.AsQueryable();
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var query = context.Set<Organization>().AsQueryable();
             
             if (!includeInactive)
             {
@@ -42,7 +43,8 @@ namespace msih.p4g.Server.Features.OrganizationService.Repositories
         /// <inheritdoc />
         public async Task<Organization?> GetWithRelatedDataAsync(int id, bool includeInactive = false)
         {
-            var query = _dbSet.AsQueryable();
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var query = context.Set<Organization>().AsQueryable();
             
             if (!includeInactive)
             {
@@ -58,7 +60,8 @@ namespace msih.p4g.Server.Features.OrganizationService.Repositories
         /// <inheritdoc />
         public async Task<IEnumerable<Organization>> GetAllWithRelatedDataAsync(bool includeInactive = false)
         {
-            var query = _dbSet.AsQueryable();
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var query = context.Set<Organization>().AsQueryable();
             
             if (!includeInactive)
             {

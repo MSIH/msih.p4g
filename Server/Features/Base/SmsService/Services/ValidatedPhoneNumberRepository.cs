@@ -16,9 +16,9 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
     /// <summary>
     /// Repository implementation for managing validated phone numbers in the database
     /// </summary>
-    public class ValidatedPhoneNumberRepository : GenericRepository<ValidatedPhoneNumber, ApplicationDbContext>, IValidatedPhoneNumberRepository
+    public class ValidatedPhoneNumberRepository : GenericRepository<ValidatedPhoneNumber>, IValidatedPhoneNumberRepository
     {
-        public ValidatedPhoneNumberRepository(ApplicationDbContext context) : base(context)
+        public ValidatedPhoneNumberRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
         }
         
@@ -30,7 +30,8 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
                 throw new ArgumentException("Phone number cannot be null or empty", nameof(phoneNumber));
             }
 
-            return await _dbSet
+            using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Set<ValidatedPhoneNumber>()
                 .FirstOrDefaultAsync(p => p.PhoneNumber == phoneNumber && p.IsActive) ?? null!;
         }
 

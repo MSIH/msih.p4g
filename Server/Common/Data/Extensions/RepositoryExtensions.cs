@@ -22,17 +22,15 @@ namespace msih.p4g.Server.Common.Data.Extensions
         /// Adds a generic repository for the specified entity type
         /// </summary>
         /// <typeparam name="TEntity">The entity type</typeparam>
-        /// <typeparam name="TContext">The DbContext type</typeparam>
         /// <param name="services">The service collection</param>
         /// <returns>The service collection</returns>
         /// <remarks>
         /// This method is currently not being used in the project. It is kept for potential future use.
         /// </remarks>
-        public static IServiceCollection AddGenericRepository<TEntity, TContext>(this IServiceCollection services)
-            where TEntity : BaseEntity
-            where TContext : DbContext
+        public static IServiceCollection AddGenericRepository<TEntity>(this IServiceCollection services)
+            where TEntity : class
         {
-            services.AddScoped<IGenericRepository<TEntity>, GenericRepository<TEntity, TContext>>();
+            services.AddScoped<IGenericRepository<TEntity>, GenericRepository<TEntity>>();
             return services;
         }
     }

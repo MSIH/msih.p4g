@@ -5,6 +5,8 @@
 @using msih.p4g.Server.Features.FundraiserService.Interfaces
 @using msih.p4g.Server.Features.Base.UserService.Interfaces
 @using msih.p4g.Server.Features.Base.ProfileService.Interfaces
+@using msih.p4g.Server.Features.Base.ProfileService.Model
+@using msih.p4g.Client.Common.Components
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IFundraiserService FundraiserService
@@ -48,25 +50,20 @@
                             </div>
                         }
 
-                        @if (referralCode != null)
+                        @if (profile != null && !string.IsNullOrEmpty(profile.ReferralCode))
                         {
                             <div class="card mb-4">
                                 <div class="card-header">
-                                    <h3 class="card-title">My Donation Referral Code</h3>
+                                    <h3 class="card-title">My Donation Referral Link</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="alert alert-info">
-                                        <p class="mb-1">Share this full URL:</p>
-                                        <h5 class="mt-2 mb-3">https://gd4.org/d/@referralCode</h5>
-                                        <p class="mb-0">
-                                            <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
-                                                <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
-                                            </button>
-                                            @if (copyUrlSuccess)
-                                            {
-                                                <span class="text-success ms-2">Copied!</span>
-                                            }
-                                        </p>
+                                        <p class="mb-1">Share this link to track donations:</p>
+                                        <ReferralLinkComponent 
+                                                               Profile="@profile"
+                                                
+                                                               OnError="@HandleReferralLinkError"
+                                                               OnUrlCopied="@HandleUrlCopied" />
                                     </div>
                                 </div>
                             </div>
@@ -237,13 +234,11 @@
 
 @code {
     private msih.p4g.Server.Features.FundraiserService.Model.Fundraiser fundraiser;
-    private string referralCode;
+    private Profile profile;
     private FundraiserStatistics statistics;
     private bool isLoading = true;
     private bool isSaving = false;
     private string message = string.Empty;
-    private bool copyCodeSuccess = false;
-    private bool copyUrlSuccess = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -260,23 +255,27 @@
             // Get the current user using the AuthService
             var userPrincipal = await AuthService.GetCurrentUserAsync();
 
+            // Check if user principal is null or has no valid ID
+            if (userPrincipal == null || userPrincipal.Id <= 0)
+            {
+                message = "Error: User not authenticated or invalid user ID. Please log in again.";
+                NavigationManager.NavigateTo("/login");
+                return;
+            }
+
 
             // Get the fundraiser for this user
             fundraiser = await FundraiserService.GetByUserIdAsync(userPrincipal.Id);
 
             // Get user's profile for the referral code
-            var profile = await ProfileService.GetByIdAsync(userPrincipal.Id);
-            if (profile != null)
-            {
-                referralCode = profile.ReferralCode;
-            }
+            profile = await ProfileService.GetByIdAsync(userPrincipal.Id);
 
             // Get donation statistics for this fundraiser
             if (fundraiser != null)
             {
                 statistics = await FundraiserStatsService.GetStatisticsAsync(fundraiser.Id);
             }
-            
+
             // If fundraiser is still null, create a default one
             if (fundraiser == null)
             {
@@ -320,47 +319,18 @@
         }
     }
 
-    private async Task CopyReferralCode()
+    private async Task HandleReferralLinkError(string errorMessage)
     {
-        try
-        {
-            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralCode);
-            copyCodeSuccess = true;
-            StateHasChanged();
-
-            // Reset the success message after 3 seconds
-            await Task.Delay(3000);
-            copyCodeSuccess = false;
-            StateHasChanged();
-        }
-        catch (Exception)
-        {
-            // Handle clipboard error
-            message = "Unable to copy to clipboard. Please select and copy the code manually.";
-        }
+        message = errorMessage;
+        StateHasChanged();
     }
 
-    private async Task CopyReferralUrl()
+    private async Task HandleUrlCopied()
     {
-        try
-        {
-            string referralUrl = $"https://gd4.org/d/{referralCode}";
-            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
-            copyUrlSuccess = true;
-            StateHasChanged();
-
-            // Reset the success message after 3 seconds
-            await Task.Delay(3000);
-            copyUrlSuccess = false;
-            StateHasChanged();
-        }
-        catch (Exception)
-        {
-            // Handle clipboard error
-            message = "Unable to copy to clipboard. Please select and copy the URL manually.";
-        }
+        // Optional: Add any additional logic when URL is copied successfully
+        // For example, analytics tracking or showing a temporary success message
     }
-    
+
     private void NavigateToW9Form()
     {
         if (fundraiser != null && fundraiser.Id > 0)
