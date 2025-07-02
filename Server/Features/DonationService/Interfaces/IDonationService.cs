@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -36,6 +42,11 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         Task<List<Donation>> GetByDonorIdAsync(int donorId);
 
         /// <summary>
+        /// Gets donations for a specific user by email.
+        /// </summary>
+        Task<List<Donation>> GetByUserEmailAsync(string email);
+
+        /// <summary>
         /// Gets donations by campaign ID.
         /// </summary>
         Task<List<Donation>> GetByCampaignIdAsync(int campaignId);
@@ -56,6 +67,11 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         Task<List<Donation>> SearchAsync(string searchTerm);
 
         /// <summary>
+        /// Searches for donations for a specific user by email.
+        /// </summary>
+        Task<List<Donation>> SearchByUserEmailAsync(string email, string searchTerm);
+
+        /// <summary>
         /// Adds a new donation.
         /// Transaction fee and total amount charged will be automatically calculated if not already set.
         /// </summary>
@@ -66,6 +82,16 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         /// Transaction fee and total amount charged will be recalculated based on the updated amount.
         /// </summary>
         Task<bool> UpdateAsync(Donation donation);
+
+        /// <summary>
+        /// Updates a recurring donation for a specific user.
+        /// </summary>
+        Task<bool> UpdateRecurringDonationAsync(string userEmail, int donationId, decimal newAmount, bool isActive);
+
+        /// <summary>
+        /// Cancels a recurring donation for a specific user.
+        /// </summary>
+        Task<bool> CancelRecurringDonationAsync(string userEmail, int donationId);
 
         /// <summary>
         /// Sets the active status of a donation.
