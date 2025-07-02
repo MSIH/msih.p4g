@@ -97,21 +97,25 @@
 
     /// <summary>
     /// Computes the consistent username format from the Profile object.
-    /// Format: "{FirstName}-{LastNameInitial}" (e.g., "John-D")
+    /// Format: "{FirstName}" (e.g., "John")
     /// </summary>
     private string ComputedUserName
     {
         get
         {
-            if (Profile?.FirstName != null && Profile?.LastName != null)
+            if (Profile?.FirstName != null)
             {
-                return $"{Profile.FirstName}";
+                var firstName = Profile.FirstName.Trim();
+                if (string.IsNullOrEmpty(firstName))
+                    return string.Empty;
+
+                return char.ToUpper(firstName[0]) + firstName.Substring(1).ToLower();
             }
 
             // Fallback to UserName parameter for backward compatibility
             return UserName;
         }
-    } 
+    }
 
     protected override async Task OnInitializedAsync()
     {

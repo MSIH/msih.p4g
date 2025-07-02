@@ -45,35 +45,46 @@
                             <input type="text" class="form-control" value="@Donation.CreatedOn.ToString("MMM dd, yyyy")" readonly />
                         </div>
 
-                        @if (Donation.IsMonthly || Donation.IsAnnual)
-                        {
-                            <div class="mb-3">
-                                <label for="donationAmount" class="form-label">Donation Amount ($)</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" class="form-control" id="donationAmount"
-                                           @bind="editModel.DonationAmount"
-                                            readonly />
-                                </div>
+                        <div class="mb-3">
+                            <label for="donationAmount" class="form-label">Donation Amount ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="donationAmount"
+                                       @bind="editModel.DonationAmount"
+                                       readonly />
                             </div>
+                        </div>
+
+                        @if (Donation.IsMonthly)
+                        {
+                           
 
                             <div class="mb-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="isActive" @bind="editModel.IsActive" />
+                                    <input class="form-check-input" type="checkbox" id="isActive" @bind="editModel.IsActiveMontly" />
                                     <label class="form-check-label" for="isActive">
                                         Active Donation
                                     </label>
                                 </div>
-                                <small class="form-text text-muted">Uncheck to pause this recurring donation</small>
+                                <small class="form-text text-muted">Uncheck to pause monthly recurring donation</small>
                             </div>
                         }
-                        else
+
+                        @if (Donation.IsAnnual)
                         {
+
+
                             <div class="mb-3">
-                                <label class="form-label">Donation Amount</label>
-                                <input type="text" class="form-control" value="$@Donation.DonationAmount.ToString("F2")" readonly />
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="isActive" @bind="editModel.IsActiveAnnualy" />
+                                    <label class="form-check-label" for="isActive">
+                                        Active Donation
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">Uncheck to pause annual recurring donation</small>
                             </div>
                         }
+                 
 
                         @if (!string.IsNullOrEmpty(Donation.DonationMessage))
                         {
@@ -155,7 +166,8 @@
             editModel = new EditDonationModel
             {
                 DonationAmount = Donation.DonationAmount,
-                IsActive = Donation.IsActive
+                IsActiveMontly = Donation.IsMonthly,
+                IsActiveAnnualy = Donation.IsAnnual
             };
         }
     }
@@ -176,7 +188,8 @@
         {
             // Update the donation object with new values
             Donation.DonationAmount = editModel.DonationAmount;
-            Donation.IsActive = editModel.IsActive;
+            Donation.IsMonthly = editModel.IsActiveMontly;
+            Donation.IsAnnual = editModel.IsActiveAnnualy;
 
             await OnSave.InvokeAsync(Donation);
         }
@@ -208,6 +221,7 @@
     private class EditDonationModel
     {
         public decimal DonationAmount { get; set; }
-        public bool IsActive { get; set; }
+        public bool IsActiveMontly { get; set; }
+        public bool IsActiveAnnualy { get; set; }
     }
 }
