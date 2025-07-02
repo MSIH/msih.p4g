@@ -17,25 +17,26 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
     public partial class RegisterUser : ComponentBase
     {
         [Inject]
-        private IUserProfileService UserProfileService { get; set; }
+        private IUserProfileService UserProfileService { get; set; } = null!;
 
         [Inject]
-        private NavigationManager NavigationManager { get; set; }
+        private NavigationManager NavigationManager { get; set; } = null!;
 
         [Inject]
-        private AuthService AuthService { get; set; }
+        private AuthService AuthService { get; set; } = null!;
 
         [Inject]
-        public IJSRuntime JSRuntime { get; set; }
+        public IJSRuntime JSRuntime { get; set; } = null!;
 
         [Inject]
-        private ISettingsService _settingsService { get; set; }
+        private ISettingsService _settingsService { get; set; } = null!;
+
         [Inject]
-        private IConfiguration _configuration { get; set; }
+        private IConfiguration _configuration { get; set; } = null!;
 
         private User user = new() { Role = UserRole.Fundraiser }; // Default to Fundraiser
         private Profile profile = new();
-        private string message;
+        private string message = string.Empty;
         private bool isProcessing;
 
         // Date of birth fields
@@ -96,7 +97,7 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
             _ => UserRole.Fundraiser
         };
 
-        private string? donationUrl = "";
+        private string donationUrl = "https://gd4.org/donate"; // Default value
 
         private string ReferralLink => appendName && !string.IsNullOrEmpty(userName)
         ? $"{donationUrl}/{referralCode}-{userName.Replace(" ", "")}"
@@ -174,22 +175,23 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
                 referralCode = createdProfile.ReferralCode;
                 userName = $"{profile.FirstName}-{profile.LastName.Substring(0, 1).ToUpper()}";
 
-                var donationUrl = await _settingsService.GetValueAsync("DonationURL")
+                // Update the donation URL from settings
+                donationUrl = await _settingsService.GetValueAsync("DonationURL")
                    ?? _configuration["DonationURL"]
                    ?? "https://gd4.org/donate";
 
                 try
                 {
                     // Request login email with verification link if needed
-                    var (success, message) = await AuthService.RequestLoginEmailAsync(createdProfile.User.Email);
+                    var (success, messageResult) = await AuthService.RequestLoginEmailAsync(user.Email);
 
                     if (success)
                     {
-                        successMessage = message;
+                        successMessage = messageResult;
                     }
                     else
                     {
-                        errorMessage = message;
+                        errorMessage = messageResult;
                     }
                 }
                 catch (Exception ex)

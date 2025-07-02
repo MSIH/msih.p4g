@@ -11,38 +11,49 @@
         <div class="card">
             @if (isRegistered)
             {
-                <div class="alert alert-success">
-                    Registration successful!
-                    <br />
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        Registration successful!
+                    </div>
+
+                    <div class="mb-3">
+                        <h5 class="mt-2 mb-3">@ReferralLink</h5>
+
+                        <div class="mb-3">
+                            <label class="form-check-label">
+                                <input type="checkbox" @bind="appendName" class="form-check-input me-2" />
+                                Append my name to the referral code
+                            </label>
+                        </div>
+
+                        <div class="mb-3">
+                            <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
+                                <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
+                            </button>
+                            @if (copyUrlSuccess)
+                            {
+                                <span class="text-success ms-2">Copied!</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Check Your Email</h5>
+                        <p>We've sent you an email to verify your email address. Please check your email (including spam folder).</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Share your code:</strong>
+                        <ul class="mt-2">
+                            <li><a href="@InstagramUrl" target="_blank">Instagram</a></li>
+                            <li><a href="@TikTokUrl" target="_blank">TikTok</a></li>
+                            <li><a href="@FacebookUrl" target="_blank">Facebook</a></li>
+                            <li><a href="@TwitterUrl" target="_blank">Twitter</a></li>
+                            <li><a href="mailto:?subject=Join%20me&body=@ReferralLink" target="_blank">Email</a></li>
+                            <li><a href="sms:?body=@ReferralLink" target="_blank">Text Message</a></li>
+                        </ul>
+                    </div>
                 </div>
-                    <h5 class="mt-2 mb-3">@ReferralLink</h5>
-                    <br />
-                <label>
-                    <input type="checkbox" @bind="appendName" />
-                    Append my name to the referral code
-                </label>
-                    <p class="mb-0">
-                        <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
-                            <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
-                        </button>
-                        @if (copyUrlSuccess)
-                        {
-                            <span class="text-success ms-2">Copied!</span>
-                        }
-                    </p>
-                <h5>Check Your Email</h5>
-                <p>We've sent you an email to verify your email ddress. Please check your email (including spam folder).</p>
-                    <br />
-                    <strong>Share your code:</strong>
-                    <ul>
-                        <li><a href="@InstagramUrl" target="_blank">Instagram</a></li>
-                        <li><a href="@TikTokUrl" target="_blank">TikTok</a></li>
-                        <li><a href="@FacebookUrl" target="_blank">Facebook</a></li>
-                        <li><a href="@TwitterUrl" target="_blank">Twitter</a></li>
-                        <li><a href="mailto:?subject=Join%20me&body=@ReferralLink" target="_blank">Email</a></li>
-                        <li><a href="sms:?body=@ReferralLink" target="_blank">Text Message</a></li>
-                    </ul>
-                
             }
             else
             {

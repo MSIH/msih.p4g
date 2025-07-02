@@ -140,7 +140,10 @@
                 var user = await UserService.GetUserByTokenAsync(token);
                 if (user != null)
                 {
+                    StateHasChanged();
                     await AuthService.LoginAsync(user);
+                
+
                 }
                 
                 StartRedirectCountdown();
