@@ -15,14 +15,37 @@
 
 <style>
     .user-menu-btn {
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: #ff6b35;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+    }
+
+        .user-menu-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(255, 255, 255, 0.8);
+            color: #e55a2b;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-menu-btn:focus {
+            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
+            color: #e55a2b;
+            background: rgba(255, 255, 255, 1);
+        }
+
+    /* Alternative orange button style for non-orange backgrounds */
+    .user-menu-btn.orange-style {
         background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffab00 100%);
         border: 2px solid #ff6b35;
         color: white;
         font-weight: 500;
-        transition: all 0.3s ease;
     }
 
-        .user-menu-btn:hover {
+        .user-menu-btn.orange-style:hover {
             background: linear-gradient(135deg, #e55a2b 0%, #e8851a 50%, #e69900 100%);
             border-color: #e55a2b;
             color: white;
@@ -30,7 +53,7 @@
             box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
         }
 
-        .user-menu-btn:focus {
+        .user-menu-btn.orange-style:focus {
             box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.5);
             color: white;
         }
