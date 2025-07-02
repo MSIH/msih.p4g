@@ -1,0 +1,144 @@
+@using Microsoft.JSInterop
+@using msih.p4g.Server.Features.Base.SettingsService.Interfaces
+@inject IJSRuntime JSRuntime
+@inject ISettingsService SettingsService
+
+<div class="mb-3">
+    <h5 class="mt-2 mb-3">@GeneratedReferralLink</h5>
+
+    @if (ShowAppendNameOption)
+    {
+        <div class="mb-3">
+            <label class="form-check-label">
+                <input type="checkbox" @bind="appendName" class="form-check-input me-2" />
+                Append my name to the referral code
+            </label>
+        </div>
+    }
+
+    <div class="mb-3">
+        <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrlToClipboard">
+            <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
+        </button>
+        @if (copyUrlSuccess)
+        {
+            <span class="text-success ms-2">Copied!</span>
+        }
+    </div>
+</div>
+
+@if (ShowSocialMediaLinks)
+{
+    <div class="mb-3">
+        <strong>Share your code:</strong>
+        <ul class="mt-2">
+            <li><a href="@InstagramUrl" target="_blank">Instagram</a></li>
+            <li><a href="@TikTokUrl" target="_blank">TikTok</a></li>
+            <li><a href="@FacebookUrl" target="_blank">Facebook</a></li>
+            <li><a href="@TwitterUrl" target="_blank">Twitter</a></li>
+            <li><a href="mailto:?subject=Join%20me&body=@GeneratedReferralLink" target="_blank">Email</a></li>
+            <li><a href="sms:?body=@GeneratedReferralLink" target="_blank">Text Message</a></li>
+        </ul>
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// The referral code to append to the URL
+    /// </summary>
+    [Parameter] public string ReferralCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The user's name to append when appendName is enabled
+    /// </summary>
+    [Parameter] public string UserName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether to show the checkbox option to append name
+    /// </summary>
+    [Parameter] public bool ShowAppendNameOption { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show the social media sharing links
+    /// </summary>
+    [Parameter] public bool ShowSocialMediaLinks { get; set; } = true;
+
+    /// <summary>
+    /// Event callback fired when an error occurs (e.g., clipboard copy fails)
+    /// </summary>
+    [Parameter] public EventCallback<string> OnError { get; set; }
+
+    /// <summary>
+    /// Event callback fired when URL is successfully copied
+    /// </summary>
+    [Parameter] public EventCallback OnUrlCopied { get; set; }
+
+    private bool _appendName = false;
+    private bool appendName
+    {
+        get => _appendName;
+        set
+        {
+            _appendName = value;
+            StateHasChanged();
+        }
+    }
+
+    private bool copyUrlSuccess = false;
+    private string donationUrl = "https://gd4.org/donate"; // Default fallback value
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load the donation URL from settings service
+        donationUrl = await SettingsService.GetValueAsync("DonationURL") ?? "https://gd4.org/donate";
+    }
+
+    /// <summary>
+    /// Gets the generated referral link based on current settings
+    /// </summary>
+    private string GeneratedReferralLink => appendName && !string.IsNullOrEmpty(UserName)
+        ? $"{donationUrl}/{ReferralCode}-{UserName.Replace(" ", "")}"
+        : $"{donationUrl}/{ReferralCode}";
+
+    /// <summary>
+    /// Social media sharing URLs
+    /// </summary>
+    private string InstagramUrl => $"https://www.instagram.com/?url={Uri.EscapeDataString(GeneratedReferralLink)}";
+    private string TikTokUrl => $"https://www.tiktok.com/share?url={Uri.EscapeDataString(GeneratedReferralLink)}";
+    private string FacebookUrl => $"https://www.facebook.com/sharer/sharer.php?u={Uri.EscapeDataString(GeneratedReferralLink)}";
+    private string TwitterUrl => $"https://twitter.com/intent/tweet?url={Uri.EscapeDataString(GeneratedReferralLink)}";
+
+    /// <summary>
+    /// Copies the referral URL to clipboard
+    /// </summary>
+    private async Task CopyReferralUrlToClipboard()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", GeneratedReferralLink);
+            copyUrlSuccess = true;
+            StateHasChanged();
+
+            // Trigger success callback
+            if (OnUrlCopied.HasDelegate)
+            {
+                await OnUrlCopied.InvokeAsync();
+            }
+
+            // Reset the success message after 3 seconds
+            await Task.Delay(3000);
+            copyUrlSuccess = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // Handle clipboard error
+            var errorMessage = "Unable to copy to clipboard. Please select and copy the URL manually.";
+            
+            if (OnError.HasDelegate)
+            {
+                await OnError.InvokeAsync(errorMessage);
+            }
+        }
+    }
+}
