@@ -1,0 +1,213 @@
+@*
+ * Copyright (c) 2025 MSIH LLC. All rights reserved.
+ * This file is developed for Make Sure It Happens Inc.
+ * Unauthorized copying, modification, distribution, or use is prohibited.
+*@
+
+@namespace msih.p4g.Client.Features.Donations.Components
+@using msih.p4g.Shared.Dtos
+
+<!-- Edit Donation Modal -->
+<div class="modal fade @(IsVisible ? "show" : "")" tabindex="-1" style="display: @(IsVisible ? "block" : "none")" aria-labelledby="editDonationModalLabel" aria-hidden="@(!IsVisible)">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editDonationModalLabel">
+                    @if (Donation?.IsMonthly == true)
+                    {
+                        <span>Edit Monthly Donation</span>
+                    }
+                    else if (Donation?.IsAnnual == true)
+                    {
+                        <span>Edit Annual Donation</span>
+                    }
+                    else
+                    {
+                        <span>View Donation</span>
+                    }
+                </h5>
+                <button type="button" class="btn-close" @onclick="Close" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (Donation != null)
+                {
+                    <EditForm Model="editModel" OnValidSubmit="SaveChanges">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger" />
+
+                        <div class="mb-3">
+                            <label class="form-label">Donation Type</label>
+                            <input type="text" class="form-control" value="@Donation.RecurrenceType" readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Donation Date</label>
+                            <input type="text" class="form-control" value="@Donation.CreatedOn.ToString("MMM dd, yyyy")" readonly />
+                        </div>
+
+                        @if (Donation.IsMonthly || Donation.IsAnnual)
+                        {
+                            <div class="mb-3">
+                                <label for="donationAmount" class="form-label">Donation Amount ($)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="donationAmount"
+                                           @bind="editModel.DonationAmount"
+                                            readonly />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="isActive" @bind="editModel.IsActive" />
+                                    <label class="form-check-label" for="isActive">
+                                        Active Donation
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">Uncheck to pause this recurring donation</small>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Donation Amount</label>
+                                <input type="text" class="form-control" value="$@Donation.DonationAmount.ToString("F2")" readonly />
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Donation.DonationMessage))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Message</label>
+                                <textarea class="form-control" rows="3" readonly>@Donation.DonationMessage</textarea>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Donation.CampaignCode))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Campaign</label>
+                                <input type="text" class="form-control" value="@Donation.CampaignCode" readonly />
+                            </div>
+                        }
+
+                        @if (Donation.PayTransactionFee)
+                        {
+                            <div class="mb-3">
+                                <small class="text-muted">Transaction Fee: $@Donation.PayTransactionFeeAmount.ToString("F2")</small><br />
+                                <small class="text-muted">Total Charged: $@Donation.TotalAmount.ToString("F2")</small><br />
+                                <small class="text-muted">Net Donation Received: $@Donation.NetDonationAmount.ToString("F2")</small>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <small class="text-muted">Transaction Fee: $@Donation.PayTransactionFeeAmount.ToString("F2") (deducted from donation)</small><br />
+                                <small class="text-muted">Net Donation Received: $@Donation.NetDonationAmount.ToString("F2")</small>
+                            </div>
+                        }
+                    </EditForm>
+                }
+            </div>
+            <div class="modal-footer">
+                @if (Donation?.IsMonthly == true || Donation?.IsAnnual == true)
+                {
+                    <button type="button" class="btn btn-danger" @onclick="CancelDonation" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        Cancel Donation
+                    </button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveChanges" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        Save Changes
+                    </button>
+                }
+                <button type="button" class="btn btn-secondary" @onclick="Close">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (IsVisible)
+{
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    [Parameter] public DonationDto? Donation { get; set; }
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<DonationDto> OnSave { get; set; }
+    [Parameter] public EventCallback<int> OnCancel { get; set; }
+
+    private EditDonationModel editModel = new();
+    private bool isProcessing = false;
+
+    protected override void OnParametersSet()
+    {
+        if (Donation != null)
+        {
+            editModel = new EditDonationModel
+            {
+                DonationAmount = Donation.DonationAmount,
+                IsActive = Donation.IsActive
+            };
+        }
+    }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task SaveChanges()
+    {
+        if (Donation == null) return;
+
+        isProcessing = true;
+        StateHasChanged();
+
+        try
+        {
+            // Update the donation object with new values
+            Donation.DonationAmount = editModel.DonationAmount;
+            Donation.IsActive = editModel.IsActive;
+
+            await OnSave.InvokeAsync(Donation);
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CancelDonation()
+    {
+        if (Donation == null) return;
+
+        isProcessing = true;
+        StateHasChanged();
+
+        try
+        {
+            await OnCancel.InvokeAsync(Donation.Id);
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private class EditDonationModel
+    {
+        public decimal DonationAmount { get; set; }
+        public bool IsActive { get; set; }
+    }
+}
