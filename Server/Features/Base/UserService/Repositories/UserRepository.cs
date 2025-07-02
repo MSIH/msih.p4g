@@ -54,7 +54,9 @@ namespace msih.p4g.Server.Features.Base.UserService.Repositories
         public async Task<User?> GetUserByTokenAsync(string token)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
-            var user = await context.Set<User>().FirstOrDefaultAsync(u => u.EmailVerificationToken == token && u.IsActive);
+            var user = await context.Set<User>()
+                .Include(u => u.Profile)  // Include the Profile
+                .FirstOrDefaultAsync(u => u.EmailVerificationToken == token && u.IsActive);
             return user;
         }
     }
