@@ -3,6 +3,7 @@
 @page "/influencer"
 @namespace msih.p4g.Client.Features.UserManagement.Pages
 @using msih.p4g.Server.Features.Base.UserService.Models
+@using msih.p4g.Client.Common.Components
 
 <PageTitle>Register New User</PageTitle>
 
@@ -16,42 +17,12 @@
                         Registration successful!
                     </div>
 
-                    <div class="mb-3">
-                        <h5 class="mt-2 mb-3">@ReferralLink</h5>
-
-                        <div class="mb-3">
-                            <label class="form-check-label">
-                                <input type="checkbox" @bind="appendName" class="form-check-input me-2" />
-                                Append my name to the referral code
-                            </label>
-                        </div>
-
-                        <div class="mb-3">
-                            <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
-                                <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
-                            </button>
-                            @if (copyUrlSuccess)
-                            {
-                                <span class="text-success ms-2">Copied!</span>
-                            }
-                        </div>
-                    </div>
+                    <ReferralLinkComponent Profile="@profile"
+                                           OnError="HandleReferralError" />
 
                     <div class="mb-4">
                         <h5>Check Your Email</h5>
                         <p>We've sent you an email to verify your email address. Please check your email (including spam folder).</p>
-                    </div>
-
-                    <div class="mb-3">
-                        <strong>Share your code:</strong>
-                        <ul class="mt-2">
-                            <li><a href="@InstagramUrl" target="_blank">Instagram</a></li>
-                            <li><a href="@TikTokUrl" target="_blank">TikTok</a></li>
-                            <li><a href="@FacebookUrl" target="_blank">Facebook</a></li>
-                            <li><a href="@TwitterUrl" target="_blank">Twitter</a></li>
-                            <li><a href="mailto:?subject=Join%20me&body=@ReferralLink" target="_blank">Email</a></li>
-                            <li><a href="sms:?body=@ReferralLink" target="_blank">Text Message</a></li>
-                        </ul>
                     </div>
                 </div>
             }
@@ -138,7 +109,7 @@
                             </div>
                         }
 
-                 
+
                         <div class="mb-3">
                             <button type="submit" class="btn btn-primary" disabled="@isProcessing">
                                 @if (isProcessing)
@@ -156,49 +127,49 @@
                     @if (isMarketer)
                     {
                         <div class="mb-3">
-                        <div class="container">
-                            <h2>Marketing Fee Structure </h2>
+                            <div class="container">
+                                <h2>Marketing Fee Structure </h2>
 
-                            <p class="description">
-                                A tiered Marketing Fee structure with three initial milestones, followed by recurring $35 fees for every additional $250 in donations. Fees are earned only when donation thresholds are fully reached.
-                            </p>
+                                <p class="description">
+                                    A tiered Marketing Fee structure with three initial milestones, followed by recurring $35 fees for every additional $250 in donations. Fees are earned only when donation thresholds are fully reached.
+                                </p>
 
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Donation Threshold</th>
-                                        <th>Marketing Fees</th>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Donation Threshold</th>
+                                            <th>Marketing Fees</th>
                                             <th>Total Marketing Fees</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>$25</td>
-                                        <td>$5</td>
-                                        <td>$5</td>
-                                    </tr>
-                                    <tr>
-                                        <td>$100</td>
-                                        <td>$10</td>
-                                        <td>$15</td>
-                                    </tr>
-                                    <tr>
-                                        <td>$250</td>
-                                        <td>$20</td>
-                                        <td>$35</td>
-                                    </tr>
-                                    <tr>
-                                        <td>$500</td>
-                                        <td>$35</td>
-                                        <td>$70</td>
-                                    </tr>                                    
-                                </tbody>
-                            </table>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>$25</td>
+                                            <td>$5</td>
+                                            <td>$5</td>
+                                        </tr>
+                                        <tr>
+                                            <td>$100</td>
+                                            <td>$10</td>
+                                            <td>$15</td>
+                                        </tr>
+                                        <tr>
+                                            <td>$250</td>
+                                            <td>$20</td>
+                                            <td>$35</td>
+                                        </tr>
+                                        <tr>
+                                            <td>$500</td>
+                                            <td>$35</td>
+                                            <td>$70</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
 
-                            <div class="example">
-                                <p>The first three levels offer increasing rewards as you build momentum. Once you hit $250, the pattern becomes straightforward - you receive a marketing fee of $35 for every additional $250 in donations. </p>
-                                <p>If you generate an annual donation of $777, you will receive a marketing fee of $105 because you've completed all three initial levels ($25, $100, and $250) and two $250 levels but haven't reached the $1000 milestone yet.</p>
-                                <p>If you generate an annual donation of $5000, you will receive a marketing fee of $700. If you generate an annual donation of $50,000, you will receive a marketing fee of $7,000. If you generate an annual donation of $150,000, you will receive a marketing fee of $21,000.</p>
+                                <div class="example">
+                                    <p>The first three levels offer increasing rewards as you build momentum. Once you hit $250, the pattern becomes straightforward - you receive a marketing fee of $35 for every additional $250 in donations. </p>
+                                    <p>If you generate an annual donation of $777, you will receive a marketing fee of $105 because you've completed all three initial levels ($25, $100, and $250) and two $250 levels but haven't reached the $1000 milestone yet.</p>
+                                    <p>If you generate an annual donation of $5000, you will receive a marketing fee of $700. If you generate an annual donation of $50,000, you will receive a marketing fee of $7,000. If you generate an annual donation of $150,000, you will receive a marketing fee of $21,000.</p>
                                 </div>
                             </div>
                         </div>

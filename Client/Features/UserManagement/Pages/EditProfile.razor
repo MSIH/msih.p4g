@@ -5,6 +5,7 @@
 @using msih.p4g.Server.Features.Base.UserProfileService.Interfaces
 @using msih.p4g.Server.Features.Base.UserService.Interfaces
 @using msih.p4g.Client.Features.Authentication.Services
+@using msih.p4g.Client.Common.Components
 @inject IUserProfileService UserProfileService
 @inject AuthService AuthService
 @inject IJSRuntime JSRuntime
@@ -43,38 +44,16 @@
                                 @message
                             </div>
                         }
-                        @if (referralCode != null)
+                        @if (!string.IsNullOrEmpty(profile.ReferralCode))
                         {
-                            <div class="card mb-4">                  
+                            <div class="card mb-4">
                                 <h4 class="card-title">Donation Referral URL</h4>
                                 <div class="card-body">
                                     <div class="alert alert-info">
-                                        <p class="mb-1">Share this full URL</p>
-                                        <h5 class="mt-2 mb-3">@donationURL/@referralCode</h5>
-                                        <p class="mb-0">
-                                            <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
-                                                <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
-                                            </button>
-                                            @if (copyUrlSuccess)
-                                            {
-                                                <span class="text-success ms-2">Copied!</span>
-                                            }
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="alert alert-info">
-                                        <p class="mb-1">Referral With Name</p>
-                                        <h5 class="mt-2 mb-3">@donationURL/@referralCode-@(profile.FirstName)-@(profile.LastName?.Substring(0, 1).ToUpper())</h5>
-                                        <p class="mb-0">
-                                            <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrl">
-                                                <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
-                                            </button>
-                                            @if (copyUrlSuccess)
-                                            {
-                                                <span class="text-success ms-2">Copied!</span>
-                                            }
-                                        </p>
+                                        <p class="mb-1">Share this URL to help raise funds:</p>
+                                        <ReferralLinkComponent Profile="@profile"
+                                                               OnError="@HandleReferralError"
+                                                               OnUrlCopied="@HandleUrlCopied" />
                                     </div>
                                 </div>
                             </div>
@@ -243,10 +222,6 @@
 </div>
 
 @code {
-    private string referralCode;
-    private bool copyCodeSuccess = false;
-    private bool copyUrlSuccess = false;
-
     private Profile profile;
     private AddressModel address = new()
     {
@@ -360,14 +335,9 @@
         // Add more countries as needed
     };
 
-    private string donationURL = string.Empty; // Fixed variable declaration
-
     protected override async Task OnInitializedAsync()
     {
         await LoadUserProfileAsync();
-        donationURL = await _settingsService.GetValueAsync("DonationURL") // Updated variable name from donationUrl to donationURL
-                   ?? _configuration["DonationURL"]
-                   ?? "https://gd4.org/donate";
     }
 
     private async Task LoadUserProfileAsync()
@@ -379,18 +349,16 @@
         {
             // Get the current user using the AuthService
             var currentUser = await AuthService.GetCurrentUserAsync();
-            
+
             if (currentUser != null)
             {
                 // Get profile using the user's email
                 profile = await UserProfileService.GetProfileByUserEmailAsync(currentUser.Email);
             }
-            
+
             // If we have a profile now, set up the form fields
             if (profile != null)
-            {            
-                referralCode = profile.ReferralCode;
-          
+            {
                 // Initialize address if it exists
                 if (profile.Address != null)
                 {
@@ -487,44 +455,22 @@
         }
     }
 
-    private async Task CopyReferralCode()
+    /// <summary>
+    /// Handles errors from the ReferralLinkComponent
+    /// </summary>
+    private Task HandleReferralError(string errorMessage)
     {
-        try
-        {
-            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralCode);
-            copyCodeSuccess = true;
-            StateHasChanged();
-
-            // Reset the success message after 3 seconds
-            await Task.Delay(3000);
-            copyCodeSuccess = false;
-            StateHasChanged();
-        }
-        catch (Exception)
-        {
-            // Handle clipboard error
-            message = "Unable to copy to clipboard. Please select and copy the code manually.";
-        }
+        message = errorMessage;
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 
-    private async Task CopyReferralUrl()
+    /// <summary>
+    /// Handles successful URL copy from the ReferralLinkComponent
+    /// </summary>
+    private Task HandleUrlCopied()
     {
-        try
-        {
-            string referralUrl = $"https://gd4.org/d/{referralCode}";
-            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralUrl);
-            copyUrlSuccess = true;
-            StateHasChanged();
-
-            // Reset the success message after 3 seconds
-            await Task.Delay(3000);
-            copyUrlSuccess = false;
-            StateHasChanged();
-        }
-        catch (Exception)
-        {
-            // Handle clipboard error
-            message = "Unable to copy to clipboard. Please select and copy the URL manually.";
-        }
+        // Optional: Could show a temporary success message if desired
+        return Task.CompletedTask;
     }
 }
