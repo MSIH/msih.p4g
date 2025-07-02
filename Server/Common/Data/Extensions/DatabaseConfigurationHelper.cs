@@ -4,6 +4,9 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace msih.p4g.Server.Common.Data.Extensions
 {
@@ -32,12 +35,12 @@ namespace msih.p4g.Server.Common.Data.Extensions
                 case DatabaseProvider.SQLite:
                     AddSqliteDbContext<TContext>(services, configuration);
                     break;
-                case DatabaseProvider.SqlServer:
-                    AddSqlServerDbContext<TContext>(services, configuration);
-                    break;
                 case DatabaseProvider.MySQL:
-                default:
                     AddMySqlDbContext<TContext>(services, configuration);
+                    break;
+                case DatabaseProvider.SqlServer:
+                default:
+                    AddSqlServerDbContext<TContext>(services, configuration);
                     break;
             }
         }
@@ -62,12 +65,12 @@ namespace msih.p4g.Server.Common.Data.Extensions
                 case DatabaseProvider.SQLite:
                     ConfigureSqliteOptions(optionsBuilder, configuration);
                     break;
-                case DatabaseProvider.SqlServer:
-                    ConfigureSqlServerOptions(optionsBuilder, configuration);
-                    break;
                 case DatabaseProvider.MySQL:
-                default:
                     ConfigureMySqlOptions(optionsBuilder, configuration);
+                    break;
+                case DatabaseProvider.SqlServer:
+                default:
+                    ConfigureSqlServerOptions(optionsBuilder, configuration);
                     break;
             }
         }
@@ -86,12 +89,12 @@ namespace msih.p4g.Server.Common.Data.Extensions
                 case DatabaseProvider.SQLite:
                     ConfigureSqliteOptions(optionsBuilder, configuration);
                     break;
-                case DatabaseProvider.SqlServer:
-                    ConfigureSqlServerOptions(optionsBuilder, configuration);
-                    break;
                 case DatabaseProvider.MySQL:
-                default:
                     ConfigureMySqlOptions(optionsBuilder, configuration);
+                    break;
+                case DatabaseProvider.SqlServer:
+                default:
+                    ConfigureSqlServerOptions(optionsBuilder, configuration);
                     break;
             }
         }
@@ -109,14 +112,14 @@ namespace msih.p4g.Server.Common.Data.Extensions
                 return DatabaseProvider.SQLite;
             }
 
-            // Check for SQL Server
-            if (configuration.GetValue<bool>("UseSqlServer", false))
+            // Check for MySQL explicitly
+            if (configuration.GetValue<bool>("UseMySQL", false))
             {
-                return DatabaseProvider.SqlServer;
+                return DatabaseProvider.MySQL;
             }
 
-            // Default to MySQL
-            return DatabaseProvider.MySQL;
+            // Default to SQL Server (including when UseSqlServer is true or not specified)
+            return DatabaseProvider.SqlServer;
         }
 
         private static void AddSqliteDbContext<TContext>(IServiceCollection services, IConfiguration configuration)
