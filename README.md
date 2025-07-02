@@ -69,6 +69,25 @@ The application follows a feature-based organization:
 - nonprod-gd4.database.windows.net / msihadmin
 - Server=tcp:nonprod-gd4.database.windows.net,1433;Initial Catalog=test-gd4;Persist Security Info=False;User ID=msihadmin;Password={your_password};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
 - Server=tcp:nonprod-gd4.database.windows.net,1433;Initial Catalog=nonprod-pg4;Persist Security Info=False;User ID=msihadmin;Password={your_password};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+
+### App Confgiuration
+- .net verion: 9
+- http verion: 2
+- web sockets: on
+- session affinity: on
+- https only: on
+- min tls: 1.3
+
+### Application Environment Variables
+- `ASPNETCORE_ENVIRONMENT`: Set to `Development`, `Staging`, or `Production` as needed.
+- `ConnectionStrings__SqlServerConnection`: Set to your database connection string.
+- `MessageService__EmailProvider`: 
+- `SMTP2GO__ApiKey`: 
+- `SMTP2GO__FromEmail`: 
+- `SMTP2GO__FromName`:
+- `DefaultAdminAccount`:
+
+
 - 
 ## Development
 
