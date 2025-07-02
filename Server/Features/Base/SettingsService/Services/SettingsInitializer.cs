@@ -1,15 +1,15 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.Base.SettingsService.Services
 {
@@ -40,23 +40,27 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Services
             try
             {
                 _logger.LogInformation("Starting settings initialization...");
-                
+
                 // Initialize all connection strings
                 await InitializeSectionAsync("ConnectionStrings");
-                
+
                 // Initialize SendGrid settings
                 await InitializeSectionAsync("SendGrid");
-                
+
                 // Initialize AWS settings
                 await InitializeSectionAsync("AWS:SES");
-                
+
                 // Initialize Braintree settings
                 await InitializeSectionAsync("Braintree");
-                
+                await InitializeSectionAsync("MessageService");
+
                 // Other general settings
                 await InitializeSingleSettingAsync("UseLocalSqlite");
-                await InitializeSingleSettingAsync("EmailProvider");
-                
+                await InitializeSingleSettingAsync("UseSqlServer");
+                await InitializeSingleSettingAsync("BaseUrl");
+                await InitializeSingleSettingAsync("DonationURL");
+                await InitializeSingleSettingAsync("DefaultAdminAccount");
+
                 _logger.LogInformation("Settings initialization completed successfully");
             }
             catch (Exception ex)
@@ -72,7 +76,7 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Services
         {
             _logger.LogInformation($"Initializing settings section: {sectionPath}");
             var section = _configuration.GetSection(sectionPath);
-            
+
             if (!section.Exists())
             {
                 _logger.LogWarning($"Section {sectionPath} not found in configuration");
@@ -81,12 +85,12 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Services
 
             foreach (var child in section.GetChildren())
             {
-                string key = string.IsNullOrEmpty(sectionPath) 
-                    ? child.Key 
+                string key = string.IsNullOrEmpty(sectionPath)
+                    ? child.Key
                     : $"{sectionPath}:{child.Key}";
-                    
+
                 string? value = child.Value;
-                
+
                 // If the child has children (is a section), recursively process it
                 if (value == null && child.GetChildren().Any())
                 {
