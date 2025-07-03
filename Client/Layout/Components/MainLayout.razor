@@ -6,6 +6,9 @@
 
 @namespace msih.p4g.Client.Layout.Components
 @inherits LayoutComponentBase
+@using msih.p4g.Client.Features.Authentication.Services
+@inject AuthService AuthService
+@implements IDisposable
 
 <style>
     /* Mobile-First Responsive Base */
@@ -49,6 +52,22 @@
         height: 2px;
         background: linear-gradient(90deg, var(--orange-primary) 0%, var(--orange-secondary) 50%, var(--orange-tertiary) 100%);
         margin: 1rem 0;
+    }
+
+    /* Brand/Logo styling */
+    .brand-text {
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-decoration: none;
+        margin: 0;
+        white-space: nowrap;
+    }
+
+    .brand-text:hover {
+        color: white;
+        text-decoration: none;
+        opacity: 0.9;
     }
 
     /* Mobile-First Typography */
@@ -183,14 +202,22 @@
         top: 0;
         z-index: 1000;
     }
+
 </style>
 
 <div class="page">
     <main class="container-fluid px-0 main-content">
-        <div class="top-row px-2 px-md-4 d-flex justify-content-end orange-top-row">
-            <div>
-                <UserMenu />
+        <div class="top-row px-2 px-md-4 d-flex justify-content-between align-items-center orange-top-row">
+            <div class="d-flex align-items-center">
+                <a href="/" class="brand-text">Make Sure It Happens</a>
             </div>
+
+            @if (AuthService.IsAuthenticated)
+            {
+                <div>
+                    <UserMenu />
+                </div>
+            }
         </div>
 
         <article class="content">
@@ -199,3 +226,39 @@
     </main>
     <Footer />
 </div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Subscribe to auth state changes to trigger UI updates
+        AuthService.AuthStateChanged += OnAuthStateChanged;
+
+        // Initialize authentication state if not already done
+        if (!AuthService.IsInitialized)
+        {
+            await AuthService.InitializeAuthenticationStateAsync();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !AuthService.IsAuthenticated && !AuthService.IsInitialized)
+        {
+            // Only try to restore authentication after the first render when JS is available
+            await AuthService.InitializeAuthenticationStateAsync();
+            StateHasChanged(); // Trigger a re-render if auth state changed
+        }
+    }
+
+    private void OnAuthStateChanged()
+    {
+        // Trigger UI refresh when auth state changes
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        // Unsubscribe from the event when the component is disposed
+        AuthService.AuthStateChanged -= OnAuthStateChanged;
+    }
+}
