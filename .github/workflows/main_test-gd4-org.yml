@@ -63,4 +63,3 @@ jobs:
           app-name: 'test-gd4-org'
           slot-name: 'Production'
           package: .
-          
