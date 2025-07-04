@@ -8,6 +8,9 @@ on:
     branches:
       - development
   workflow_dispatch:
+  pull_request:
+    types:
+      - closed
 
 jobs:
   build:
