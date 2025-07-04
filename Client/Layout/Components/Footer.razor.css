@@ -1,0 +1,85 @@
+/*
+ * Copyright (c) 2025 MSIH LLC. All rights reserved.
+ * This file is developed for Make Sure It Happens Inc.
+ * Unauthorized copying, modification, distribution, or use is prohibited.
+ */
+
+/* Orange Theme Variables - needed for footer styling */
+:root {
+    --orange-primary: #ff6b35;
+    --orange-secondary: #f7931e;
+    --orange-tertiary: #ffab00;
+    --orange-light: rgba(255, 107, 53, 0.1);
+    --orange-darker: #e55a2b;
+    --transition: all 0.3s ease;
+}
+
+.orange-motif {
+    background: linear-gradient(135deg, var(--orange-primary) 0%, var(--orange-secondary) 50%, var(--orange-tertiary) 100%);
+    color: white;
+}
+
+/* Footer */
+.footer {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    margin-top: auto;
+    border-top: 2px solid var(--orange-primary);
+}
+
+.footer-link {
+    color: var(--orange-tertiary);
+    text-decoration: none;
+    transition: var(--transition);
+    font-size: 0.85rem;
+}
+
+.footer-link:hover {
+    color: var(--orange-primary);
+    text-decoration: underline;
+}
+
+/* Compact footer styling */
+.footer .container-fluid {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+
+.footer h6 {
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.footer .orange-motif {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.9rem;
+}
+
+.footer p {
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.footer .list-unstyled li {
+    margin-bottom: 0.25rem;
+}
+
+/* Header styling for sections */
+.section-header {
+    color: var(--orange-primary);
+}
+
+/* Responsive Grid */
+.mobile-stack > .col-md-6,
+.mobile-stack > .col-md-3,
+.mobile-stack > .col-md-4 {
+    margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+    .mobile-stack > .col-md-6,
+    .mobile-stack > .col-md-3,
+    .mobile-stack > .col-md-4 {
+        margin-bottom: 0;
+    }
+}
