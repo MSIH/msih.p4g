@@ -1,16 +1,13 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy test-gd4-org
+name: Build and deploy ASP.Net Core app to Azure Web App - gd4-org
 
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-  pull_request:
-    types:
-      - closed
 
 jobs:
   build:
@@ -41,7 +38,7 @@ jobs:
   deploy:
     runs-on: windows-latest
     needs: build
-
+    
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
@@ -51,18 +48,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-
+      
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_EFF678DA2D464E6FBC13708630AE4CD6 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_61B21333FAB94F30B50BA8D9B1237770 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A3F2985F826541DD92585B8201248219 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_878F75B3C5174BE0AE2E299D8C9707F6 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A2E9FFEE6C214F46B5DABC1905C3E685 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_39C32FC00BE544A9963176B10DE9BB2F }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'test-gd4-org'
+          app-name: 'gd4-org'
           slot-name: 'Production'
           package: .
+          
