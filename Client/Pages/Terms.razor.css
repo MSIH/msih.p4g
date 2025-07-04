@@ -1,0 +1,52 @@
+.terms-content {
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.terms-content h2 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #333;
+    border-bottom: 2px solid #dee2e6;
+    padding-bottom: 0.5rem;
+}
+
+.terms-content h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.terms-content p {
+    margin-bottom: 1rem;
+    text-align: justify;
+}
+
+.terms-content ul {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.terms-content li {
+    margin-bottom: 0.5rem;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: top;
+}
+
+@media (max-width: 768px) {
+    .terms-content {
+        font-size: 0.9rem;
+    }
+
+    .terms-content p {
+        text-align: left;
+    }
+}
