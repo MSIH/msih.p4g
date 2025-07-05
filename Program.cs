@@ -6,6 +6,7 @@
 
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
@@ -196,14 +197,17 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(Path.Combine(env.WebRootPath, ".well-known")),
-                RequestPath = "/.well-known",
-                ServeUnknownFileTypes = true,
-                DefaultContentType = "application/json"
-            });
-app.UseStaticFile();
+// Configure .well-known files first
+app.UseStaticFiles(new StaticFileOptions  
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(app.Environment.WebRootPath, ".well-known")),
+    RequestPath = "/.well-known",
+    ServeUnknownFileTypes = true,
+    DefaultContentType = "text/plain"
+});
+
+// Regular static files
+app.UseStaticFiles(); 
 
 app.UseRouting();
 
