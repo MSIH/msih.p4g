@@ -203,7 +203,7 @@ Directory.CreateDirectory(wellKnownPath);
 
 // Extract embedded resource
 var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-var resourceName = "msih.p4g.Resources.apple-developer-merchantid-domain-association";
+var resourceName = "Resources.apple-developer-merchantid-domain-association";
 using var stream = assembly.GetManifestResourceStream(resourceName);
 if (stream != null)
 {
