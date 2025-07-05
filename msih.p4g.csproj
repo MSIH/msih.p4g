@@ -7,10 +7,7 @@
   </PropertyGroup>
 
 <ItemGroup>
-  <Content Update="wwwroot\.well-known\apple-developer-merchantid-domain-association">
-    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-  </Content>
+  <EmbeddedResource Include="Resources\apple-developer-merchantid-domain-association" />
 </ItemGroup>
 
   <ItemGroup>
