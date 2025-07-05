@@ -195,7 +195,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+
 app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(Path.Combine(env.WebRootPath, ".well-known")),
@@ -203,6 +203,7 @@ app.UseStaticFiles(new StaticFileOptions
                 ServeUnknownFileTypes = true,
                 DefaultContentType = "application/json"
             });
+app.UseStaticFile();
 
 app.UseRouting();
 
