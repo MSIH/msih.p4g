@@ -197,6 +197,21 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Create .well-known directory and extract embedded file
+var wellKnownPath = Path.Combine(app.Environment.WebRootPath, ".well-known");
+Directory.CreateDirectory(wellKnownPath);
+
+// Extract embedded resource
+var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+var resourceName = "msih.p4g.Resources.apple-developer-merchantid-domain-association";
+using var stream = assembly.GetManifestResourceStream(resourceName);
+if (stream != null)
+{
+    var filePath = Path.Combine(wellKnownPath, "apple-developer-merchantid-domain-association");
+    using var fileStream = File.Create(filePath);
+    await stream.CopyToAsync(fileStream);
+}
+
 // Only configure .well-known if the directory exists
 var wellKnownPath = Path.Combine(app.Environment.WebRootPath, ".well-known");
 if (Directory.Exists(wellKnownPath))
