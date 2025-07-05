@@ -213,7 +213,6 @@ if (stream != null)
 }
 
 // Only configure .well-known if the directory exists
-var wellKnownPath = Path.Combine(app.Environment.WebRootPath, ".well-known");
 if (Directory.Exists(wellKnownPath))
 {
     app.UseStaticFiles(new StaticFileOptions
