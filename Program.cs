@@ -197,14 +197,18 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Configure .well-known files first
-app.UseStaticFiles(new StaticFileOptions  
+// Only configure .well-known if the directory exists
+var wellKnownPath = Path.Combine(app.Environment.WebRootPath, ".well-known");
+if (Directory.Exists(wellKnownPath))
 {
-    FileProvider = new PhysicalFileProvider(Path.Combine(app.Environment.WebRootPath, ".well-known")),
-    RequestPath = "/.well-known",
-    ServeUnknownFileTypes = true,
-    DefaultContentType = "text/plain"
-});
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(wellKnownPath),
+        RequestPath = "/.well-known",
+        ServeUnknownFileTypes = true,
+        DefaultContentType = "text/plain"
+    });
+}
 
 // Regular static files
 app.UseStaticFiles(); 
