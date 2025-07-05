@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy to gd4-org
+name: Build and deploy ASP.Net Core app to Azure Web App - gd4-org
 
 on:
   push:
@@ -52,9 +52,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_590B8129F6A745F38D1932DAB1304E30 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_6F3E48C7F7644A66A532AFDD910D212F }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5FABD15976A943F6B298FC3AFA7A95FB }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_22CC1BAC1A7445479D38C2E9C1EFA9EA }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_25A85940A24F4DFFB55121E97D44C1DD }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7B92CA5A708D49288243ADE78EF79237 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
