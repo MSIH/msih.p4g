@@ -6,6 +6,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+ <ItemGroup>
+    <None Include="wwwroot\.well-known\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Remove="Server\Features\OrganizationService\Tests\**" />
     <Compile Remove="Tests\**" />
