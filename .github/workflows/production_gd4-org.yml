@@ -67,5 +67,6 @@ jobs:
       - name: Copy .well-known files
         run: |
           mkdir -p ${{ github.workspace }}/publish/wwwroot/.well-known
+          
           cp -r wwwroot/.well-known/* ${{ github.workspace }}/publish/wwwroot/.well-known/
           
