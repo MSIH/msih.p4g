@@ -6,12 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
- <ItemGroup>
-    <None Include="wwwroot\.well-known\**\*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-    </None>
-  </ItemGroup>
+<ItemGroup>
+  <Content Include="wwwroot\.well-known\apple-developer-merchantid-domain-association">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+  </Content>
+</ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Server\Features\OrganizationService\Tests\**" />
