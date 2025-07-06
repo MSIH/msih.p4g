@@ -25,11 +25,6 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<EmailVerificationService> _logger;
 
-        private const string _eMAIL_VERIFICATION_TEMPLATE = "Email Verification";
-        private const string _eMAIL_VERIFICATION_SECRET_KEY = "EmailVerification:SecretKey";
-        private const string _bASE_URL_SETTING = "EmailVerification:BaseUrl";
-        private const string _dONATION_URL_SETTING = "DonationURL";
-
         public EmailVerificationService(
             IUserService userService,
             IMessageService messageService,
@@ -52,13 +47,13 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     throw new ArgumentNullException(nameof(user));
 
                 // Get the base URL for the verification link
-                var baseUrl = await _settingsService.GetValueAsync(_bASE_URL_SETTING)
+                var baseUrl = await _settingsService.GetValueAsync("BaseUrl")
                     ?? _configuration["BaseUrl"]
-                    ?? "https://localhost:7265";
+                    ?? "https://msih.org";
 
-                var donationUrl = await _settingsService.GetValueAsync(_dONATION_URL_SETTING)
+                var donationUrl = await _settingsService.GetValueAsync("DonationURL")
                     ?? _configuration["DonationURL"]
-                    ?? "https://msih.org/donate";
+                    ?? $"{baseUrl}/donate";
 
                 // based on the current time get number in format of HHmmss
                 var currentTime = DateTime.UtcNow.ToString("HHmmss");
@@ -113,8 +108,8 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
     <div style=""margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;"">
         <p style=""margin: 0; color: #555; font-size: 0.9em;"">
             Best regards,<br>
-            <strong>Platform for Good</strong><br>
-            <a href=""https://msih.org"" style=""color: #3182ce; text-decoration: none;"">https://msih.org</a>
+            <strong>Make Sure It Happens</strong><br>
+            <a href=""https://www.msih.org"" style=""color: #3182ce; text-decoration: none;"">https://www.msih.org</a>
         </p>
     </div>
 </body>

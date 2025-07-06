@@ -10,6 +10,7 @@ using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Data.Repositories;
+using msih.p4g.Server.Common.Utilities;
 using msih.p4g.Server.Features.Base.EmailService.Extensions;
 using msih.p4g.Server.Features.Base.MessageService.Data;
 using msih.p4g.Server.Features.Base.MessageService.Extensions;
@@ -107,6 +108,9 @@ builder.Services.AddScoped<IPaymentService>(provider =>
 
 // Register Settings Service and related dependencies
 builder.Services.AddSettingsServices();
+
+// Register common utilities
+builder.Services.AddScoped<ReferalURLGenerator>();
 
 // Register DonorRepository and DonorService for DI
 builder.Services.AddScoped<IDonorRepository, DonorRepository>();

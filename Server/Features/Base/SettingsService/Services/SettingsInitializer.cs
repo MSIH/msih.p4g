@@ -41,20 +41,14 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Services
             {
                 _logger.LogInformation("Starting settings initialization...");
 
-                // Initialize all connection strings
+                // Sections
                 await InitializeSectionAsync("ConnectionStrings");
-
-                // Initialize SendGrid settings
                 await InitializeSectionAsync("SendGrid");
-
-                // Initialize AWS settings
                 await InitializeSectionAsync("AWS:SES");
-
-                // Initialize Braintree settings
                 await InitializeSectionAsync("Braintree");
                 await InitializeSectionAsync("MessageService");
 
-                // Other general settings
+                // Single Setting
                 await InitializeSingleSettingAsync("UseLocalSqlite");
                 await InitializeSingleSettingAsync("UseSqlServer");
                 await InitializeSingleSettingAsync("BaseUrl");

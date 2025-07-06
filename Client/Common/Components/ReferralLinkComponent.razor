@@ -120,7 +120,9 @@
     protected override async Task OnInitializedAsync()
     {
         // Load the donation URL from settings service
-        donationUrl = await SettingsService.GetValueAsync("DonationURL") ?? "https://msih.org/donate";
+        var baseUrl = await SettingsService.GetValueAsync("BaseUrl") ?? "https://msih.org";
+        donationUrl = await SettingsService.GetValueAsync("DonationURL") ?? $"{baseUrl}/donate";
+
         // Ensure the referral code is generated if not already set
         if (Profile != null && !string.IsNullOrEmpty(Profile.ReferralCode))
         {
