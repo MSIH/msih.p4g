@@ -51,8 +51,8 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     ?? _configuration["BaseUrl"]
                     ?? "https://msih.org";
 
-                var donationUrl = await _settingsService.GetValueAsync("DonationURL")
-                    ?? _configuration["DonationURL"]
+                var donationUrl = await _settingsService.GetValueAsync("donationUrl")
+                    ?? _configuration["donationUrl"]
                     ?? $"{baseUrl}/donate";
 
                 // based on the current time get number in format of HHmmss
@@ -75,7 +75,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     { "fullName", user.Profile.FullName },
                     { "VerificationLink", verificationLink },
                     { "token", token },
-                    { "referalURL", referalURL} // Updated to use the new DonationURL
+                    { "referalURL", referalURL} // Updated to use the new donationUrl
                 };
                 var TemplateContent = @"<!DOCTYPE html>
 <html>
