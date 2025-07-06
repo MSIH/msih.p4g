@@ -301,8 +301,14 @@ namespace msih.p4g.Server.Features.Base.EmailService.Services
             if (string.IsNullOrWhiteSpace(html))
                 return string.Empty;
 
+            // Remove head section entirely (including title, meta, style tags)
+            var text = Regex.Replace(html, @"<head[^>]*>.*?</head>", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            // Remove inline style attributes from HTML tags
+            text = Regex.Replace(text, @"\s+style\s*=\s*([""'])[^""']*\1", string.Empty, RegexOptions.IgnoreCase);
+
             // Remove HTML tags
-            var text = Regex.Replace(html, @"<[^>]+>", string.Empty);
+            text = Regex.Replace(text, @"<[^>]+>", string.Empty);
 
             // Decode HTML entities
             text = System.Net.WebUtility.HtmlDecode(text);
