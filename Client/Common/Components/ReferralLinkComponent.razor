@@ -121,7 +121,7 @@
     {
         // Load the donation URL from settings service
         var baseUrl = await SettingsService.GetValueAsync("BaseUrl") ?? "https://msih.org";
-        donationUrl = await SettingsService.GetValueAsync("donationUrl") ?? $"{baseUrl}/donate";
+        donationUrl = await SettingsService.GetValueAsync("donationUrl") ?? $"{baseUrl.TrimEnd('/')}/donate";
 
         // Ensure the referral code is generated if not already set
         if (Profile != null && !string.IsNullOrEmpty(Profile.ReferralCode))
@@ -134,8 +134,8 @@
     /// Gets the generated referral link based on current settings
     /// </summary>
     private string GeneratedReferralLink => appendName && !string.IsNullOrEmpty(ComputedUserName)
-        ? $"{donationUrl}/{ReferralCode}-{ComputedUserName.Replace(" ", "")}"
-        : $"{donationUrl}/{ReferralCode}";
+        ? $"{donationUrl.TrimEnd('/')}/{ReferralCode}-{ComputedUserName.Replace(" ", "")}"
+        : $"{donationUrl.TrimEnd('/')}/{ReferralCode}";
 
     /// <summary>
     /// Social media sharing URLs
