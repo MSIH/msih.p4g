@@ -37,7 +37,7 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Model
         public string? MobileNumber { get; set; }
         public bool ConsentReceiveText { get; set; } = false;
         public bool UnsubscribeMobile { get; set; } = false;
-        public bool ConsentReceiveEmail { get; set; } = false;
+        public bool ConsentReceiveEmail { get; set; } = false; //TODO: Set default value to true when creating a new profile
         public bool UnsubscribeEmail { get; set; } = false;
         public bool ConsentReceiveMail { get; set; } = false;
         public bool UnsubscribeMail { get; set; } = false;
