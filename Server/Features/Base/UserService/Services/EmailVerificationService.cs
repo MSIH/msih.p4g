@@ -169,11 +169,11 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     return false;
                 }
 
-                // is less than 15 minutes old
+                // is less than 90 days old (129,600 minutes)
                 if (user.LastEmailVerificationSentAt.HasValue &&
-                    (DateTime.UtcNow - user.LastEmailVerificationSentAt.Value).TotalMinutes > 15)
+                    (DateTime.UtcNow - user.LastEmailVerificationSentAt.Value).TotalMinutes > 129600) //TODO: make this use settings and creat environment variable
                 {
-                    _logger.LogWarning("Email verification token for user {UserId} is expired", user.Id);
+                    _logger.LogWarning("Email verification token for user {UserId} is expired (older than 90 days)", user.Id);
                     return false;
                 }
 
