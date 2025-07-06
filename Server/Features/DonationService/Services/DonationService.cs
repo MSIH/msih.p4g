@@ -4,6 +4,7 @@
 //  * Unauthorized copying, modification, distribution, or use is prohibited.
 //  */
 
+using Microsoft.Extensions.Logging;
 using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Models;
@@ -31,12 +32,13 @@ namespace msih.p4g.Server.Features.DonationService.Services
         private readonly IPaymentService _paymentService;
         private readonly IUserProfileService _userProfileService;
         private readonly IMessageService _messageService;
+        private readonly ILogger<DonationService> _logger;
 
         // Standard transaction fee percentage (can be moved to configuration in the future)
         private const decimal _transactionFeePercentage = 0.029m; // 2.9%
         private const decimal _transactionFeeFlat = 0.30m; // $0.30 flat fee
 
-        // Ensure the constructor initializes _messageService
+        // Ensure the constructor initializes _messageService and _logger
         public DonationService(
             IUserRepository userRepository,
             IProfileService profileService,
@@ -44,7 +46,8 @@ namespace msih.p4g.Server.Features.DonationService.Services
             IDonationRepository donationRepository,
             IPaymentService paymentService,
             IUserProfileService userProfileService,
-            IMessageService messageService) // Add IMessageService to the constructor
+            IMessageService messageService,
+            ILogger<DonationService> logger)
         {
             _userRepository = userRepository;
             _profileService = profileService;
@@ -52,7 +55,8 @@ namespace msih.p4g.Server.Features.DonationService.Services
             _donationRepository = donationRepository;
             _paymentService = paymentService;
             _userProfileService = userProfileService;
-            _messageService = messageService; // Initialize _messageService
+            _messageService = messageService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -206,19 +210,42 @@ namespace msih.p4g.Server.Features.DonationService.Services
 
             donation = await _donationRepository.AddAsync(donation, "DonationService");
 
-            // 5. send email notification to donor
-
-            var placeholders = new Dictionary<string, string>
+            // 5. Send email notification to donor with error handling
+            try
             {
-                ["donorName"] = profile?.FullName ?? $"{dto.FirstName} {dto.LastName}",
-                ["donationAmountInDollars"] = donation.DonationAmount.ToString("C")
-            };
+                var placeholders = new Dictionary<string, string>
+                {
+                    ["donorName"] = profile?.FullName ?? $"{dto.FirstName} {dto.LastName}",
+                    ["donationAmountInDollars"] = donation.DonationAmount.ToString("C")
+                };
 
-            await _messageService.SendTemplatedMessageByNameAsync(
-                templateName: "MVP Donor Thank You Email",
-                to: user.Email,
-                placeholderValues: placeholders
-            );
+                bool emailSent = await _messageService.SendTemplatedMessageByNameAsync(
+                    templateName: "MVP Donor Thank You Email",
+                    to: user.Email,
+                    placeholderValues: placeholders
+                );
+
+                if (emailSent)
+                {
+                    _logger.LogInformation("Thank you email sent successfully to donor {Email} for donation ID {DonationId}", 
+                        user.Email, donation.Id);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to send thank you email to donor {Email} for donation ID {DonationId}. Email service returned false.", 
+                        user.Email, donation.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't fail the donation process
+                _logger.LogError(ex, 
+                    "Error sending thank you email to donor {Email} for donation ID {DonationId}. Donation was processed successfully but email notification failed.", 
+                    user.Email, donation.Id);
+                
+                // Optionally, you could store this failure for retry later
+                // The donation itself was successful, so we don't want to throw an exception here
+            }
 
             return donation;
         }
@@ -381,7 +408,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting donations for user {email}: {ex.Message}");
+                _logger.LogError(ex, "Error getting donations for user {Email}", email);
                 return new List<Donation>();
             }
         }
@@ -412,7 +439,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error searching donations for user {email}: {ex.Message}");
+                _logger.LogError(ex, "Error searching donations for user {Email} with search term '{SearchTerm}'", email, searchTerm);
                 return new List<Donation>();
             }
         }
@@ -450,7 +477,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error updating recurring donation: {ex.Message}");
+                _logger.LogError(ex, "Error updating recurring donation {DonationId} for user {UserEmail}", donationId, userEmail);
                 return false;
             }
         }
@@ -483,11 +510,9 @@ namespace msih.p4g.Server.Features.DonationService.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error canceling recurring donation: {ex.Message}");
+                _logger.LogError(ex, "Error canceling recurring donation {DonationId} for user {UserEmail}", donationId, userEmail);
                 return false;
             }
         }
-
-
     }
 }
