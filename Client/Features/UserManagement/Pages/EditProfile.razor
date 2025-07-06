@@ -159,8 +159,8 @@
                             <h4 class="mt-4">Communication Preferences</h4>
 
                             <div class="form-check mb-3">
-                                <InputCheckbox id="consentEmail" @bind-Value="profile.ConsentReceiveEmail" class="form-check-input" />
-                                <label class="form-check-label" for="consentEmail">
+                                <InputCheckbox id="consentEmail" @bind-Value="profile.ConsentReceiveEmail" class="form-check-input" disabled />
+                                <label class="form-check-label" for="consentEmail" >
                                     I consent to receive emails
                                 </label>
                             </div>
@@ -168,7 +168,7 @@
                             <div class="form-check mb-3">
                                 <InputCheckbox id="unsubscribeEmail" @bind-Value="profile.UnsubscribeEmail" class="form-check-input" disabled="@(!profile.ConsentReceiveEmail)" />
                                 <label class="form-check-label @(!profile.ConsentReceiveEmail ? "text-muted" : "")" for="unsubscribeEmail">
-                                    Unsubscribe from emails
+                                    Unsubscribe from marketing emails
                                 </label>
                             </div>
 
@@ -182,21 +182,21 @@
                             <div class="form-check mb-3">
                                 <InputCheckbox id="unsubscribeMobile" @bind-Value="profile.UnsubscribeMobile" class="form-check-input" disabled="@(!profile.ConsentReceiveText)" />
                                 <label class="form-check-label @(!profile.ConsentReceiveText ? "text-muted" : "")" for="unsubscribeMobile">
-                                    Unsubscribe from text messages
+                                    Unsubscribe from marketing text messages
                                 </label>
                             </div>
 
                             <div class="form-check mb-4">
                                 <InputCheckbox id="consentMail" @bind-Value="profile.ConsentReceiveMail" class="form-check-input" />
                                 <label class="form-check-label" for="consentMail">
-                                    I consent to receive mail
+                                    I consent to receive  mail
                                 </label>
                             </div>
 
                             <div class="form-check mb-4">
                                 <InputCheckbox id="unsubscribeMail" @bind-Value="profile.UnsubscribeMail" class="form-check-input" disabled="@(!profile.ConsentReceiveMail)" />
                                 <label class="form-check-label @(!profile.ConsentReceiveMail ? "text-muted" : "")" for="unsubscribeMail">
-                                    Unsubscribe from mail
+                                    Unsubscribe from marketing mail
                                 </label>
                             </div>
 
