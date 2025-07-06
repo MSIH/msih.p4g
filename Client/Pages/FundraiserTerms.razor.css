@@ -1,0 +1,45 @@
+.content-page {
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.fee-structure-container {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.example-box {
+    background-color: #e8f4f8;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid #007bff;
+    margin-top: 15px;
+}
+
+.table {
+    margin-bottom: 15px;
+}
+
+.description {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.acceptance-notice {
+    font-size: 0.95em;
+}
+
+h2 {
+    color: #333;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+h3 {
+    color: #555;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}

@@ -59,7 +59,7 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
         private bool isRegistered = false;
         private string referralCode = "";
         private string userName = "";
-        private string donationUrl = "https://gd4.org/donate"; // Default value
+        private string donationUrl = "https://msih.org/donate"; // Default value
 
         private string Title => Route switch
         {
@@ -137,12 +137,12 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
             {
                 // Create both the user and profile in a single operation
                 var createdProfile = await UserProfileService.CreateUserWithProfileAsync(user, profile);
-                referralCode = createdProfile.ReferralCode;
+                //referralCode = createdProfile.ReferralCode;
 
-                // Update the donation URL from settings
-                donationUrl = await _settingsService.GetValueAsync("DonationURL")
-                   ?? _configuration["DonationURL"]
-                   ?? "https://gd4.org/donate";
+                //// Update the donation URL from settings
+                //donationUrl = await _settingsService.GetValueAsync("donationUrl")
+                //   ?? _configuration["donationUrl"]
+                //   ?? "https://msih.org/donate";
 
                 try
                 {
