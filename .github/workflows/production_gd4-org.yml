@@ -1,40 +1,44 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy ASP.Net Core app to Azure Web App - gd4-org
-
 on:
   push:
     branches:
       - production
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: windows-latest
     permissions:
       contents: read #This is required for actions/checkout
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 'v9.0'
-
       - name: Build with dotnet
         run: dotnet build --configuration Release
-
       - name: dotnet publish
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
-
+      
+      # Copy .well-known files to the published output
+      - name: Copy .well-known files to publish directory
+        run: |
+          if (Test-Path "wwwroot\.well-known") {
+            New-Item -ItemType Directory -Force -Path "${{env.DOTNET_ROOT}}\myapp\wwwroot\.well-known"
+            Copy-Item -Path "wwwroot\.well-known\*" -Destination "${{env.DOTNET_ROOT}}\myapp\wwwroot\.well-known\" -Recurse -Force
+            Write-Host ".well-known files copied successfully"
+          } else {
+            Write-Host "No .well-known directory found in wwwroot"
+          }
+        shell: powershell
+      
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
-
   deploy:
     runs-on: windows-latest
     needs: build
@@ -42,7 +46,6 @@ jobs:
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
-
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -55,7 +58,7 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_22CC1BAC1A7445479D38C2E9C1EFA9EA }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_25A85940A24F4DFFB55121E97D44C1DD }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7B92CA5A708D49288243ADE78EF79237 }}
-
+      
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
@@ -63,10 +66,3 @@ jobs:
           app-name: 'gd4-org'
           slot-name: 'Production'
           package: .
-          
-      - name: Copy .well-known files
-        run: |
-          mkdir -p ${{ github.workspace }}/publish/wwwroot/.well-known
-          
-          cp -r wwwroot/.well-known/* ${{ github.workspace }}/publish/wwwroot/.well-known/
-          
