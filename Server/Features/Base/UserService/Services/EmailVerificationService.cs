@@ -58,7 +58,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
 
                 var donationUrl = await _settingsService.GetValueAsync(_dONATION_URL_SETTING)
                     ?? _configuration["DonationURL"]
-                    ?? "https://gd4.org/donate";
+                    ?? "https://msih.org/donate";
 
                 // based on the current time get number in format of HHmmss
                 var currentTime = DateTime.UtcNow.ToString("HHmmss");
@@ -114,7 +114,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         <p style=""margin: 0; color: #555; font-size: 0.9em;"">
             Best regards,<br>
             <strong>Platform for Good</strong><br>
-            <a href=""https://gd4.org"" style=""color: #3182ce; text-decoration: none;"">https://gd4.org</a>
+            <a href=""https://msih.org"" style=""color: #3182ce; text-decoration: none;"">https://msih.org</a>
         </p>
     </div>
 </body>

@@ -93,7 +93,7 @@
     [Parameter] public string ReferralCode { get; set; } = string.Empty;
 
     private bool copyUrlSuccess = false;
-    private string donationUrl = "https://gd4.org/donate"; // Default fallback value
+    private string donationUrl = "https://msih.org/donate"; // Default fallback value
 
     /// <summary>
     /// Computes the consistent username format from the Profile object.
@@ -120,7 +120,7 @@
     protected override async Task OnInitializedAsync()
     {
         // Load the donation URL from settings service
-        donationUrl = await SettingsService.GetValueAsync("DonationURL") ?? "https://gd4.org/donate";
+        donationUrl = await SettingsService.GetValueAsync("DonationURL") ?? "https://msih.org/donate";
         // Ensure the referral code is generated if not already set
         if (Profile != null && !string.IsNullOrEmpty(Profile.ReferralCode))
         {
