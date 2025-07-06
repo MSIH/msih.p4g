@@ -1,8 +1,11 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.Base.ProfileService.Services
 {
@@ -28,6 +31,7 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Services
         {
             // Generate a unique referral code before adding to the repository
             profile.GenerateReferralCode();
+            profile.ConsentReceiveEmail = true; // Default to true for email consent
             return await _profileRepository.AddAsync(profile, createdBy);
         }
 
