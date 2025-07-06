@@ -140,8 +140,8 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
                 //referralCode = createdProfile.ReferralCode;
 
                 //// Update the donation URL from settings
-                //donationUrl = await _settingsService.GetValueAsync("DonationURL")
-                //   ?? _configuration["DonationURL"]
+                //donationUrl = await _settingsService.GetValueAsync("donationUrl")
+                //   ?? _configuration["donationUrl"]
                 //   ?? "https://msih.org/donate";
 
                 try

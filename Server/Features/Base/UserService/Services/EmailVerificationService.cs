@@ -51,8 +51,8 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     ?? _configuration["BaseUrl"]
                     ?? "https://msih.org";
 
-                var donationUrl = await _settingsService.GetValueAsync("DonationURL")
-                    ?? _configuration["DonationURL"]
+                var donationUrl = await _settingsService.GetValueAsync("donationUrl")
+                    ?? _configuration["donationUrl"]
                     ?? $"{baseUrl}/donate";
 
                 // based on the current time get number in format of HHmmss
@@ -75,7 +75,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     { "fullName", user.Profile.FullName },
                     { "VerificationLink", verificationLink },
                     { "token", token },
-                    { "referalURL", referalURL} // Updated to use the new DonationURL
+                    { "referalURL", referalURL} // Updated to use the new donationUrl
                 };
                 var TemplateContent = @"<!DOCTYPE html>
 <html>
@@ -169,11 +169,11 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     return false;
                 }
 
-                // is less than 15 minutes old
+                // is less than 90 days old (129,600 minutes)
                 if (user.LastEmailVerificationSentAt.HasValue &&
-                    (DateTime.UtcNow - user.LastEmailVerificationSentAt.Value).TotalMinutes > 15)
+                    (DateTime.UtcNow - user.LastEmailVerificationSentAt.Value).TotalMinutes > 129600) //TODO: make this use settings and creat environment variable
                 {
-                    _logger.LogWarning("Email verification token for user {UserId} is expired", user.Id);
+                    _logger.LogWarning("Email verification token for user {UserId} is expired (older than 90 days)", user.Id);
                     return false;
                 }
 

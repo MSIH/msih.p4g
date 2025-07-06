@@ -52,7 +52,7 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Services
                 await InitializeSingleSettingAsync("UseLocalSqlite");
                 await InitializeSingleSettingAsync("UseSqlServer");
                 await InitializeSingleSettingAsync("BaseUrl");
-                await InitializeSingleSettingAsync("DonationURL");
+                await InitializeSingleSettingAsync("donationUrl");
                 await InitializeSingleSettingAsync("DefaultAdminAccount");
 
                 _logger.LogInformation("Settings initialization completed successfully");

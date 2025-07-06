@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -9,7 +15,6 @@ using Microsoft.EntityFrameworkCore;
 using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
-using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Common.Utilities;
 using msih.p4g.Server.Features.Base.EmailService.Extensions;
 using msih.p4g.Server.Features.Base.MessageService.Data;
@@ -21,7 +26,6 @@ using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Repositories;
 using msih.p4g.Server.Features.Base.ProfileService.Services;
 using msih.p4g.Server.Features.Base.SettingsService.Extensions;
-using msih.p4g.Server.Features.Base.SettingsService.Model; // Add this using for EF Core migrations
 using msih.p4g.Server.Features.Base.SettingsService.Services;
 using msih.p4g.Server.Features.Base.SmsService.Extensions;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
@@ -110,7 +114,7 @@ builder.Services.AddScoped<IPaymentService>(provider =>
 builder.Services.AddSettingsServices();
 
 // Register common utilities
-builder.Services.AddScoped<ReferalURLGenerator>();
+builder.Services.AddScoped<ReferralURLGenerator>();
 
 // Register DonorRepository and DonorService for DI
 builder.Services.AddScoped<IDonorRepository, DonorRepository>();

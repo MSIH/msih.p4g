@@ -4,7 +4,6 @@
 //  * Unauthorized copying, modification, distribution, or use is prohibited.
 //  */
 
-using Microsoft.Extensions.Configuration;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
 
@@ -31,7 +30,7 @@ namespace msih.p4g.Server.Common.Utilities
         private readonly IConfiguration _configuration;
         private readonly IUserProfileService _userProfileService;
 
-        public ReferalURLGenerator(
+        public ReferralURLGenerator(
             ISettingsService settingsService,
             IConfiguration configuration,
             IUserProfileService userProfileService)
@@ -57,16 +56,16 @@ namespace msih.p4g.Server.Common.Utilities
             {
                 // Get the user's profile by email
                 var profile = await _userProfileService.GetProfileByUserEmailAsync(email);
-                
+
                 // Get the base donation URL
                 var baseDonationUrl = await GetBaseDonationUrlAsync();
-                
+
                 // If profile found and has referral code, append it to the URL
                 if (profile != null && !string.IsNullOrEmpty(profile.ReferralCode))
                 {
                     return $"{baseDonationUrl}/{profile.ReferralCode}";
                 }
-                
+
                 // Return base URL if no profile or referral code found
                 return baseDonationUrl;
             }
@@ -79,27 +78,27 @@ namespace msih.p4g.Server.Common.Utilities
 
         /// <summary>
         /// Gets the base donation URL from settings or configuration
-        /// Priority order: 1) DonationURL from database settings, 2) DonationURL from configuration, 
-        /// 3) BaseURL from settings + "/donate", 4) BaseUrl from configuration + "/donate", 5) Default fallback
+        /// Priority order: 1) donationUrl from database settings, 2) donationUrl from configuration, 
+        /// 3) BaseUrl from settings + "/donate", 4) BaseUrl from configuration + "/donate", 5) Default fallback
         /// </summary>
         /// <returns>The base donation URL</returns>
         public async Task<string> GetBaseDonationUrlAsync()
         {
             // Try to get donation URL from settings first
-            var donationUrl = await _settingsService.GetValueAsync("DonationURL");
-            
+            var donationUrl = await _settingsService.GetValueAsync("donationUrl");
+
             // If not found in settings, check configuration
             if (string.IsNullOrEmpty(donationUrl))
             {
-                donationUrl = _configuration["DonationURL"];
+                donationUrl = _configuration["donationUrl"];
             }
-            
-            // If still not found, try to construct from BaseURL setting
+
+            // If still not found, try to construct from BaseUrl setting
             if (string.IsNullOrEmpty(donationUrl))
             {
-                var baseUrl = await _settingsService.GetValueAsync("BaseURL") 
+                var baseUrl = await _settingsService.GetValueAsync("BaseUrl")
                               ?? _configuration["BaseUrl"];
-                              
+
                 if (!string.IsNullOrEmpty(baseUrl))
                 {
                     // Remove trailing slash if present
@@ -107,7 +106,7 @@ namespace msih.p4g.Server.Common.Utilities
                     donationUrl = $"{baseUrl}/donate";
                 }
             }
-            
+
             // Final fallback to default URL
             return donationUrl ?? "https://msih.org/donate";
         }
