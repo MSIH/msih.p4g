@@ -1,27 +1,38 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy to gd4-org
+
 name: Build and deploy ASP.Net Core app to Azure Web App - gd4-org
-on:
+on: 
   push:
     branches:
       - production
   workflow_dispatch:
+  pull_request:
+    types: [closed]
+    branches: [production]
+
 jobs:
   build:
     runs-on: windows-latest
     permissions:
       contents: read #This is required for actions/checkout
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 'v9.0'
+
       - name: Build with dotnet
         run: dotnet build --configuration Release
+
       - name: dotnet publish
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
-      
+
       # Debug: List contents to see what we have
       - name: Debug - List source wwwroot contents
         run: |
@@ -84,6 +95,7 @@ jobs:
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
+
   deploy:
     runs-on: windows-latest
     needs: build
@@ -91,6 +103,7 @@ jobs:
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
+
     steps:
       # Checkout the repo to access .well-known files
       - uses: actions/checkout@v4
@@ -124,7 +137,7 @@ jobs:
             # Copy .well-known directory
             Copy-Item -Path $sourceWellKnown -Destination $destWwwroot -Recurse -Force
             Write-Host ".well-known files copied to deployment package"
-            
+      
             # Verify the copy
             if (Test-Path $destWellKnown) {
               Write-Host "=== Contents of .well-known in deployment package ==="
@@ -144,7 +157,7 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_22CC1BAC1A7445479D38C2E9C1EFA9EA }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_25A85940A24F4DFFB55121E97D44C1DD }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7B92CA5A708D49288243ADE78EF79237 }}
-      
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3

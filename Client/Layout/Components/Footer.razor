@@ -7,83 +7,6 @@
 @namespace msih.p4g.Client.Layout.Components
 @inject IWebHostEnvironment env
 
-<style>
-    /* Orange Theme Variables - needed for footer styling */
-    :root {
-        --orange-primary: #ff6b35;
-        --orange-secondary: #f7931e;
-        --orange-tertiary: #ffab00;
-        --orange-light: rgba(255, 107, 53, 0.1);
-        --orange-darker: #e55a2b;
-        --transition: all 0.3s ease;
-    }
-
-    .orange-motif {
-        background: linear-gradient(135deg, var(--orange-primary) 0%, var(--orange-secondary) 50%, var(--orange-tertiary) 100%);
-        color: white;
-    }
-
-    /* Footer */
-    .footer {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        color: white;
-        margin-top: auto;
-        border-top: 2px solid var(--orange-primary);
-    }
-
-    .footer-link {
-        color: var(--orange-tertiary);
-        text-decoration: none;
-        transition: var(--transition);
-        font-size: 0.85rem;
-    }
-
-    .footer-link:hover {
-        color: var(--orange-primary);
-        text-decoration: underline;
-    }
-
-    /* Compact footer styling */
-    .footer .container-fluid {
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
-    }
-
-    .footer h6 {
-        margin-bottom: 0.75rem;
-        font-size: 0.9rem;
-    }
-
-    .footer .orange-motif {
-        padding: 0.25rem 0.75rem;
-        font-size: 0.9rem;
-    }
-
-    .footer p {
-        margin-bottom: 0.5rem;
-        line-height: 1.3;
-    }
-
-    .footer .list-unstyled li {
-        margin-bottom: 0.25rem;
-    }
-
-    /* Responsive Grid */
-    .mobile-stack > .col-md-6,
-    .mobile-stack > .col-md-3,
-    .mobile-stack > .col-md-4 {
-        margin-bottom: 0.75rem;
-    }
-
-    @@media (min-width: 768px) {
-        .mobile-stack > .col-md-6,
-        .mobile-stack > .col-md-3,
-        .mobile-stack > .col-md-4 {
-            margin-bottom: 0;
-        }
-    }
-</style>
-
 <footer class="footer">
     <div class="container-fluid px-2 px-md-4">
         <div class="row mobile-stack">
@@ -98,22 +21,22 @@
             </div>
             <div class="col-md-3">
                 <h6 class="text-uppercase fw-bold">
-                    <span style="color: var(--orange-primary);">Quick Links</span>
+                    <span class="section-header">Quick Links</span>
                 </h6>
                 <ul class="list-unstyled mb-0">
                     <li><a href="/" class="footer-link">Home</a></li>
                     <li><a href="/donate" class="footer-link">Donate</a></li>
-                    <li><a href="/login" class="footer-link">Login</a></li>                    
+                    <li><a href="/login" class="footer-link">Login</a></li>
                 </ul>
             </div>
             <div class="col-md-3">
                 <h6 class="text-uppercase fw-bold">
-                    <span style="color: var(--orange-primary);">Support</span>
+                    <span class="section-header">Support</span>
                 </h6>
                 <ul class="list-unstyled mb-0">
                     <li><a href="/terms" target="_blank" class="footer-link">Terms</a></li>
                     <li><a href="/privacy" class="footer-link">Privacy Policy</a></li>
-                    <li><a href="#" class="footer-link">Contact Us</a></li>                        
+                    <li><a href="mailto:ithappens@msih.org?subject=Contact%20Us" class="footer-link">Contact</a></li>
                 </ul>
             </div>
         </div>

@@ -31,7 +31,7 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Model
         public string? FirstName { get; set; }
 
         public string? LastName { get; set; }
-        public string FullName => $"{FirstName} {LastName}";
+        public string FullName => $"{FirstName?.Trim()} {LastName?.Trim()}".Trim();
         public AddressModel? Address { get; set; }
         [Phone]
         public string? MobileNumber { get; set; }

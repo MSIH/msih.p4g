@@ -25,11 +25,6 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<EmailVerificationService> _logger;
 
-        private const string _eMAIL_VERIFICATION_TEMPLATE = "Email Verification";
-        private const string _eMAIL_VERIFICATION_SECRET_KEY = "EmailVerification:SecretKey";
-        private const string _bASE_URL_SETTING = "EmailVerification:BaseUrl";
-        private const string _dONATION_URL_SETTING = "DonationURL";
-
         public EmailVerificationService(
             IUserService userService,
             IMessageService messageService,
@@ -52,13 +47,13 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     throw new ArgumentNullException(nameof(user));
 
                 // Get the base URL for the verification link
-                var baseUrl = await _settingsService.GetValueAsync(_bASE_URL_SETTING)
+                var baseUrl = await _settingsService.GetValueAsync("BaseUrl")
                     ?? _configuration["BaseUrl"]
-                    ?? "https://localhost:7265";
+                    ?? "https://msih.org";
 
-                var donationUrl = await _settingsService.GetValueAsync(_dONATION_URL_SETTING)
-                    ?? _configuration["DonationURL"]
-                    ?? "https://gd4.org/donate";
+                var donationUrl = await _settingsService.GetValueAsync("donationUrl")
+                    ?? _configuration["donationUrl"]
+                    ?? $"{baseUrl}/donate";
 
                 // based on the current time get number in format of HHmmss
                 var currentTime = DateTime.UtcNow.ToString("HHmmss");
@@ -80,7 +75,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     { "fullName", user.Profile.FullName },
                     { "VerificationLink", verificationLink },
                     { "token", token },
-                    { "referalURL", referalURL} // Updated to use the new DonationURL
+                    { "referalURL", referalURL} // Updated to use the new donationUrl
                 };
                 var TemplateContent = @"<!DOCTYPE html>
 <html>
@@ -113,8 +108,8 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
     <div style=""margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;"">
         <p style=""margin: 0; color: #555; font-size: 0.9em;"">
             Best regards,<br>
-            <strong>Platform for Good</strong><br>
-            <a href=""https://gd4.org"" style=""color: #3182ce; text-decoration: none;"">https://gd4.org</a>
+            <strong>Make Sure It Happens</strong><br>
+            <a href=""https://www.msih.org"" style=""color: #3182ce; text-decoration: none;"">https://www.msih.org</a>
         </p>
     </div>
 </body>
@@ -174,11 +169,11 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                     return false;
                 }
 
-                // is less than 15 minutes old
+                // is less than 90 days old (129,600 minutes)
                 if (user.LastEmailVerificationSentAt.HasValue &&
-                    (DateTime.UtcNow - user.LastEmailVerificationSentAt.Value).TotalMinutes > 15)
+                    (DateTime.UtcNow - user.LastEmailVerificationSentAt.Value).TotalMinutes > 129600) //TODO: make this use settings and creat environment variable
                 {
-                    _logger.LogWarning("Email verification token for user {UserId} is expired", user.Id);
+                    _logger.LogWarning("Email verification token for user {UserId} is expired (older than 90 days)", user.Id);
                     return false;
                 }
 

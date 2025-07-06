@@ -20,22 +20,22 @@
   <ItemGroup>
     <Compile Remove="Server\Features\OrganizationService\Tests\**" />
     <Compile Remove="Tests\**" />
+    <Content Remove="Client\Features\Base\Payment\Services\**" />
+    <Content Remove="Client\Features\DonationService\**" />
     <Content Remove="Server\Features\OrganizationService\Tests\**" />
     <Content Remove="Tests\**" />
+    <EmbeddedResource Remove="Client\Features\Base\Payment\Services\**" />
+    <EmbeddedResource Remove="Client\Features\DonationService\**" />
     <EmbeddedResource Remove="Server\Features\OrganizationService\Tests\**" />
     <EmbeddedResource Remove="Tests\**" />
+    <None Remove="Client\Features\Base\Payment\Services\**" />
+    <None Remove="Client\Features\DonationService\**" />
     <None Remove="Server\Features\OrganizationService\Tests\**" />
     <None Remove="Tests\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Server\Features\Base\PayoutService\Models\PayPalBatchStatus.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="Client\Features\Admin\Pages\_Imports.razor" />
-    <Content Remove="Client\Pages\Shared\_Layout.cshtml" />
-    <Content Remove="Client\Pages\_Host.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,10 +65,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Client\Features\Base\Payment\Services\" />
     <Folder Include="Client\Features\Base\SmsService\Pages\" />
     <Folder Include="Client\Features\Base\W9FormManagement\Components\" />
-    <Folder Include="Client\Features\DonationService\Pages\" />
     <Folder Include="Server\Common\Data\Migrations\" />
     <Folder Include="Server\Common\Interfaces\" />
     <Folder Include="Server\Common\Services\" />
