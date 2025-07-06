@@ -37,8 +37,26 @@
         @foreach (var campaign in campaigns)
         {
             <tr>
-                <td>@campaign.Title</td>
-                <td>@campaign.Description</td>
+                <td>
+                    @if (editingCampaignId == campaign.Id)
+                    {
+                        <input type="text" class="form-control" @bind="editTitle" maxlength="100" />
+                    }
+                    else
+                    {
+                        <span>@campaign.Title</span>
+                    }
+                </td>
+                <td>
+                    @if (editingCampaignId == campaign.Id)
+                    {
+                        <textarea class="form-control" @bind="editDescription" maxlength="1000" rows="3"></textarea>
+                    }
+                    else
+                    {
+                        <span>@campaign.Description</span>
+                    }
+                </td>
                 <td>
                     <input type="checkbox" @bind="campaign.IsActive" />
                 </td> 
@@ -46,8 +64,17 @@
                     <input type="checkbox" checked="@campaign.IsDefault" disabled />
                 </td>
                 <td>
-                    <button class="btn btn-warning btn-sm" @onclick="() => SaveCampaign(campaign)">Save</button>
-                    <button class="btn btn-danger btn-sm" @onclick="() => DeactivateCampaign(campaign.Id)">Deactivate</button>
+                    @if (editingCampaignId == campaign.Id)
+                    {
+                        <button class="btn btn-success btn-sm me-1" @onclick="() => SaveEdit(campaign)">Save</button>
+                        <button class="btn btn-secondary btn-sm me-1" @onclick="CancelEdit">Cancel</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary btn-sm me-1" @onclick="() => StartEdit(campaign)">Edit</button>
+                        <button class="btn btn-warning btn-sm me-1" @onclick="() => SaveCampaign(campaign)">Save Status</button>
+                    }
+                    <button class="btn btn-danger btn-sm me-1" @onclick="() => DeactivateCampaign(campaign.Id)">Deactivate</button>
                     @if (!campaign.IsDefault)
                     {
                         <button class="btn btn-info btn-sm" @onclick="() => SetDefaultCampaign(campaign.Id)">Set Default</button>
@@ -61,6 +88,9 @@
 @code {
     private List<Campaign> campaigns = new();
     private Campaign newCampaign = new();
+    private int? editingCampaignId = null;
+    private string editTitle = "";
+    private string editDescription = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,6 +110,36 @@
             newCampaign = new();
             await LoadCampaigns();
         }
+    }
+
+    private void StartEdit(Campaign campaign)
+    {
+        editingCampaignId = campaign.Id;
+        editTitle = campaign.Title;
+        editDescription = campaign.Description ?? "";
+    }
+
+    private async Task SaveEdit(Campaign campaign)
+    {
+        if (!string.IsNullOrWhiteSpace(editTitle))
+        {
+            campaign.Title = editTitle;
+            campaign.Description = editDescription;
+            
+            await CampaignService.UpdateAsync(campaign);
+            await LoadCampaigns();
+            
+            editingCampaignId = null;
+            editTitle = "";
+            editDescription = "";
+        }
+    }
+
+    private void CancelEdit()
+    {
+        editingCampaignId = null;
+        editTitle = "";
+        editDescription = "";
     }
 
     private async Task SaveCampaign(Campaign campaign)
