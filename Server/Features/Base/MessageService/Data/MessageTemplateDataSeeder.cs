@@ -195,10 +195,33 @@ new MessageTemplate
     
     <p>Dear {{donorName}},</p>
     
-    <p>Thank you for making a tax-deductible donation today in the amount of {{donationAmountInDollars}} to Make Sure It Happens Inc (https://msih.org), a tax-exempt organization under Section 501(c)(3) of the Internal Revenue Code, EIN 5-3536160. No goods or services were provided in exchange for this donation.</p>
+    <p>Thank you for making a tax-deductible donation today in the amount of {{donationAmountInDollars}} to Make Sure It Happens Inc (https://www.msih.org), a tax-exempt organization under Section 501(c)(3) of the Internal Revenue Code, EIN 5-3536160. No goods or services were provided in exchange for this donation.</p>
 
     <div class=""tax-info"">
         <p>Please retain this receipt for your tax records.</p>
+    </div>
+
+    <div class=""tax-info"">
+        <p>To view your donation history, please log in <a href=""https://msih.org/login"">https://msih.org/login</a></p>
+    </div>
+
+    <div class=""social-sharing"" style=""margin-top: 25px; padding: 15px; background-color: #f0f4f8; border-radius: 8px;"">
+        <p><strong>Support our mission - share with your network!</strong></p>
+        <p>Your donation makes a difference. Help us reach more people by sharing our donation page:</p>
+        <p><a href=""https://msih.org/donate"">https://msih.org/donate</a></p>
+        
+        <div style=""margin-top: 15px;"">
+            <p><strong>Sample messages to share:</strong></p>
+            <div style=""background-color: #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;"">
+                <p><strong>Email:</strong> I just donated to Make Sure It Happens Inc. They're doing amazing work. Join me in making a difference: https://msih.org/donate</p>
+            </div>
+            <div style=""background-color: #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;"">
+                <p><strong>Facebook:</strong> Proud to support Make Sure It Happens Inc. They're doing amazing work. Every donation counts! https://msih.org/donate</p>
+            </div>
+            <div style=""background-color: #e2e8f0; padding: 10px; border-radius: 4px;"">
+                <p><strong>Twitter:</strong> Just supported Make Sure It Happens Inc! They're doing amazing work. Join me! https://msih.org/donate #MakeADifference</p>
+            </div>
+        </div>
     </div>
             
     <div class=""signature"">
@@ -207,27 +230,10 @@ new MessageTemplate
     </div>
 
     <div class=""org-info"">
-        <p>Make Sure It Happens Inc. | 5013 Russsett Road, Rockville, Maryland | EIN: EIN 5-3536160</p>
+        <p>Make Sure It Happens Inc. | 5013 Russsett Road, Rockville, Maryland | EIN: EIN 5-3536160 | www.msih.org</p>
     </div>  
 
-    <div class=""social-sharing"" style=""margin-top: 25px; padding: 15px; background-color: #f0f4f8; border-radius: 8px;"">
-        <p><strong>Support our mission - share with your network!</strong></p>
-        <p>Your donation makes a difference. Help us reach more people by sharing our donation page:</p>
-        <p><a href=""https://4dg.org/donate"">https://4dg.org/donate</a></p>
-        
-        <div style=""margin-top: 15px;"">
-            <p><strong>Sample messages to share:</strong></p>
-            <div style=""background-color: #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;"">
-                <p><strong>Email:</strong> I just donated to Make Sure It Happens Inc. They're doing amazing work. Join me in making a difference: https://4dg.org/donate</p>
-            </div>
-            <div style=""background-color: #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 4px;"">
-                <p><strong>Facebook:</strong> Proud to support Make Sure It Happens Inc. They're doing amazing work. Every donation counts! https://4dg.org/donate</p>
-            </div>
-            <div style=""background-color: #e2e8f0; padding: 10px; border-radius: 4px;"">
-                <p><strong>Twitter:</strong> Just supported Make Sure It Happens Inc! They're doing amazing work. Join me! https://4dg.org/donate #MakeADifference</p>
-            </div>
-        </div>
-    </div>
+    
     
 </body>
 </html>",

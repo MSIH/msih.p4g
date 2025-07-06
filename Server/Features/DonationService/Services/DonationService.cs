@@ -4,6 +4,7 @@
 //  * Unauthorized copying, modification, distribution, or use is prohibited.
 //  */
 
+using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Models;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
@@ -29,18 +30,21 @@ namespace msih.p4g.Server.Features.DonationService.Services
         private readonly IDonationRepository _donationRepository;
         private readonly IPaymentService _paymentService;
         private readonly IUserProfileService _userProfileService;
+        private readonly IMessageService _messageService;
 
         // Standard transaction fee percentage (can be moved to configuration in the future)
         private const decimal _transactionFeePercentage = 0.029m; // 2.9%
         private const decimal _transactionFeeFlat = 0.30m; // $0.30 flat fee
 
+        // Ensure the constructor initializes _messageService
         public DonationService(
             IUserRepository userRepository,
             IProfileService profileService,
             IDonorService donorService,
             IDonationRepository donationRepository,
             IPaymentService paymentService,
-            IUserProfileService userProfileService)
+            IUserProfileService userProfileService,
+            IMessageService messageService) // Add IMessageService to the constructor
         {
             _userRepository = userRepository;
             _profileService = profileService;
@@ -48,6 +52,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             _donationRepository = donationRepository;
             _paymentService = paymentService;
             _userProfileService = userProfileService;
+            _messageService = messageService; // Initialize _messageService
         }
 
         /// <summary>
@@ -202,17 +207,18 @@ namespace msih.p4g.Server.Features.DonationService.Services
             donation = await _donationRepository.AddAsync(donation, "DonationService");
 
             // 5. send email notification to donor
-            if (isNewUser)
+
+            var placeholders = new Dictionary<string, string>
             {
-                // Send welcome email to new donor
+                ["donorName"] = profile?.FullName ?? $"{dto.FirstName} {dto.LastName}",
+                ["donationAmountInDollars"] = donation.DonationAmount.ToString("C")
+            };
 
-            }
-            else
-            {
-                // Send thank you email for donation
-
-            }
-
+            await _messageService.SendTemplatedMessageByNameAsync(
+                templateName: "MVP Donor Thank You Email",
+                to: user.Email,
+                placeholderValues: placeholders
+            );
 
             return donation;
         }
@@ -481,5 +487,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 return false;
             }
         }
+
+
     }
 }
