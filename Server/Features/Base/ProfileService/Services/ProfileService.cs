@@ -27,11 +27,11 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Services
             return await _profileRepository.GetByIdAsync(id);
         }
 
-        public async Task<Profile> AddAsync(Profile profile, string createdBy = "System")
+        public async Task<Profile> AddAsync(Profile profile, string createdBy = "System", bool consentReceiveEmail = true)
         {
             // Generate a unique referral code before adding to the repository
             profile.GenerateReferralCode();
-            profile.ConsentReceiveEmail = true; // Default to true for email consent
+            profile.ConsentReceiveEmail = consentReceiveEmail; // Default to true for email consent
             return await _profileRepository.AddAsync(profile, createdBy);
         }
 
