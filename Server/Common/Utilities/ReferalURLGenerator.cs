@@ -25,7 +25,7 @@ namespace msih.p4g.Server.Common.Utilities
     /// // Result: "https://localhost:63581/donate" (if user has no profile or referral code)
     /// </code>
     /// </example>
-    public class ReferalURLGenerator
+    public class ReferralURLGenerator
     {
         private readonly ISettingsService _settingsService;
         private readonly IConfiguration _configuration;
