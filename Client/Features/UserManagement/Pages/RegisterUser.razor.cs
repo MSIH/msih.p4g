@@ -137,12 +137,12 @@ namespace msih.p4g.Client.Features.UserManagement.Pages
             {
                 // Create both the user and profile in a single operation
                 var createdProfile = await UserProfileService.CreateUserWithProfileAsync(user, profile);
-                referralCode = createdProfile.ReferralCode;
+                //referralCode = createdProfile.ReferralCode;
 
-                // Update the donation URL from settings
-                donationUrl = await _settingsService.GetValueAsync("DonationURL")
-                   ?? _configuration["DonationURL"]
-                   ?? "https://msih.org/donate";
+                //// Update the donation URL from settings
+                //donationUrl = await _settingsService.GetValueAsync("DonationURL")
+                //   ?? _configuration["DonationURL"]
+                //   ?? "https://msih.org/donate";
 
                 try
                 {
