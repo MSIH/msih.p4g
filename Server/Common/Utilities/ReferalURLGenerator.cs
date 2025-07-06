@@ -30,7 +30,7 @@ namespace msih.p4g.Server.Common.Utilities
         private readonly IConfiguration _configuration;
         private readonly IUserProfileService _userProfileService;
 
-        public ReferalURLGenerator(
+        public ReferralURLGenerator(
             ISettingsService settingsService,
             IConfiguration configuration,
             IUserProfileService userProfileService)
