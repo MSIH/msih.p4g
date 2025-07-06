@@ -3,14 +3,11 @@
 
 name: Build and deploy dev-gd4-org
 
-on:
-  push:
-    branches:
-      - development
+on:  
   workflow_dispatch:
   pull_request:
-    types:
-      - closed
+    types: [closed]
+    branches: [development]
 
 jobs:
   build:
