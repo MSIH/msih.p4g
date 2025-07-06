@@ -127,9 +127,9 @@
         finally
         {
             isLoggingIn = false;
-            StateHasChanged();
-            // wait two seconds
-            await Task.Delay(2000);
+            // StateHasChanged();
+            // // wait two seconds
+            // await Task.Delay(2000);
 
             // If login was successful, we could redirect the user here
             if (!string.IsNullOrEmpty(successMessage))
