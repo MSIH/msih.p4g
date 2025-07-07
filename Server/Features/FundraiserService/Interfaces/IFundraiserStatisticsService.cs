@@ -19,5 +19,14 @@ namespace msih.p4g.Server.Features.FundraiserService.Interfaces
         /// <param name="fundraiserId">ID of the fundraiser</param>
         /// <returns>Fundraiser statistics</returns>
         Task<FundraiserStatistics> GetStatisticsAsync(int fundraiserId);
+
+        /// <summary>
+        /// Gets first-time donors who made their very first donation with this fundraiser
+        /// </summary>
+        /// <param name="fundraiserId">ID of the fundraiser</param>
+        /// <returns>List of first-time donor information</returns>
+        Task<List<FirstTimeDonorInfo>> GetFirstTimeDonorsAsync(int fundraiserId);
+
+
     }
 }

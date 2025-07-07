@@ -1,9 +1,15 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 using Microsoft.AspNetCore.Components;
-using msih.p4g.Server.Features.FundraiserService.Model;
-using msih.p4g.Server.Features.FundraiserService.Interfaces;
-using msih.p4g.Server.Features.Base.PayoutService.Models;
 using msih.p4g.Server.Features.Base.PayoutService.Interfaces;
+using msih.p4g.Server.Features.Base.PayoutService.Models;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
+using msih.p4g.Server.Features.FundraiserService.Interfaces;
+using msih.p4g.Server.Features.FundraiserService.Model;
 
 namespace msih.p4g.Client.Features.FundraiserManagement.Component
 {
@@ -50,7 +56,7 @@ namespace msih.p4g.Client.Features.FundraiserManagement.Component
 
                 // Get fundraiser statistics (donations)
                 var statistics = await FundraiserStatsService.GetStatisticsAsync(FundraiserId);
-                
+
                 // Get payouts for this fundraiser
                 var payouts = await PayoutService.GetPayoutsByFundraiserIdAsync(FundraiserId.ToString());
 
@@ -71,40 +77,82 @@ namespace msih.p4g.Client.Features.FundraiserManagement.Component
         private List<QuarterlyCommission> CalculateQuarterlyCommissions(FundraiserStatistics statistics, List<Payout> payouts)
         {
             var commissions = new List<QuarterlyCommission>();
-            
+
             if (statistics?.Donations == null || !statistics.Donations.Any())
             {
                 return commissions;
             }
 
+            // Get the fundraiser's referral code from the Profile
+            var fundraiserReferralCode = Profile?.ReferralCode;
+            if (string.IsNullOrEmpty(fundraiserReferralCode))
+            {
+                return commissions; // Cannot calculate commissions without referral code
+            }
+
+            // Filter donations to only include those made after fundraiser account creation
+            var validDonations = statistics.Donations
+                .Where(d => Profile?.CreatedOn == null || d.DonationDate >= Profile.CreatedOn)
+                .ToList();
+
+            if (!validDonations.Any())
+            {
+                return commissions;
+            }
+
+            // Group donations by DonorId to find first donation for each unique donor
+            // Handle cases where DonorId might be 0 or invalid by also grouping by DonorName as fallback
+            var uniqueDonorFirstDonations = validDonations
+                .Where(d => d.DonorId > 0 || !string.IsNullOrEmpty(d.DonorName)) // Filter out invalid entries
+                .GroupBy(d => d.DonorId > 0 ? d.DonorId.ToString() : d.DonorName) // Use DonorId if valid, otherwise DonorName
+                .Select(group => new
+                {
+                    DonorKey = group.Key,
+                    DonorId = group.First().DonorId,
+                    DonorName = group.First().DonorName,
+                    FirstDonation = group.OrderBy(d => d.DonationDate).First(), // Get first donation from this donor
+                    FirstDonationDate = group.Min(d => d.DonationDate)
+                })
+                .OrderBy(x => x.FirstDonationDate) // Order by when they first donated
+                .ToList();
+
+            if (!uniqueDonorFirstDonations.Any())
+            {
+                return commissions;
+            }
+
             // Determine the starting date (fundraiser profile creation date or first donation)
-            var startDate = Profile?.CreatedOn ?? statistics.Donations.Min(d => d.DonationDate);
+            var startDate = Profile?.CreatedOn ?? uniqueDonorFirstDonations.Min(d => d.FirstDonationDate);
             var endDate = DateTime.Now;
 
             // Generate quarters from start date to current date
             var currentQuarter = new DateTime(startDate.Year, ((startDate.Month - 1) / 3) * 3 + 1, 1);
-            var runningAnnualTotal = 0m;
+            var cumulativeNewDonors = 0; // Track total new donors across all quarters
             var totalCommissionPayouts = 0m;
-            var previousAnnualCommission = 0m; // Track previous quarter's annual commission
+            var previousCommissionEarned = 0m; // Track previous quarter's total commission
 
             while (currentQuarter <= endDate)
             {
                 var quarterEnd = currentQuarter.AddMonths(3).AddDays(-1);
                 var quarter = (currentQuarter.Month - 1) / 3 + 1;
 
-                // Get donations for this quarter
-                var quarterDonations = statistics.Donations
+                // Count new donors who made their first donation in this quarter
+                var newDonorsThisQuarter = uniqueDonorFirstDonations
+                    .Count(d => d.FirstDonationDate >= currentQuarter && d.FirstDonationDate <= quarterEnd);
+
+                // Update cumulative count of new donors
+                cumulativeNewDonors += newDonorsThisQuarter;
+
+                // Calculate total commission earned based on cumulative new donors
+                var currentTotalCommission = CalculateCommissionForDonorCount(cumulativeNewDonors);
+
+                // Calculate commission earned just this quarter (difference from previous total)
+                var quarterlyCommissionEarned = currentTotalCommission - previousCommissionEarned;
+
+                // Get donation amounts for this quarter (for display purposes)
+                var quarterDonations = validDonations
                     .Where(d => d.DonationDate >= currentQuarter && d.DonationDate <= quarterEnd)
                     .Sum(d => d.Amount);
-
-                // Update running annual total
-                runningAnnualTotal += quarterDonations;
-
-                // Calculate annual commission based on total annual donations up to this quarter
-                var currentAnnualCommission = CalculateCommissionForAmount(runningAnnualTotal);
-                
-                // Calculate quarterly commission (difference from previous quarter's annual commission)
-                var quarterlyCommissionEarned = currentAnnualCommission - previousAnnualCommission;
 
                 // Get payouts for this quarter
                 var quarterPayouts = payouts
@@ -123,9 +171,11 @@ namespace msih.p4g.Client.Features.FundraiserManagement.Component
                     Quarter = quarter,
                     StartDate = currentQuarter,
                     EndDate = quarterEnd,
-                    QuarterlyDonations = quarterDonations,
-                    TotalAnnualDonations = runningAnnualTotal,
-                    CommissionEarned = currentAnnualCommission, // Total annual commission up to this quarter
+                    QuarterlyDonations = quarterDonations, // Total donations this quarter for reference
+                    NewDonorsThisQuarter = newDonorsThisQuarter, // New property for new donors this quarter
+                    TotalNewDonors = cumulativeNewDonors, // New property for cumulative new donors
+                    TotalAnnualDonations = 0, // Not used in new structure, but keeping for compatibility
+                    CommissionEarned = currentTotalCommission, // Total commission earned up to this quarter
                     QuarterlyCommissionEarned = quarterlyCommissionEarned, // Commission earned just this quarter
                     PayoutAmount = payoutAmount,
                     PayoutDate = payoutDate,
@@ -133,14 +183,47 @@ namespace msih.p4g.Client.Features.FundraiserManagement.Component
                     TotalCommissionPayouts = totalCommissionPayouts
                 });
 
-                // Update previous annual commission for next iteration
-                previousAnnualCommission = currentAnnualCommission;
+                // Update previous commission for next iteration
+                previousCommissionEarned = currentTotalCommission;
                 currentQuarter = currentQuarter.AddMonths(3);
             }
 
             return commissions;
         }
 
+        /// <summary>
+        /// Calculate commission based on the total number of new donors
+        /// New structure: 1 donor = $15, 2 donors = $25, 5 donors = $35, then +$35 for every 5 additional donors
+        /// </summary>
+        private decimal CalculateCommissionForDonorCount(int donorCount)
+        {
+            if (donorCount <= 0) return 0;
+
+            // 1 donor = $15
+            if (donorCount == 1) return 15;
+
+            // 2 donors = $25
+            if (donorCount == 2) return 25;
+
+            // 3-4 donors still = $25 (no change until 5)
+            if (donorCount >= 3 && donorCount < 5) return 25;
+
+            // 5 donors = $35
+            if (donorCount == 5) return 35;
+
+            // For more than 5 donors: $35 base + $35 for every additional group of 5
+            if (donorCount > 5)
+            {
+                var additionalDonors = donorCount - 5;
+                var additionalGroups = additionalDonors / 5; // Integer division
+                return 35 + (additionalGroups * 35);
+            }
+
+            return 0;
+        }
+
+        // Keep the old method for backwards compatibility but mark as obsolete
+        [Obsolete("This method is replaced by CalculateCommissionForDonorCount for the new donor-based commission structure")]
         private decimal CalculateCommissionForAmount(decimal amount)
         {
             if (amount <= 0) return 0;
@@ -209,12 +292,29 @@ namespace msih.p4g.Client.Features.FundraiserManagement.Component
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public decimal QuarterlyDonations { get; set; }
-        public decimal TotalAnnualDonations { get; set; }
+
+        // New properties for donor-based commission structure
+        public int NewDonorsThisQuarter { get; set; } // New donors added this quarter
+        public int TotalNewDonors { get; set; } // Cumulative new donors up to this quarter
+
+        public decimal TotalAnnualDonations { get; set; } // Kept for compatibility
         public decimal CommissionEarned { get; set; }
-        public decimal QuarterlyCommissionEarned { get; set; } // New property for quarterly commission
+        public decimal QuarterlyCommissionEarned { get; set; } // Commission earned just this quarter
         public decimal PayoutAmount { get; set; }
         public DateTime? PayoutDate { get; set; }
         public string PayoutStatus { get; set; } = string.Empty;
         public decimal TotalCommissionPayouts { get; set; }
+    }
+
+    public class DonationInfo
+    {
+        public int Id { get; set; }
+        public string DonorName { get; set; }
+        public decimal Amount { get; set; }
+        public DateTime DonationDate { get; set; }
+        public string Message { get; set; }
+
+        // Add the missing property
+        public int DonorId { get; set; } // Ensure this matches the expected type in the grouping logic
     }
 }
