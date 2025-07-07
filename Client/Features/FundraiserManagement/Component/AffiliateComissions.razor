@@ -23,38 +23,38 @@
             {
                 <div class="commission-structure mb-4">
                     <h5>Commission Structure</h5>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered">
+                    <div class="d-flex justify-content-start">
+                        <table class="table table-sm table-bordered" style="width: auto; max-width: 500px;">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Donation Threshold</th>
-                                    <th>Marketing Fees</th>
-                                    <th>Total Marketing Fees</th>
+                                    <th class="text-end" style="width: 140px;">Donation Threshold</th>
+                                    <th class="text-end" style="width: 120px;">Marketing Fees</th>
+                                    <th class="text-end" style="width: 140px;">Total Marketing Fees</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>$25</td>
-                                    <td>$5</td>
-                                    <td>$5</td>
+                                    <td class="text-end">$25</td>
+                                    <td class="text-end">$5</td>
+                                    <td class="text-end">$5</td>
                                 </tr>
                                 <tr>
-                                    <td>$100</td>
-                                    <td>$10</td>
-                                    <td>$15</td>
+                                    <td class="text-end">$100</td>
+                                    <td class="text-end">$10</td>
+                                    <td class="text-end">$15</td>
                                 </tr>
                                 <tr>
-                                    <td>$250</td>
-                                    <td>$20</td>
-                                    <td>$35</td>
+                                    <td class="text-end">$250</td>
+                                    <td class="text-end">$20</td>
+                                    <td class="text-end">$35</td>
                                 </tr>
                                 <tr>
-                                    <td>$500</td>
-                                    <td>$35</td>
-                                    <td>$70</td>
+                                    <td class="text-end">$500</td>
+                                    <td class="text-end">$35</td>
+                                    <td class="text-end">$70</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="3" class="text-muted">Pattern continues: $35 for every additional $250 in donations</td>
+                                    <td colspan="3" class="text-muted small">Pattern continues: $35 for every additional $250 in donations</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -76,45 +76,39 @@
                                 <thead>
                                     <tr>
                                         <th>Quarter</th>
-                                        <th>Annual Donations</th>
-                                        <th>Annual Commissions</th>
-                                        <th>Quaterly Commissions</th>
-                                        <th>Commission Payouts</th>
+                                        <th class="text-end">Total Donations</th>
+                                        <th class="text-end">Total Commissions</th>
+                                        <th class="text-end">Quaterly Commissions</th>
+                                        <th class="text-end">Commission Payouts</th>
                                         <th>Payout Date</th>
-                                        <th>Total Commission Payouts</th>
+                                        <th class="text-end">Total Commission Payouts</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var quarter in quarterlyCommissions.OrderByDescending(q => q.Year).ThenBy(q => q.Quarter))
+                                    @foreach (var quarter in quarterlyCommissions.OrderBy(q => q.StartDate))
                                     {
                                         <tr>
                                             <td>
                                                 <strong>@quarter.StartDate.ToString("MMM d") - @quarter.EndDate.ToString("MMM d, yyyy")</strong>
                                                 <br>
-                                               @*  <small class="text-muted">@quarter.StartDate.ToString("MMM d") - @quarter.EndDate.ToString("MMM d, yyyy")</small> *@
+                                                @*  <small class="text-muted">@quarter.StartDate.ToString("MMM d") - @quarter.EndDate.ToString("MMM d, yyyy")</small> *@
                                             </td>
-                                            <td>$@quarter.TotalAnnualDonations.ToString("N2")</td>
-                                            <td>
-                                                <span class="fw-bold text-success">$@quarter.CommissionEarned.ToString("N2")</span>
-                                                @if (quarter.CommissionEarned > 0)
-                                                {
-                                                    <br>
-                                                    <small class="text-muted">Based on $@quarter.QuarterlyDonations.ToString("N2") this quarter</small>
-                                                }
+                                            <td class="text-end">$@quarter.TotalAnnualDonations.ToString("N2")</td>
+                                            <td class="text-end">
+                                                $@quarter.CommissionEarned.ToString("N2")                                               
                                             </td>
-                                            <td>$@quarter.QuarterlyCommissionEarned.ToString("N2")</td>
-                                            <td>
+                                            <td class="text-end">
                                                 <span class="fw-bold text-success">$@quarter.QuarterlyCommissionEarned.ToString("N2")</span>
-                                                @if (quarter.QuarterlyCommissionEarned > 0) // Update here
-                                                {
-                                                    <br>
-                                                    <small class="text-muted">Based on $@quarter.QuarterlyCommissionEarned.ToString("N2") this quarter</small>
-                                                }
+                                            @if (quarter.CommissionEarned > 0)
+                                            {
+                                                <br>
+                                                <small class="text-muted">Based on $@quarter.QuarterlyDonations.ToString("N2") this quarter</small>
+                                            }
                                             </td>
-                                            <td>
+                                            <td class="text-end">
                                                 @if (quarter.PayoutAmount > 0)
                                                 {
-                                                    <span class="text-primary">$@quarter.PayoutAmount.ToString("N2")</span>
+                                                    <span class="fw-bold text-success">$@quarter.PayoutAmount.ToString("N2")</span>
                                                 }
                                                 else
                                                 {
@@ -152,7 +146,7 @@
                                                     }
                                                 }
                                             </td>
-                                            <td>
+                                            <td class="text-end">
                                                 <span class="fw-bold">$@quarter.TotalCommissionPayouts.ToString("N2")</span>
                                             </td>
                                         </tr>
