@@ -102,6 +102,15 @@
                                                     <small class="text-muted">Based on $@quarter.QuarterlyDonations.ToString("N2") this quarter</small>
                                                 }
                                             </td>
+                                            <td>$@quarter.QuarterlyCommissionEarned.ToString("N2")</td>
+                                            <td>
+                                                <span class="fw-bold text-success">$@quarter.QuarterlyCommissionEarned.ToString("N2")</span>
+                                                @if (quarter.QuarterlyCommissionEarned > 0) // Update here
+                                                {
+                                                    <br>
+                                                    <small class="text-muted">Based on $@quarter.QuarterlyCommissionEarned.ToString("N2") this quarter</small>
+                                                }
+                                            </td>
                                             <td>
                                                 @if (quarter.PayoutAmount > 0)
                                                 {
