@@ -26,8 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Server\Common\Data\Migrations\20250702231852_first.cs" />
-    <Compile Remove="Server\Common\Data\Migrations\20250702231852_first.Designer.cs" />
     <Compile Remove="Server\Features\Base\PayoutService\Models\PayPalBatchStatus.cs" />
   </ItemGroup>
 
@@ -60,7 +58,6 @@
   <ItemGroup>
     <Folder Include="Client\Features\Base\SmsService\Pages\" />
     <Folder Include="Client\Features\Base\W9FormManagement\Components\" />
-    <Folder Include="Server\Common\Data\Migrations\" />
     <Folder Include="Server\Common\Interfaces\" />
     <Folder Include="Server\Common\Services\" />
     <Folder Include="Server\Features\Base\ProfileService\Data\Migrations\" />
