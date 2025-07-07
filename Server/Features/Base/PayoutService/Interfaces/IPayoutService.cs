@@ -1,9 +1,3 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -78,5 +72,12 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Interfaces
         /// <param name="batchId">The PayPal batch ID</param>
         /// <returns>Batch status information</returns>
         Task<PayPalBatchStatus> GetBatchPayoutStatusAsync(string batchId);
+
+        /// <summary>
+        /// Get all payouts for a fundraiser
+        /// </summary>
+        /// <param name="fundraiserId">The fundraiser ID</param>
+        /// <returns>List of all Payout records for the fundraiser</returns>
+        Task<List<Payout>> GetPayoutsByFundraiserIdAsync(string fundraiserId);
     }
 }

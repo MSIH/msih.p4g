@@ -155,7 +155,7 @@
                                 <div class="card bg-light mb-3">
                                     <div class="card-body text-center">
                                         <h5 class="card-title">Total Donations</h5>
-                                        <p class="display-4">@statistics.DonationCount</p>
+                                        <p class="display-6">@statistics.DonationCount</p>
                                     </div>
                                 </div>
                             </div>
@@ -163,7 +163,7 @@
                                 <div class="card bg-light mb-3">
                                     <div class="card-body text-center">
                                         <h5 class="card-title">Total Raised</h5>
-                                        <p class="display-4">$@statistics.TotalRaised.ToString("N2")</p>
+                                        <p class="display-6">$@statistics.TotalRaised.ToString("N2")</p>
                                     </div>
                                 </div>
                             </div>
@@ -171,7 +171,7 @@
                                 <div class="card bg-light mb-3">
                                     <div class="card-body text-center">
                                         <h5 class="card-title">Average Donation</h5>
-                                        <p class="display-4">$@statistics.AverageDonation.ToString("N2")</p>
+                                        <p class="display-6">$@statistics.AverageDonation.ToString("N2")</p>
                                     </div>
                                 </div>
                             </div>
@@ -227,6 +227,8 @@
                         }
                     </div>
                 </div>
+
+                <msih.p4g.Client.Features.FundraiserManagement.Component.AffiliateComissions FundraiserId="@fundraiser.Id" Profile="@profile" />
             }
         </div>
     </div>
