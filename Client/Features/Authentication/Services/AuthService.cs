@@ -115,7 +115,10 @@ namespace msih.p4g.Client.Features.Authentication.Services
 
         public async Task LogoutAsync()
         {
-            var emailSent = await _userService.LogOutUserByIdAsync(_currentUser.Id);
+            if (_currentUser != null) // Ensure _currentUser is not null before accessing its properties
+            {
+                await _userService.LogOutUserByIdAsync(_currentUser.Id);
+            }
             await _localStorage.DeleteAsync("userId");
             _currentUser = null;
 

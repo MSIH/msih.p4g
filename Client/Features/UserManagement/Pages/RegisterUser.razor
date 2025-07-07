@@ -58,57 +58,16 @@
                                 <ValidationMessage For="@(() => profile.LastName)" />
                             </div>
                         </div>
-                        @if (!isMarketer)
-                        {
-                            <h4 class="mt-4 mb-3">Profile Information</h4>
-                            <div class="mb-3">
-                                <label for="mobileNumber" class="form-label">Mobile Number</label>
-                                <InputText id="mobileNumber" @bind-Value="profile.MobileNumber" class="form-control" />
-                                <ValidationMessage For="@(() => profile.MobileNumber)" />
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Date of Birth</label>
-                                <div class="d-flex gap-2">
-                                    <InputSelect @bind-Value="month" class="form-select" style="width: 33%;">
-                                        <option value="">Month</option>
-                                        @for (int m = 1; m <= 12; m++)
-                                        {
-                                            <option value="@m">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)</option>
-                                        }
-                                    </InputSelect>
-                                    <InputSelect @bind-Value="day" class="form-select" style="width: 33%;">
-                                        <option value="">Day</option>
-                                        @for (int d = 1; d <= 31; d++)
-                                        {
-                                            <option value="@d">@d</option>
-                                        }
-                                    </InputSelect>
-                                    <InputSelect @bind-Value="year" class="form-select" style="width: 33%;">
-                                        <option value="">Year</option>
-                                        @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 120; y--)
-                                        {
-                                            <option value="@y">@y</option>
-                                        }
-                                    </InputSelect>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    <InputCheckbox id="consentEmail" @bind-Value="profile.ConsentReceiveEmail" class="form-check-input" disabled />
+                                    <label class="form-check-label" for="consentEmail">
+                                        I consent to receive emails
+                                    </label>
                                 </div>
                             </div>
-
-                            <div class="mb-3 form-check">
-                                <InputCheckbox id="consentEmail" @bind-Value="profile.ConsentReceiveEmail" class="form-check-input" disabled/>
-                                <label class="form-check-label" for="consentEmail">
-                                    I consent to receive emails
-                                </label>
-                            </div>
-
-                            <div class="mb-3 form-check">
-                                <InputCheckbox id="consentText" @bind-Value="profile.ConsentReceiveText" class="form-check-input" />
-                                <label class="form-check-label" for="consentText">
-                                    I consent to receive text messages
-                                </label>
-                            </div>
-                        }
-
+                        </div>
 
                         <div class="mb-3">
                             <button type="submit" class="btn btn-primary" disabled="@isProcessing">
@@ -168,8 +127,8 @@
 
                                 <div class="example">
                                     <p>The first three levels offer increasing rewards as you build momentum. Once you hit $250, the pattern becomes straightforward - you receive a marketing fee of $35 for every additional $250 in donations. </p>
-                                    <p>If you generate an annual donation of $777, you will receive a marketing fee of $105 because you've completed all three initial levels ($25, $100, and $250) and two $250 levels but haven't reached the $1000 milestone yet.</p>
-                                    <p>If you generate an annual donation of $5000, you will receive a marketing fee of $700. If you generate an annual donation of $50,000, you will receive a marketing fee of $7,000. If you generate an annual donation of $150,000, you will receive a marketing fee of $21,000.</p>
+                                    <p>For example, if you generate a donation of $777, you will earn a marketing fee of $105 ($5 + $10 + $20 + $35 + $35) because you've completed levels ($25, $100, $250, $500, and $750).</p>
+                                    <p>For example, if you generate donations of $5000, you will receive total marketing fees of $700, for donations of $50,000, you will receive total marketing fees of $7,000, and for donations of $150,000, you will receive total  marketing fees of $21,000.</p>
                                 </div>
                             </div>
                         </div>

@@ -1,0 +1,27 @@
+.login-page {
+  color: #0d6efd; /* Bootstrap primary blue */
+}
+
+  .login-page .form-label {
+    color: #0b5ed7 !important; /* Slightly darker blue for labels with !important */
+    font-weight: 500;
+  }
+
+  .login-page p {
+    color: #6c757d; /* Bootstrap text-muted for secondary text */
+  }
+
+  .login-page .card-body {
+    color: #0d6efd;
+  }
+
+  /* Ensure card header text stays white */
+  .login-page .card-header h3 {
+    color: white !important;
+  }
+
+  /* More specific selector for the email label */
+  .login-page .mb-3 label[for="email"] {
+    color: #000000 !important;
+    font-weight: 500;
+  }

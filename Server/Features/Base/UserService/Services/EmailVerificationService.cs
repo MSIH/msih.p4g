@@ -50,10 +50,12 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                 var baseUrl = await _settingsService.GetValueAsync("BaseUrl")
                     ?? _configuration["BaseUrl"]
                     ?? "https://msih.org";
+                baseUrl = baseUrl.TrimEnd('/');
 
                 var donationUrl = await _settingsService.GetValueAsync("donationUrl")
                     ?? _configuration["donationUrl"]
                     ?? $"{baseUrl}/donate";
+                donationUrl = donationUrl.TrimEnd('/');
 
                 // based on the current time get number in format of HHmmss
                 var currentTime = DateTime.UtcNow.ToString("HHmmss");
