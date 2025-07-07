@@ -39,6 +39,13 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Interfaces
         Task<List<Payout>> GetPayoutsByFundraiserIdAsync(string fundraiserId, int page = 1, int pageSize = 20);
 
         /// <summary>
+        /// Get all Payouts for a specific fundraiser
+        /// </summary>
+        /// <param name="fundraiserId">The fundraiser ID</param>
+        /// <returns>List of all Payouts for the fundraiser</returns>
+        Task<List<Payout>> GetPayoutsByFundraiserIdAsync(string fundraiserId);
+
+        /// <summary>
         /// Get Payouts by batch ID
         /// </summary>
         /// <param name="batchId">The PayPal batch ID</param>
