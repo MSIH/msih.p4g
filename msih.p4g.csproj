@@ -58,7 +58,6 @@
   <ItemGroup>
     <Folder Include="Client\Features\Base\SmsService\Pages\" />
     <Folder Include="Client\Features\Base\W9FormManagement\Components\" />
-    <Folder Include="Server\Common\Data\Migrations\" />
     <Folder Include="Server\Common\Interfaces\" />
     <Folder Include="Server\Common\Services\" />
     <Folder Include="Server\Features\Base\ProfileService\Data\Migrations\" />
