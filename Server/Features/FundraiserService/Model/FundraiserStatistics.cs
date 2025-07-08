@@ -61,5 +61,33 @@ namespace msih.p4g.Server.Features.FundraiserService.Model
         /// Message from the donor
         /// </summary>
         public string Message { get; set; }
+
+        public int DonorId { get; set; } // Ensure this matches the expected type in the grouping logic
+    }
+
+    /// <summary>
+    /// Information about a first-time donor
+    /// </summary>
+    public class FirstTimeDonorInfo
+    {
+        /// <summary>
+        /// Donor ID
+        /// </summary>
+        public int DonorId { get; set; }
+
+        /// <summary>
+        /// Donor's name
+        /// </summary>
+        public string DonorName { get; set; }
+
+        /// <summary>
+        /// Date of their first donation
+        /// </summary>
+        public DateTime FirstDonationDate { get; set; }
+
+        /// <summary>
+        /// Amount of their first donation
+        /// </summary>
+        public decimal FirstDonationAmount { get; set; }
     }
 }

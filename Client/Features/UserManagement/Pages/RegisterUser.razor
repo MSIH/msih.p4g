@@ -85,53 +85,7 @@
                     </EditForm>
                     @if (isMarketer)
                     {
-                        <div class="mb-3">
-                            <div class="container">
-                                <h2>Marketing Fee Structure </h2>
-
-                                <p class="description">
-                                    A tiered Marketing Fee structure with three initial milestones, followed by recurring $35 fees for every additional $250 in donations. Fees are earned only when donation thresholds are fully reached.
-                                </p>
-
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Donation Threshold</th>
-                                            <th>Marketing Fees</th>
-                                            <th>Total Marketing Fees</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>$25</td>
-                                            <td>$5</td>
-                                            <td>$5</td>
-                                        </tr>
-                                        <tr>
-                                            <td>$100</td>
-                                            <td>$10</td>
-                                            <td>$15</td>
-                                        </tr>
-                                        <tr>
-                                            <td>$250</td>
-                                            <td>$20</td>
-                                            <td>$35</td>
-                                        </tr>
-                                        <tr>
-                                            <td>$500</td>
-                                            <td>$35</td>
-                                            <td>$70</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-
-                                <div class="example">
-                                    <p>The first three levels offer increasing rewards as you build momentum. Once you hit $250, the pattern becomes straightforward - you receive a marketing fee of $35 for every additional $250 in donations. </p>
-                                    <p>For example, if you generate a donation of $777, you will earn a marketing fee of $105 ($5 + $10 + $20 + $35 + $35) because you've completed levels ($25, $100, $250, $500, and $750).</p>
-                                    <p>For example, if you generate donations of $5000, you will receive total marketing fees of $700, for donations of $50,000, you will receive total marketing fees of $7,000, and for donations of $150,000, you will receive total marketing fees of $21,000.</p>
-                                </div>
-                            </div>
-                        </div>
+                        <AffiliateCommissionTable />
                     }
                 </div>
             }
