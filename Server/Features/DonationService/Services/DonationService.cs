@@ -16,6 +16,7 @@ using msih.p4g.Server.Features.DonationService.Interfaces;
 using msih.p4g.Server.Features.DonationService.Models;
 using msih.p4g.Server.Features.DonorService.Interfaces;
 using msih.p4g.Server.Features.DonorService.Model;
+using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Features.DonationService.Services
 {
@@ -66,94 +67,80 @@ namespace msih.p4g.Server.Features.DonationService.Services
             return Math.Round(amount * _transactionFeePercentage + _transactionFeeFlat, 2);
         }
 
-        public async Task<bool> ProcessDonorRegistrationAsync(DonationRequestDto dto)
+        public async Task<DonorRegistrationResultType> ProcessDonorRegistrationAsync(DonationRequestDto dto)
         {
-            // 1. Find or create user with needed navigation properties
-            var user = await _userRepository.GetByEmailAsync(
-                email: dto.Email,
-                includeProfile: false,
-                includeAddress: false,
-                includeDonor: false,
-                includeFundraiser: false);
-
-            bool isNewUser = false;
-            Profile? profile = null;
-
-            if (user != null)
+            bool donorCreated = false;
+            bool error = false;
+            try
             {
-                return true; // User already exists, no need to create again
-            }
-            else
-            {
-                // Create new user and profile in a single coordinated operation
-                user = new User
-                {
-                    Email = dto.Email,
-                    Role = UserRole.Donor
-                };
+                // 1. Find user with needed navigation properties
+                var user = await _userRepository.GetByEmailAsync(
+                    email: dto.Email,
+                    includeProfile: true,
+                    includeAddress: true,
+                    includeDonor: true,
+                    includeFundraiser: false);
 
-                profile = new Profile
+                if (user == null)
                 {
-                    FirstName = dto.FirstName,
-                    LastName = dto.LastName,
-                    Address = dto.Address,
-                    MobileNumber = dto.Mobile
-                };
-
-                // The UserProfileService handles setting the UserId and generating the referral code
-                profile = await _userProfileService.CreateUserWithProfileAsync(user, profile, "DonationService");
-                isNewUser = true;
-                // Use navigation property to get profile if it exists
-                profile = user.Profile;
-
-                // If profile doesn't exist (unlikely since we loaded it with includeProfile=true), create it
-                if (profile == null)
-                {
-                    profile = new Profile
+                    // Create new user and profile in a single coordinated operation
+                    user = new User
                     {
-                        UserId = user.Id,
+                        Email = dto.Email,
+                        Role = UserRole.Donor
+                    };
+
+                    var profile = new Profile
+                    {
                         FirstName = dto.FirstName,
                         LastName = dto.LastName,
                         Address = dto.Address,
                         MobileNumber = dto.Mobile
                     };
-                    profile = await _profileService.AddAsync(profile, "DonationService");
-                }
-                // Update profile information if needed
-                else if (ShouldUpdateProfile(profile, dto))
-                {
-                    profile.FirstName = dto.FirstName;
-                    profile.LastName = dto.LastName;
-                    profile.Address = dto.Address;
 
-                    if (!string.IsNullOrEmpty(dto.Mobile) &&
-                        (string.IsNullOrEmpty(profile.MobileNumber) || !profile.MobileNumber.Equals(dto.Mobile)))
+                    // The UserProfileService handles setting the UserId and generating the referral code
+                    profile = await _userProfileService.CreateUserWithProfileAsync(user, profile, "DonationService");
+
+                    // Create donor for the new user
+                    var donor = new Donor
                     {
-                        profile.MobileNumber = dto.Mobile;
-                    }
+                        UserId = user.Id,
+                        IsActive = true,
+                        CreatedBy = "DonationService",
+                        CreatedOn = DateTime.UtcNow,
+                        ReferralCode = dto.ReferralCode
+                    };
+                    donor = await _donorService.AddAsync(donor);
 
-                    profile = await _profileService.UpdateAsync(profile, "DonationService");
+                    donorCreated = true;
                 }
             }
 
-            // 2. Find or create donor using navigation property
-            Donor? donor = user.Donor;
-
-            if (donor == null)
+            catch (Exception ex)
             {
-                // Create a new donor
-                donor = new Donor
-                {
-                    UserId = user.Id,
-                    IsActive = true,
-                    CreatedBy = "DonationService",
-                    CreatedOn = DateTime.UtcNow,
-                    ReferralCode = dto.ReferralCode
+                _logger.LogError(ex,
+                    "Error processing donor registration for email {Email}. Error: {ErrorMessage}",
+                    dto.Email, ex.Message);
+                error = true;
 
-                };
-                donor = await _donorService.AddAsync(donor);
+                // You might want to return a specific error result type or rethrow
+                // depending on your error handling strategy
+
             }
-            return true;
+
+            // Return appropriate result based on what was done
+            if (donorCreated)
+            {
+                return DonorRegistrationResultType.NewCreated;
+            }
+            else if (error)
+            {
+                return DonorRegistrationResultType.Error;
+            }
+            else
+            {
+                return DonorRegistrationResultType.ExistingFound;
+            }
         }
 
         /// <summary>

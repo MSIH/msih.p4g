@@ -11,6 +11,7 @@
  */
 
 using msih.p4g.Server.Features.DonationService.Models;
+using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Features.DonationService.Interfaces
 {
@@ -26,7 +27,7 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         /// </summary>
         Task<Donation> ProcessDonationAsync(DonationRequestDto dto);
 
-        Task<bool> ProcessDonorRegistrationAsync(DonationRequestDto dto);
+        Task<DonorRegistrationResultType> ProcessDonorRegistrationAsync(DonationRequestDto dto);
 
         /// <summary>
         /// Gets all donations.
