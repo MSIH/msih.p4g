@@ -38,12 +38,11 @@
                                 <thead>
                                     <tr>
                                         <th>Quarter</th>
-                                        <th class="text-end">Total New Users</th>
-                                        <th class="text-end">Total Commissions</th>
-                                        <th class="text-end">Quarterly Commissions</th>
+                                        <th class="text-end">Cumulative New Users</th>                              
+                                        <th class="text-end">Cumulative Commissions</th>
                                         <th class="text-end">Commission Payouts</th>
                                         <th>Payout Date</th>
-                                        <th class="text-end">Total Commission Payouts</th>
+                                        <th class="text-end">Cumulative Commission Payouts</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -56,19 +55,18 @@
                                                 @*  <small class="text-muted">@quarter.StartDate.ToString("MMM d") - @quarter.EndDate.ToString("MMM d, yyyy")</small> *@
                                             </td>
                                             <td class="text-end">@quarter.TotalNewDonors</td>
-                                            <td class="text-end">$@quarter.TotalAnnualDonations.ToString("N2")</td>
                                             <td class="text-end">
                                                 $@quarter.CommissionEarned.ToString("N2")                                               
                                             </td>
                                             <td class="text-end">
                                                 <span class="fw-bold text-success">$@quarter.QuarterlyCommissionEarned.ToString("N2")</span>
-                                            @if (quarter.CommissionEarned > 0)
+                                            @* @if (quarter.CommissionEarned > 0)
                                             {
                                                 <br>
                                                 <small class="text-muted">Based on $@quarter.QuarterlyDonations.ToString("N2") this quarter</small>
-                                            }
+                                            } *@
                                             </td>
-                                            <td class="text-end">
+                                            @* <td class="text-end">
                                                 @if (quarter.PayoutAmount > 0)
                                                 {
                                                     <span class="fw-bold text-success">$@quarter.PayoutAmount.ToString("N2")</span>
@@ -77,7 +75,7 @@
                                                 {
                                                     <span class="text-muted">$0.00</span>
                                                 }
-                                            </td>
+                                            </td> *@
                                             <td>
                                                 @if (quarter.PayoutDate.HasValue)
                                                 {

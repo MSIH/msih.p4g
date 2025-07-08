@@ -120,13 +120,13 @@
                                     <InputText id="lastName" class="form-control" @bind-Value="donationRequest.LastName" />
                                     <ValidationMessage For="@(() => donationRequest.LastName)" />
                                 </div>
-                                <div class="col-md-5 mb-3">
+                                <div class="col-md-4 mb-3">
                                     <label for="email" class="form-label">Email*</label>
                                     <InputText id="email" class="form-control" @bind-Value="donationRequest.Email" />
                                     <ValidationMessage For="@(() => donationRequest.Email)" />
                                 </div>
-                                <div class="col-md-1 mb-3">
-                                    <button type="button">Register</button>
+                                <div class="col-md-2 mb-3 d-flex align-items-end">
+                                    <button type="button" class="btn btn-secondary btn-sm" @onclick="RegisterWithoutDonating">Register without donating</button>
                                 </div>
                             </div>
                         </div>
@@ -278,6 +278,14 @@
                 UpdateSelectedCampaign();
             }
         }
+    }
+
+    /// <summary>
+    /// Handles user registration without requiring a donation.
+    /// </summary>
+    private async Task RegisterWithoutDonating()
+    {
+        // TODO: Implement registration logic without donation
     }
 
     private void UpdateSelectedCampaign()
