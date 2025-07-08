@@ -1,4 +1,4 @@
-@page "/fundraiser"
+@page "/affiliate"
 @namespace msih.p4g.Client.Features.FundraiserManagement.Pages
 @using msih.p4g.Client.Features.Authentication.Services
 @using msih.p4g.Server.Features.FundraiserService.Model
@@ -17,14 +17,14 @@
 @inject AuthService AuthService
 @inject NavigationManager NavigationManager
 
-<PageTitle>My Fundraiser</PageTitle>
+<PageTitle>Affiliate Dashboard</PageTitle>
 
 <div class="container">
     <div class="row">
         <div class="col-md-8 offset-md-2">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h3 class="card-title">My Fundraiser</h3>
+                    <h3 class="card-title">Affiliate Dashboard</h3>
                 </div>
                 <div class="card-body">
                     @if (isLoading)
@@ -54,11 +54,11 @@
                         {
                             <div class="card mb-4">
                                 <div class="card-header">
-                                    <h3 class="card-title">My Donation Referral Link</h3>
+                                    <h3 class="card-title">My Affiliate Referral Link</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="alert alert-info">
-                                        <p class="mb-1">Share this link to track donations:</p>
+                                        <p class="mb-1">Share this link to track Affiliate:</p>
                                         <ReferralLinkComponent 
                                                                Profile="@profile"
                                                 
