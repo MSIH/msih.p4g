@@ -26,6 +26,8 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         /// </summary>
         Task<Donation> ProcessDonationAsync(DonationRequestDto dto);
 
+        Task<bool> ProcessDonorRegistrationAsync(DonationRequestDto dto);
+
         /// <summary>
         /// Gets all donations.
         /// </summary>

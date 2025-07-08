@@ -4,7 +4,6 @@
 //  * Unauthorized copying, modification, distribution, or use is prohibited.
 //  */
 
-using Microsoft.Extensions.Logging;
 using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Models;
@@ -65,6 +64,96 @@ namespace msih.p4g.Server.Features.DonationService.Services
         private decimal CalculateTransactionFee(decimal amount)
         {
             return Math.Round(amount * _transactionFeePercentage + _transactionFeeFlat, 2);
+        }
+
+        public async Task<bool> ProcessDonorRegistrationAsync(DonationRequestDto dto)
+        {
+            // 1. Find or create user with needed navigation properties
+            var user = await _userRepository.GetByEmailAsync(
+                email: dto.Email,
+                includeProfile: false,
+                includeAddress: false,
+                includeDonor: false,
+                includeFundraiser: false);
+
+            bool isNewUser = false;
+            Profile? profile = null;
+
+            if (user != null)
+            {
+                return true; // User already exists, no need to create again
+            }
+            else
+            {
+                // Create new user and profile in a single coordinated operation
+                user = new User
+                {
+                    Email = dto.Email,
+                    Role = UserRole.Donor
+                };
+
+                profile = new Profile
+                {
+                    FirstName = dto.FirstName,
+                    LastName = dto.LastName,
+                    Address = dto.Address,
+                    MobileNumber = dto.Mobile
+                };
+
+                // The UserProfileService handles setting the UserId and generating the referral code
+                profile = await _userProfileService.CreateUserWithProfileAsync(user, profile, "DonationService");
+                isNewUser = true;
+                // Use navigation property to get profile if it exists
+                profile = user.Profile;
+
+                // If profile doesn't exist (unlikely since we loaded it with includeProfile=true), create it
+                if (profile == null)
+                {
+                    profile = new Profile
+                    {
+                        UserId = user.Id,
+                        FirstName = dto.FirstName,
+                        LastName = dto.LastName,
+                        Address = dto.Address,
+                        MobileNumber = dto.Mobile
+                    };
+                    profile = await _profileService.AddAsync(profile, "DonationService");
+                }
+                // Update profile information if needed
+                else if (ShouldUpdateProfile(profile, dto))
+                {
+                    profile.FirstName = dto.FirstName;
+                    profile.LastName = dto.LastName;
+                    profile.Address = dto.Address;
+
+                    if (!string.IsNullOrEmpty(dto.Mobile) &&
+                        (string.IsNullOrEmpty(profile.MobileNumber) || !profile.MobileNumber.Equals(dto.Mobile)))
+                    {
+                        profile.MobileNumber = dto.Mobile;
+                    }
+
+                    profile = await _profileService.UpdateAsync(profile, "DonationService");
+                }
+            }
+
+            // 2. Find or create donor using navigation property
+            Donor? donor = user.Donor;
+
+            if (donor == null)
+            {
+                // Create a new donor
+                donor = new Donor
+                {
+                    UserId = user.Id,
+                    IsActive = true,
+                    CreatedBy = "DonationService",
+                    CreatedOn = DateTime.UtcNow,
+                    ReferralCode = dto.ReferralCode
+
+                };
+                donor = await _donorService.AddAsync(donor);
+            }
+            return true;
         }
 
         /// <summary>
@@ -150,7 +239,8 @@ namespace msih.p4g.Server.Features.DonationService.Services
                     UserId = user.Id,
                     IsActive = true,
                     CreatedBy = "DonationService",
-                    CreatedOn = DateTime.UtcNow
+                    CreatedOn = DateTime.UtcNow,
+                    ReferralCode = dto.ReferralCode
                 };
                 donor = await _donorService.AddAsync(donor);
             }
@@ -227,22 +317,22 @@ namespace msih.p4g.Server.Features.DonationService.Services
 
                 if (emailSent)
                 {
-                    _logger.LogInformation("Thank you email sent successfully to donor {Email} for donation ID {DonationId}", 
+                    _logger.LogInformation("Thank you email sent successfully to donor {Email} for donation ID {DonationId}",
                         user.Email, donation.Id);
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to send thank you email to donor {Email} for donation ID {DonationId}. Email service returned false.", 
+                    _logger.LogWarning("Failed to send thank you email to donor {Email} for donation ID {DonationId}. Email service returned false.",
                         user.Email, donation.Id);
                 }
             }
             catch (Exception ex)
             {
                 // Log the error but don't fail the donation process
-                _logger.LogError(ex, 
-                    "Error sending thank you email to donor {Email} for donation ID {DonationId}. Donation was processed successfully but email notification failed.", 
+                _logger.LogError(ex,
+                    "Error sending thank you email to donor {Email} for donation ID {DonationId}. Donation was processed successfully but email notification failed.",
                     user.Email, donation.Id);
-                
+
                 // Optionally, you could store this failure for retry later
                 // The donation itself was successful, so we don't want to throw an exception here
             }

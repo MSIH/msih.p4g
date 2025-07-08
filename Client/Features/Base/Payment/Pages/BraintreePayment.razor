@@ -285,7 +285,24 @@
     /// </summary>
     private async Task RegisterWithoutDonating()
     {
-        // TODO: Implement registration logic without donation
+        try
+        {
+            // Process donor registration
+            var registrationResult = await DonationService.ProcessDonorRegistrationAsync(donationRequest);
+
+            if (registrationResult)
+            {
+                await JSRuntime.InvokeVoidAsync("showAlert", "Registration Successful", "Account created");
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("showAlert", "Registration Failed", "Something went wrong during registration. Please try again.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("showAlert", "Registration Error", $"An error occurred: {ex.Message}");
+        }
     }
 
     private void UpdateSelectedCampaign()
