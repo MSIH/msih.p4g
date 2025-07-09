@@ -112,21 +112,27 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
 
             var fundraiserReferralCode = fundraiser.User.Profile.ReferralCode;
 
-            // Get all donors with the fundraiser's referral code who have not made any donations and have confirmed their email
-            var donorsFromReferralJustLogIn = await context.Donors
-                .Where(d => d.ReferralCode == fundraiserReferralCode)
-                .Where(d => !d.Donations.Any())
-                .Where(d => d.User.EmailConfirmedAt != null)
-                .ToListAsync();
+            //// Get all donors with the fundraiser's referral code who have not made any donations and have confirmed their email
+            //var donorsFromReferralJustLogIn = await context.Donors
+            //    .Where(d => d.ReferralCode == fundraiserReferralCode)
+            //    .Where(d => !d.Donations.Any())
+            //    .Where(d => d.User.EmailConfirmedAt != null)
+            //    .ToListAsync();
 
-            // Get all donors with the fundraiser's referral code who have made donations
+            //// Get all donors with the fundraiser's referral code who have made donations
+            //var donorsFromReferral = await context.Donors
+            //    .Where(d => d.ReferralCode == fundraiserReferralCode)
+            //    .Where(d => d.Donations.Any())
+            //    .ToListAsync();
+
+            //// Combine the two lists
+            //donorsFromReferral.AddRange(donorsFromReferralJustLogIn);
+
             var donorsFromReferral = await context.Donors
                 .Where(d => d.ReferralCode == fundraiserReferralCode)
-                .Where(d => d.Donations.Any())
+                .Where(d => d.User.EmailConfirmedAt != null || d.Donations.Any())
                 .ToListAsync();
 
-            // Combine the two lists
-            donorsFromReferral.AddRange(donorsFromReferralJustLogIn);
 
             return donorsFromReferral.Select(ftd => new FirstTimeDonorInfo
             {
