@@ -55,7 +55,7 @@ namespace msih.p4g.Client.Features.FundraiserManagement.Component
                 }
 
                 // Get fundraiser statistics (donations)
-                var statistics = await FundraiserStatsService.GetDeferralDonorsAsync(FundraiserId);
+                var statistics = await FundraiserStatsService.GetReferralDonorsAsync(FundraiserId);
 
                 // Get payouts for this fundraiser
                 var payouts = await PayoutService.GetPayoutsByFundraiserIdAsync(FundraiserId.ToString());

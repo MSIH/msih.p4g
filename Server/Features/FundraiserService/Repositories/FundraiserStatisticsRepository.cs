@@ -95,7 +95,7 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
             return profile?.ReferralCode;
         }
 
-        public async Task<List<FirstTimeDonorInfo>> GetDeferralDonorsAsync(int fundraiserId)
+        public async Task<List<FirstTimeDonorInfo>> GetReferralDonorsAsync(int fundraiserId)
         {
             using var context = await _contextFactory.CreateDbContextAsync();
 
