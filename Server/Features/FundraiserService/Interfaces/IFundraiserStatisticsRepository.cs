@@ -38,5 +38,7 @@ namespace msih.p4g.Server.Features.FundraiserService.Interfaces
         /// <param name="fundraiserId">ID of the fundraiser</param>
         /// <returns>List of first-time donor information</returns>
         Task<List<FirstTimeDonorInfo>> GetFirstTimeDonorsAsync(int fundraiserId);
+
+        Task<List<FirstTimeDonorInfo>> GetDeferralDonorsAsync(int fundraiserId);
     }
 }
