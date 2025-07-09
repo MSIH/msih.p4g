@@ -118,7 +118,6 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
                 .Where(d => d.User.EmailConfirmedAt != null || d.Donations.Any())
                 .ToListAsync();
 
-
             return donorsFromReferral.Select(ftd => new FirstTimeDonorInfo
             {
                 DonorId = 0,
