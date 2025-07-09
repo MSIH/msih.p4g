@@ -519,7 +519,7 @@
             await LoadReferrerAsync();
 
             // Find the appropriate campaign
-            if (CampaignId.HasValue && campaigns.Any())
+            if (CampaignId.HasValue)
             {
                 campaign = campaigns.FirstOrDefault(c => c.Id == CampaignId.Value);
             }
