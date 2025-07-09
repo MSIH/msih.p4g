@@ -41,5 +41,11 @@ namespace msih.p4g.Server.Features.FundraiserService.Services
         {
             return await _repository.GetFirstTimeDonorsAsync(fundraiserId);
         }
+
+        public async Task<List<FirstTimeDonorInfo>> GetReferralDonorsAsync(int fundraiserId)
+        {
+            return await _repository.GetReferralDonorsAsync(fundraiserId);
+        }
+
     }
 }

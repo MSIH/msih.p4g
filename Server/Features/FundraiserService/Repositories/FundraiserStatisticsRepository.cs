@@ -95,6 +95,42 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
             return profile?.ReferralCode;
         }
 
+        public async Task<List<FirstTimeDonorInfo>> GetReferralDonorsAsync(int fundraiserId)
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            // Get the donors from referral code
+            var fundraiser = await context.Fundraisers
+                .Include(f => f.User)
+                .ThenInclude(u => u.Profile)
+                .FirstOrDefaultAsync(f => f.Id == fundraiserId);
+
+            if (fundraiser == null || fundraiser.User?.Profile == null)
+            {
+                return new List<FirstTimeDonorInfo>();
+            }
+
+            var fundraiserReferralCode = fundraiser.User.Profile.ReferralCode;
+
+            // Get all donors with the fundraiser's referral code who have confirmed their email or made a donation
+
+
+            var donorsFromReferral = await context.Donors
+                .Where(d => d.ReferralCode == fundraiserReferralCode)
+                .Where(d => d.User.EmailConfirmedAt != null || d.Donations.Any())
+                .ToListAsync();
+
+
+            return donorsFromReferral.Select(ftd => new FirstTimeDonorInfo
+            {
+                DonorId = 0,
+                DonorName = "",
+                FirstDonationDate = ftd.CreatedOn,
+                FirstDonationAmount = ftd.UserId
+            }).OrderBy(x => x.FirstDonationDate).ToList();
+        }
+
+
         /// <inheritdoc />
         public async Task<List<FirstTimeDonorInfo>> GetFirstTimeDonorsAsync(int fundraiserId)
         {

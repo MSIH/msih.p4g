@@ -55,13 +55,16 @@ namespace msih.p4g.Client.Features.FundraiserManagement.Component
                 }
 
                 // Get fundraiser statistics (donations)
-                var statistics = await FundraiserStatsService.GetStatisticsAsync(FundraiserId);
+                var statistics = await FundraiserStatsService.GetReferralDonorsAsync(FundraiserId);
 
                 // Get payouts for this fundraiser
                 var payouts = await PayoutService.GetPayoutsByFundraiserIdAsync(FundraiserId.ToString());
 
                 // Calculate quarterly commissions
-                quarterlyCommissions = CalculateQuarterlyCommissions(statistics, payouts);
+                // quarterlyCommissions = CalculateQuarterlyCommissions(statistics, payouts);
+
+                // Calculate quarterly affiliate commissions
+                quarterlyCommissions = CalculateQuarterlyAffiliateCommissions(statistics, payouts);
             }
             catch (Exception ex)
             {
@@ -72,6 +75,81 @@ namespace msih.p4g.Client.Features.FundraiserManagement.Component
                 isLoading = false;
                 StateHasChanged();
             }
+        }
+
+
+        private List<QuarterlyCommission> CalculateQuarterlyAffiliateCommissions(List<FirstTimeDonorInfo> statistics, List<Payout> payouts)
+        {
+            var commissions = new List<QuarterlyCommission>();
+
+            if (statistics == null || !statistics.Any())
+            {
+                return commissions;
+            }
+
+            // Determine the starting date (fundraiser profile creation date or first donation)
+            var startDate = Profile?.CreatedOn ?? DateTime.Now;
+            var endDate = DateTime.Now;
+
+            // Generate quarters from start date to current date
+            var currentQuarter = new DateTime(startDate.Year, ((startDate.Month - 1) / 3) * 3 + 1, 1);
+            var cumulativeNewDonors = 0; // Track total new donors across all quarters
+            var totalCommissionPayouts = 0m;
+            var previousCommissionEarned = 0m; // Track previous quarter's total commission
+
+            while (currentQuarter <= endDate)
+            {
+                var quarterEnd = currentQuarter.AddMonths(3).AddDays(-1);
+                var quarter = (currentQuarter.Month - 1) / 3 + 1;
+
+                // Count new donors who made their first donation in this quarter
+                var newDonorsThisQuarter = statistics
+                    .Count(d => d.FirstDonationDate >= currentQuarter && d.FirstDonationDate <= quarterEnd);
+
+                // Update cumulative count of new donors
+                cumulativeNewDonors += newDonorsThisQuarter;
+
+                // Calculate total commission earned based on cumulative new donors
+                var currentTotalCommission = CalculateCommissionForDonorCount(cumulativeNewDonors);
+
+                // Calculate commission earned just this quarter (difference from previous total)
+                var quarterlyCommissionEarned = currentTotalCommission - previousCommissionEarned;
+
+                // Get payouts for this quarter
+                var quarterPayouts = payouts
+                    .Where(p => p.CreatedAt >= currentQuarter && p.CreatedAt <= quarterEnd)
+                    .ToList();
+
+                var payoutAmount = quarterPayouts.Sum(p => p.Amount);
+                var payoutDate = quarterPayouts.OrderByDescending(p => p.CreatedAt).FirstOrDefault()?.CreatedAt;
+                var payoutStatus = quarterPayouts.OrderByDescending(p => p.CreatedAt).FirstOrDefault()?.TransactionStatus.ToString();
+
+                totalCommissionPayouts += payoutAmount;
+
+                commissions.Add(new QuarterlyCommission
+                {
+                    Year = currentQuarter.Year,
+                    Quarter = quarter,
+                    StartDate = currentQuarter,
+                    EndDate = quarterEnd,
+                    QuarterlyDonations = 0, // Removed as this is no longer in use
+                    NewDonorsThisQuarter = newDonorsThisQuarter, // New property for new donors this quarter
+                    TotalNewDonors = cumulativeNewDonors, // New property for cumulative new donors
+                    TotalAnnualDonations = 0, // Not used in new structure, but keeping for compatibility
+                    CommissionEarned = currentTotalCommission, // Total commission earned up to this quarter
+                    QuarterlyCommissionEarned = quarterlyCommissionEarned, // Commission earned just this quarter
+                    PayoutAmount = payoutAmount,
+                    PayoutDate = payoutDate,
+                    PayoutStatus = payoutStatus ?? "NONE",
+                    TotalCommissionPayouts = totalCommissionPayouts
+                });
+
+                // Update previous commission for next iteration
+                previousCommissionEarned = currentTotalCommission;
+                currentQuarter = currentQuarter.AddMonths(3);
+            }
+
+            return commissions;
         }
 
         private List<QuarterlyCommission> CalculateQuarterlyCommissions(FundraiserStatistics statistics, List<Payout> payouts)

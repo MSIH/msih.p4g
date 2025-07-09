@@ -27,6 +27,8 @@ namespace msih.p4g.Server.Features.FundraiserService.Interfaces
         /// <returns>List of first-time donor information</returns>
         Task<List<FirstTimeDonorInfo>> GetFirstTimeDonorsAsync(int fundraiserId);
 
+        Task<List<FirstTimeDonorInfo>> GetReferralDonorsAsync(int fundraiserId);
+
 
     }
 }

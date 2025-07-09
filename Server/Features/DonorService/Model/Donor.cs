@@ -11,6 +11,7 @@
  */
 using msih.p4g.Server.Common.Models;
 using msih.p4g.Server.Features.DonationService.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace msih.p4g.Server.Features.DonorService.Model
 {
@@ -24,9 +25,13 @@ namespace msih.p4g.Server.Features.DonorService.Model
         public virtual Base.UserService.Models.User User { get; set; }
         public string? PaymentProcessorDonorId { get; set; }
 
+        [MaxLength(100)]
+        public string? ReferralCode { get; set; }
+
         /// <summary>
         /// Collection of donations made by this donor.
         /// </summary>
         public virtual ICollection<Donation> Donations { get; set; } = new List<Donation>();
+
     }
 }
