@@ -6,6 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+<ItemGroup>
+  <None Include="wwwroot\.well-known\**" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+</ItemGroup>
+
+<Target Name="CopyWellKnownFiles" AfterTargets="AfterPublish">
+  <ItemGroup>
+    <WellKnownFiles Include="wwwroot\.well-known\**\*" />
+  </ItemGroup>
+  <Copy SourceFiles="@(WellKnownFiles)" DestinationFolder="$(PublishDir)wwwroot\.well-known" SkipUnchangedFiles="false" />
+</Target>
+
   <ItemGroup>
     <Compile Remove="Client\Features\Base\Payment\Services\**" />
     <Compile Remove="Client\Features\DonationService\**" />
