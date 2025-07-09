@@ -45,6 +45,7 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.SimpleEmail" Version="4.0.0.9" />
     <PackageReference Include="Braintree" Version="5.33.0" />
+    <PackageReference Include="FontAwesome" Version="4.7.0" />
     <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="9.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />
@@ -67,7 +68,6 @@
   <ItemGroup>
     <Folder Include="Client\Features\Base\SmsService\Pages\" />
     <Folder Include="Client\Features\Base\W9FormManagement\Components\" />
-    <Folder Include="Server\Common\Data\Migrations\" />
     <Folder Include="Server\Common\Interfaces\" />
     <Folder Include="Server\Common\Services\" />
     <Folder Include="Server\Features\Base\ProfileService\Data\Migrations\" />

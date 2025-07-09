@@ -16,7 +16,8 @@
 
 <PageTitle>Login</PageTitle>
 
-<div class="container">
+
+<div class="container login-page">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow-sm mt-5">
@@ -30,7 +31,7 @@
                             @errorMessage
                         </div>
                     }
-                    
+
                     @if (!string.IsNullOrEmpty(successMessage))
                     {
                         <div class="alert alert-success" role="alert">
@@ -42,8 +43,8 @@
                         <DataAnnotationsValidator />
 
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email Address</label>
-                            <InputText id="email" @bind-Value="loginModel.Email" class="form-control" />
+                            <label for="email" class="form-label">We'll send you a login code to verify your email address</label>
+                            <InputText id="email" @bind-Value="loginModel.Email" class="form-control" placeholder="Enter your email address" />                      
                             <ValidationMessage For="@(() => loginModel.Email)" />
                         </div>
 
@@ -91,7 +92,7 @@
         {
             NavigationManager.NavigateTo("/");
         }
-        
+
         // Check for email verification token in the URL
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
         if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("token", out var token))
@@ -110,7 +111,7 @@
         {
             // Request login email with verification link if needed
             var (success, message) = await AuthService.RequestLoginEmailAsync(loginModel.Email);
-            
+
             if (success)
             {
                 successMessage = message;
@@ -139,17 +140,17 @@
             }
         }
     }
-    
+
     private async Task HandleLoginWithToken(string token)
     {
         // This would validate the login token and authenticate the user
         // For the MVP, this is a placeholder
-        
+
         // In a real implementation, you would:
         // 1. Validate the token
         // 2. Find the associated user
         // 3. Log them in
-        
+
         // For demo purposes, just show a message
         successMessage = "Login successful via email link!";
     }

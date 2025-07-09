@@ -3,7 +3,7 @@
 @page "/influencer"
 @namespace msih.p4g.Client.Features.UserManagement.Pages
 @using msih.p4g.Server.Features.Base.UserService.Models
-@using msih.p4g.Client.Common.Components
+
 
 <PageTitle>Register New User</PageTitle>
 
@@ -58,57 +58,16 @@
                                 <ValidationMessage For="@(() => profile.LastName)" />
                             </div>
                         </div>
-                        @if (!isMarketer)
-                        {
-                            <h4 class="mt-4 mb-3">Profile Information</h4>
-                            <div class="mb-3">
-                                <label for="mobileNumber" class="form-label">Mobile Number</label>
-                                <InputText id="mobileNumber" @bind-Value="profile.MobileNumber" class="form-control" />
-                                <ValidationMessage For="@(() => profile.MobileNumber)" />
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Date of Birth</label>
-                                <div class="d-flex gap-2">
-                                    <InputSelect @bind-Value="month" class="form-select" style="width: 33%;">
-                                        <option value="">Month</option>
-                                        @for (int m = 1; m <= 12; m++)
-                                        {
-                                            <option value="@m">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)</option>
-                                        }
-                                    </InputSelect>
-                                    <InputSelect @bind-Value="day" class="form-select" style="width: 33%;">
-                                        <option value="">Day</option>
-                                        @for (int d = 1; d <= 31; d++)
-                                        {
-                                            <option value="@d">@d</option>
-                                        }
-                                    </InputSelect>
-                                    <InputSelect @bind-Value="year" class="form-select" style="width: 33%;">
-                                        <option value="">Year</option>
-                                        @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 120; y--)
-                                        {
-                                            <option value="@y">@y</option>
-                                        }
-                                    </InputSelect>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    <InputCheckbox id="consentEmail" @bind-Value="profile.ConsentReceiveEmail" class="form-check-input" disabled />
+                                    <label class="form-check-label" for="consentEmail">
+                                        I consent to receive emails
+                                    </label>
                                 </div>
                             </div>
-
-                            <div class="mb-3 form-check">
-                                <InputCheckbox id="consentEmail" @bind-Value="profile.ConsentReceiveEmail" class="form-check-input" disabled/>
-                                <label class="form-check-label" for="consentEmail">
-                                    I consent to receive emails
-                                </label>
-                            </div>
-
-                            <div class="mb-3 form-check">
-                                <InputCheckbox id="consentText" @bind-Value="profile.ConsentReceiveText" class="form-check-input" />
-                                <label class="form-check-label" for="consentText">
-                                    I consent to receive text messages
-                                </label>
-                            </div>
-                        }
-
+                        </div>
 
                         <div class="mb-3">
                             <button type="submit" class="btn btn-primary" disabled="@isProcessing">
@@ -126,53 +85,7 @@
                     </EditForm>
                     @if (isMarketer)
                     {
-                        <div class="mb-3">
-                            <div class="container">
-                                <h2>Marketing Fee Structure </h2>
-
-                                <p class="description">
-                                    A tiered Marketing Fee structure with three initial milestones, followed by recurring $35 fees for every additional $250 in donations. Fees are earned only when donation thresholds are fully reached.
-                                </p>
-
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Donation Threshold</th>
-                                            <th>Marketing Fees</th>
-                                            <th>Total Marketing Fees</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>$25</td>
-                                            <td>$5</td>
-                                            <td>$5</td>
-                                        </tr>
-                                        <tr>
-                                            <td>$100</td>
-                                            <td>$10</td>
-                                            <td>$15</td>
-                                        </tr>
-                                        <tr>
-                                            <td>$250</td>
-                                            <td>$20</td>
-                                            <td>$35</td>
-                                        </tr>
-                                        <tr>
-                                            <td>$500</td>
-                                            <td>$35</td>
-                                            <td>$70</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-
-                                <div class="example">
-                                    <p>The first three levels offer increasing rewards as you build momentum. Once you hit $250, the pattern becomes straightforward - you receive a marketing fee of $35 for every additional $250 in donations. </p>
-                                    <p>If you generate an annual donation of $777, you will receive a marketing fee of $105 because you've completed all three initial levels ($25, $100, and $250) and two $250 levels but haven't reached the $1000 milestone yet.</p>
-                                    <p>If you generate an annual donation of $5000, you will receive a marketing fee of $700. If you generate an annual donation of $50,000, you will receive a marketing fee of $7,000. If you generate an annual donation of $150,000, you will receive a marketing fee of $21,000.</p>
-                                </div>
-                            </div>
-                        </div>
+                        <AffiliateCommissionTable />
                     }
                 </div>
             }

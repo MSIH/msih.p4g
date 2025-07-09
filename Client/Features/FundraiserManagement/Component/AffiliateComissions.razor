@@ -1,0 +1,125 @@
+
+
+<div class= "affiliate-commissions mb-4" >
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Affiliate Commission Earnings</h3>
+            <p class="text-muted mb-0">Quarterly breakdown of your affiliate commission earnings</p>
+        </div>
+        <div class="card-body">
+            @if (isLoading)
+            {
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+            else if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">
+                    @errorMessage
+                </div>
+            }
+            else
+            {
+                <AffiliateCommissionTable />
+                
+                <div class="quarterly-breakdown">
+                    <h5>Quarterly Commission Breakdown</h5>
+                    @if (quarterlyCommissions.Count == 0)
+                    {
+                        <div class="alert alert-info">
+                            <p class="mb-0">No commission data available yet. Start sharing your referral link to generate donations and earn commissions!</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Quarter</th>
+                                        <th class="text-end">Cumulative New Users</th>                              
+                                        <th class="text-end">Cumulative Commissions</th>
+                                        <th class="text-end">Commission Payouts</th>
+                                        <th>Payout Date</th>
+                                        <th class="text-end">Cumulative Commission Payouts</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var quarter in quarterlyCommissions.OrderBy(q => q.StartDate))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@quarter.StartDate.ToString("MMM d") - @quarter.EndDate.ToString("MMM d, yyyy")</strong>
+                                                <br>
+                                                @*  <small class="text-muted">@quarter.StartDate.ToString("MMM d") - @quarter.EndDate.ToString("MMM d, yyyy")</small> *@
+                                            </td>
+                                            <td class="text-end">@quarter.TotalNewDonors</td>
+                                            <td class="text-end">
+                                                $@quarter.CommissionEarned.ToString("N2")                                               
+                                            </td>
+                                            <td class="text-end">
+                                                <span class="fw-bold text-success">$@quarter.QuarterlyCommissionEarned.ToString("N2")</span>
+                                            @* @if (quarter.CommissionEarned > 0)
+                                            {
+                                                <br>
+                                                <small class="text-muted">Based on $@quarter.QuarterlyDonations.ToString("N2") this quarter</small>
+                                            } *@
+                                            </td>
+                                            @* <td class="text-end">
+                                                @if (quarter.PayoutAmount > 0)
+                                                {
+                                                    <span class="fw-bold text-success">$@quarter.PayoutAmount.ToString("N2")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">$0.00</span>
+                                                }
+                                            </td> *@
+                                            <td>
+                                                @if (quarter.PayoutDate.HasValue)
+                                                {
+                                                    <span>@quarter.PayoutDate.Value.ToString("MMM d, yyyy")</span>
+                                                    @if (quarter.PayoutStatus == "PENDING")
+                                                    {
+                                                        <br><small class="badge bg-warning">Pending</small>
+                                                    }
+                                                    else if (quarter.PayoutStatus == "SUCCESS")
+                                                    {
+                                                        <br><small class="badge bg-success">Paid</small>
+                                                    }
+                                                    else if (quarter.PayoutStatus == "FAILED")
+                                                    {
+                                                        <br><small class="badge bg-danger">Failed</small>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    @if (quarter.CommissionEarned > 0)
+                                                    {
+                                                        var nextPayoutDate = GetNextPayoutDate(quarter.Year, quarter.Quarter);
+                                                        <span class="text-muted">@nextPayoutDate.ToString("MMM d, yyyy")</span>
+                                                        <br><small class="text-muted">Expected</small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">N/A</span>
+                                                    }
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                <span class="fw-bold">$@quarter.TotalCommissionPayouts.ToString("N2")</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

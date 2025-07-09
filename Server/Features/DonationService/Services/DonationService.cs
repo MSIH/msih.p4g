@@ -4,7 +4,6 @@
 //  * Unauthorized copying, modification, distribution, or use is prohibited.
 //  */
 
-using Microsoft.Extensions.Logging;
 using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Models;
@@ -17,6 +16,7 @@ using msih.p4g.Server.Features.DonationService.Interfaces;
 using msih.p4g.Server.Features.DonationService.Models;
 using msih.p4g.Server.Features.DonorService.Interfaces;
 using msih.p4g.Server.Features.DonorService.Model;
+using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Features.DonationService.Services
 {
@@ -65,6 +65,82 @@ namespace msih.p4g.Server.Features.DonationService.Services
         private decimal CalculateTransactionFee(decimal amount)
         {
             return Math.Round(amount * _transactionFeePercentage + _transactionFeeFlat, 2);
+        }
+
+        public async Task<DonorRegistrationResultType> ProcessDonorRegistrationAsync(DonationRequestDto dto)
+        {
+            bool donorCreated = false;
+            bool error = false;
+            try
+            {
+                // 1. Find user with needed navigation properties
+                var user = await _userRepository.GetByEmailAsync(
+                    email: dto.Email,
+                    includeProfile: true,
+                    includeAddress: true,
+                    includeDonor: true,
+                    includeFundraiser: false);
+
+                if (user == null)
+                {
+                    // Create new user and profile in a single coordinated operation
+                    user = new User
+                    {
+                        Email = dto.Email,
+                        Role = UserRole.Donor
+                    };
+
+                    var profile = new Profile
+                    {
+                        FirstName = dto.FirstName,
+                        LastName = dto.LastName,
+                        Address = dto.Address,
+                        MobileNumber = dto.Mobile
+                    };
+
+                    // The UserProfileService handles setting the UserId and generating the referral code
+                    profile = await _userProfileService.CreateUserWithProfileAsync(user, profile, "DonationService");
+
+                    // Create donor for the new user
+                    var donor = new Donor
+                    {
+                        UserId = user.Id,
+                        IsActive = true,
+                        CreatedBy = "DonationService",
+                        CreatedOn = DateTime.UtcNow,
+                        ReferralCode = dto.ReferralCode
+                    };
+                    donor = await _donorService.AddAsync(donor);
+
+                    donorCreated = true;
+                }
+            }
+
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Error processing donor registration for email {Email}. Error: {ErrorMessage}",
+                    dto.Email, ex.Message);
+                error = true;
+
+                // You might want to return a specific error result type or rethrow
+                // depending on your error handling strategy
+
+            }
+
+            // Return appropriate result based on what was done
+            if (donorCreated)
+            {
+                return DonorRegistrationResultType.NewCreated;
+            }
+            else if (error)
+            {
+                return DonorRegistrationResultType.Error;
+            }
+            else
+            {
+                return DonorRegistrationResultType.ExistingFound;
+            }
         }
 
         /// <summary>
@@ -150,7 +226,8 @@ namespace msih.p4g.Server.Features.DonationService.Services
                     UserId = user.Id,
                     IsActive = true,
                     CreatedBy = "DonationService",
-                    CreatedOn = DateTime.UtcNow
+                    CreatedOn = DateTime.UtcNow,
+                    ReferralCode = dto.ReferralCode
                 };
                 donor = await _donorService.AddAsync(donor);
             }
@@ -227,22 +304,22 @@ namespace msih.p4g.Server.Features.DonationService.Services
 
                 if (emailSent)
                 {
-                    _logger.LogInformation("Thank you email sent successfully to donor {Email} for donation ID {DonationId}", 
+                    _logger.LogInformation("Thank you email sent successfully to donor {Email} for donation ID {DonationId}",
                         user.Email, donation.Id);
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to send thank you email to donor {Email} for donation ID {DonationId}. Email service returned false.", 
+                    _logger.LogWarning("Failed to send thank you email to donor {Email} for donation ID {DonationId}. Email service returned false.",
                         user.Email, donation.Id);
                 }
             }
             catch (Exception ex)
             {
                 // Log the error but don't fail the donation process
-                _logger.LogError(ex, 
-                    "Error sending thank you email to donor {Email} for donation ID {DonationId}. Donation was processed successfully but email notification failed.", 
+                _logger.LogError(ex,
+                    "Error sending thank you email to donor {Email} for donation ID {DonationId}. Donation was processed successfully but email notification failed.",
                     user.Email, donation.Id);
-                
+
                 // Optionally, you could store this failure for retry later
                 // The donation itself was successful, so we don't want to throw an exception here
             }
