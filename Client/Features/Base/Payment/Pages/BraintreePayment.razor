@@ -518,25 +518,23 @@
             await LoadAllCampaignAsync();
             await LoadReferrerAsync();
 
-            // After all campaigns are loaded, set the selected campaign if CampaignId is present
-            if (CampaignId.HasValue && campaigns.Any())
+            // Find the appropriate campaign
+            if (CampaignId.HasValue)
             {
-                selectedCampaignId = CampaignId.Value;
                 campaign = campaigns.FirstOrDefault(c => c.Id == CampaignId.Value);
-                if (campaign != null)
-                {
-                    donationRequest.CampaignCode = campaign.Id.ToString();
-                }
             }
-            else if (campaigns.Any())
+
+            // Fall back to default if no specific campaign found
+            if (campaign == null)
             {
-                // Optionally, select the default campaign if no CampaignId is provided
-                campaign = campaigns.FirstOrDefault(c => c.IsDefault) ?? campaigns.First();
-                selectedCampaignId = campaign?.Id;
-                if (campaign != null)
-                {
-                    donationRequest.CampaignCode = campaign.Id.ToString();
-                }
+                campaign = campaigns.FirstOrDefault(c => c.IsDefault) ?? campaigns.FirstOrDefault();
+            }
+
+            selectedCampaignId = campaign?.Id;
+
+            if (campaign != null)
+            {
+                donationRequest.CampaignCode = campaign.Id.ToString();
             }
         }
         catch (Exception ex)
