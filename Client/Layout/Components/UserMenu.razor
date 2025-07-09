@@ -69,6 +69,7 @@
         {
             <li><a class="dropdown-item" href="/profile">My Profile</a></li>
             <li><a class="dropdown-item" href="/donations">My Donations</a></li>
+            <li><a class="dropdown-item" href="/fundraiser">My Fundraiser</a></li>
             @if (userWithProfile?.Role == UserRole.Fundraiser || userWithProfile?.Role == UserRole.Admin) // Updated to use userWithProfile
             {
                 <li><a class="dropdown-item" href="/affiliate">Affiliate Dashboard</a></li>
