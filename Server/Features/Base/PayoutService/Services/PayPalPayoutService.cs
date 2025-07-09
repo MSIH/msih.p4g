@@ -243,6 +243,14 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Services
         }
 
         /// <summary>
+        /// Get all payouts for a fundraiser
+        /// </summary>
+        public async Task<List<Payout>> GetPayoutsByFundraiserIdAsync(string fundraiserId)
+        {
+            return await _payoutRepository.GetPayoutsByFundraiserIdAsync(fundraiserId);
+        }
+
+        /// <summary>
         /// Updates the status of all payouts in a batch by querying PayPal for the current status
         /// </summary>
         /// <param name="batchId">The PayPal batch ID</param>

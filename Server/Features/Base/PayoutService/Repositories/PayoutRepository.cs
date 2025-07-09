@@ -75,6 +75,26 @@ namespace msih.p4g.Server.Features.Base.PayoutService.Repositories
         }
 
         /// <summary>
+        /// Get all Payouts for a specific fundraiser
+        /// </summary>
+        public async Task<List<Payout>> GetPayoutsByFundraiserIdAsync(string fundraiserId)
+        {
+            try
+            {
+                using var context = await _contextFactory.CreateDbContextAsync();
+                return await context.Set<Payout>()
+                    .Where(p => p.FundraiserId == fundraiserId)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting all Payouts for fundraiser {FundraiserId}", fundraiserId);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// Get Payouts by batch ID
         /// </summary>
         public async Task<List<Payout>> GetPayoutsByBatchIdAsync(string batchId)
