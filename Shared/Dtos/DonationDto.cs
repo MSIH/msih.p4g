@@ -26,10 +26,9 @@ namespace msih.p4g.Shared.Dtos
         public string? DonationMessage { get; set; }
         public string? ReferralCode { get; set; }
         public string? CampaignCode { get; set; }
+        public string? CampaignName { get; set; } // <-- Add this property
         public DateTime CreatedOn { get; set; }
         public bool IsActive { get; set; }
-
-
 
         /// <summary>
         /// Computed property for display purposes
