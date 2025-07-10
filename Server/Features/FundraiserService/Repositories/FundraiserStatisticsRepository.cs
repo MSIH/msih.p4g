@@ -74,7 +74,7 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
                 Donations = donations.Select(d => new DonationInfo
                 {
                     Id = d.Id,
-                    DonorName = $"{d.Donor.User.Profile.FirstName} {d.Donor.User.Profile.LastName}",
+                    DonorName = $"{d.Donor.User.Profile.FirstName} {(!string.IsNullOrEmpty(d.Donor.User.Profile.LastName) ? d.Donor.User.Profile.LastName[0] + "." : "")}",
                     Amount = d.DonationAmount,
                     DonationDate = d.CreatedOn,
                     Message = d.DonationMessage ?? string.Empty,
