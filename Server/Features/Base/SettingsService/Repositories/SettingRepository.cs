@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -6,6 +12,7 @@
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Repositories;
+using msih.p4g.Server.Common.Interfaces;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.SettingsService.Model;
 
@@ -20,7 +27,9 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Repositories
         /// Initializes a new instance of the SettingRepository class
         /// </summary>
         /// <param name="contextFactory">The database context factory</param>
-        public SettingRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
+        public SettingRepository(IDbContextFactory<ApplicationDbContext> contextFactory,
+        ICacheStrategy cacheStrategy)
+        : base(contextFactory, cacheStrategy)
         {
         }
 
