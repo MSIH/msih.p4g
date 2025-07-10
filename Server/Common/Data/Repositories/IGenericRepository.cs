@@ -37,7 +37,7 @@ namespace msih.p4g.Server.Common.Data.Repositories
         /// <param name="id">The entity ID</param>
         /// <param name="includeInactive">Whether to include inactive entities</param>
         /// <returns>The entity with the specified ID, or null if not found</returns>
-        Task<TEntity> GetByIdAsync(int id, bool includeInactive = false);
+        Task<TEntity?> GetByIdAsync(int id, bool includeInactive = false);
         
         /// <summary>
         /// Adds a new entity
