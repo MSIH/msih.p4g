@@ -42,7 +42,7 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         /// <summary>
         /// Gets donations by donor ID.
         /// </summary>
-        Task<List<Donation>> GetByDonorIdAsync(int donorId);
+        Task<List<Donation>> GetByDonorIdAsync(int donorId, bool includeCampaignName);
 
         /// <summary>
         /// Gets donations for a specific user by email.

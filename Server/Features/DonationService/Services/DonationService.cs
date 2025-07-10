@@ -14,6 +14,7 @@ using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
 using msih.p4g.Server.Features.DonationService.Interfaces;
 using msih.p4g.Server.Features.DonationService.Models;
+using msih.p4g.Server.Features.DonationService.Repositories;
 using msih.p4g.Server.Features.DonorService.Interfaces;
 using msih.p4g.Server.Features.DonorService.Model;
 using msih.p4g.Shared.Models;
@@ -28,7 +29,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
         private readonly IUserRepository _userRepository;
         private readonly IProfileService _profileService;
         private readonly IDonorService _donorService;
-        private readonly IDonationRepository _donationRepository;
+        private readonly DonationRepository _donationRepository;
         private readonly IPaymentService _paymentService;
         private readonly IUserProfileService _userProfileService;
         private readonly IMessageService _messageService;
@@ -43,7 +44,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             IUserRepository userRepository,
             IProfileService profileService,
             IDonorService donorService,
-            IDonationRepository donationRepository,
+            DonationRepository donationRepository,
             IPaymentService paymentService,
             IUserProfileService userProfileService,
             IMessageService messageService,
@@ -358,8 +359,14 @@ namespace msih.p4g.Server.Features.DonationService.Services
         /// <summary>
         /// Gets donations by donor ID.
         /// </summary>
-        public async Task<List<Donation>> GetByDonorIdAsync(int donorId)
+        public async Task<List<Donation>> GetByDonorIdAsync(int donorId, bool includeCampaignName = false)
         {
+            if (includeCampaignName)
+            {
+                // If we need to include campaign name, we can use the repository method that supports it
+                var donation = await _donationRepository.GetByDonorIdAsync(donorId, includeCampaignName);
+                return donation != null ? new List<Donation> { donation } : new List<Donation>();
+            }
             var donations = await _donationRepository.FindAsync(d => d.DonorId == donorId);
             return donations.ToList();
         }
