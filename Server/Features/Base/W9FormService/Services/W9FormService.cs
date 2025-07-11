@@ -308,6 +308,8 @@ namespace msih.p4g.Server.Features.Base.W9FormService.Services
             {
                 Id = entity.Id,
                 Name = entity.Name,
+                FirstName = entity.FirstName,
+                LastName = entity.LastName,
                 BusinessName = entity.BusinessName,
                 FederalTaxClassification = entity.FederalTaxClassification,
                 LLCTaxClassification = entity.LLCTaxClassification,
@@ -335,6 +337,8 @@ namespace msih.p4g.Server.Features.Base.W9FormService.Services
         private void MapToEntity(W9FormDto dto, W9Form entity)
         {
             entity.Name = dto.Name;
+            entity.FirstName = dto.FirstName;
+            entity.LastName = dto.LastName;
             entity.BusinessName = dto.BusinessName;
             entity.FederalTaxClassification = dto.FederalTaxClassification;
             entity.LLCTaxClassification = dto.LLCTaxClassification;

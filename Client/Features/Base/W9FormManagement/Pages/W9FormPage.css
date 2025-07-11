@@ -1,0 +1,4 @@
+.validation-message {
+  color: #dc3545; /* Bootstrap's "danger" red */
+  font-size: 0.95em;
+}

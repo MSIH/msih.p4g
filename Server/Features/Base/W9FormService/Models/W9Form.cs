@@ -10,7 +10,6 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Common.Models;
-using msih.p4g.Server.Features.Base.ProfileService.Model;
 using System.ComponentModel.DataAnnotations;
 
 namespace msih.p4g.Server.Features.Base.W9FormService.Models
@@ -136,7 +135,5 @@ namespace msih.p4g.Server.Features.Base.W9FormService.Models
         [Required]
         [MaxLength(50)]
         public string Status { get; set; } = "Draft";
-
-        public Profile? Profile { get; set; }
     }
 }
