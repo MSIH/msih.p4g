@@ -25,7 +25,7 @@ namespace msih.p4g.Shared.W9FormService.Dtos
 
         /// <summary>
         /// Name of entity/individual as shown on tax return
-        /// depreciated: use FirstName and LastName instead
+        /// deprecated: use FirstName and LastName instead
         /// </summary>
         [Required(ErrorMessage = "Name is required")]
         [MaxLength(200, ErrorMessage = "Name cannot exceed 200 characters")]
