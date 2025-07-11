@@ -200,39 +200,8 @@ namespace msih.p4g.Server.Common.Data.Repositories
 
         public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, bool includeInactive = false)
         {
-            string? keyValue = null;
-
-            // Special handling for Setting entity and s => s.Key == key
-            if (typeof(T).Name == "Setting" && predicate.Body is BinaryExpression binaryExpr)
-            {
-                if (binaryExpr.Left is MemberExpression memberExpr && memberExpr.Member.Name == "Key")
-                {
-                    object? value = null;
-                    if (binaryExpr.Right is ConstantExpression constExpr)
-                    {
-                        value = constExpr.Value;
-                    }
-                    else if (binaryExpr.Right is MemberExpression rightMember)
-                    {
-                        // Handles closure variables (e.g., s => s.Key == key)
-                        var objectMember = Expression.Convert(rightMember, typeof(object));
-                        var getterLambda = Expression.Lambda<Func<object>>(objectMember);
-                        value = getterLambda.Compile().Invoke();
-                    }
-                    keyValue = value?.ToString();
-                }
-            }
-
-            string cacheKey;
-            if (keyValue != null)
-            {
-                cacheKey = $"{_entityTypeName}:Find:Key:{keyValue}:IncludeInactive:{includeInactive}";
-            }
-            else
-            {
-                var predicateHash = predicate.ToString().GetHashCode().ToString();
-                cacheKey = GetCacheKeyForFind(predicateHash, includeInactive);
-            }
+            var predicateHash = predicate.ToString().GetHashCode().ToString();
+            var cacheKey = GetCacheKeyForFind(predicateHash, includeInactive);
 
             if (_cacheStrategy != null)
             {
