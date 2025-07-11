@@ -8,9 +8,11 @@
 @using msih.p4g.Server.Features.Base.UserService.Models
 @using msih.p4g.Server.Features.Base.UserService.Interfaces
 @using msih.p4g.Client.Features.Authentication.Services
+@using msih.p4g.Server.Features.Base.UserProfileService.Interfaces
 @inject IUserService UserService
 @inject NavigationManager NavigationManager
 @inject AuthService AuthService
+@inject IUserProfileService UserProfileService
 @implements IDisposable
 
 <style>
@@ -37,26 +39,26 @@
             background: rgba(255, 255, 255, 1);
         }
 
-    /* Alternative orange button style for non-orange backgrounds */
-    .user-menu-btn.orange-style {
-        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffab00 100%);
-        border: 2px solid #ff6b35;
-        color: white;
-        font-weight: 500;
-    }
-
-        .user-menu-btn.orange-style:hover {
-            background: linear-gradient(135deg, #e55a2b 0%, #e8851a 50%, #e69900 100%);
-            border-color: #e55a2b;
+        /* Alternative orange button style for non-orange backgrounds */
+        .user-menu-btn.orange-style {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffab00 100%);
+            border: 2px solid #ff6b35;
             color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+            font-weight: 500;
         }
 
-        .user-menu-btn.orange-style:focus {
-            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.5);
-            color: white;
-        }
+            .user-menu-btn.orange-style:hover {
+                background: linear-gradient(135deg, #e55a2b 0%, #e8851a 50%, #e69900 100%);
+                border-color: #e55a2b;
+                color: white;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(255, 107, 53, 0.3);
+            }
+
+            .user-menu-btn.orange-style:focus {
+                box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.5);
+                color: white;
+            }
 </style>
 
 <div class="dropdown">
@@ -83,7 +85,7 @@
                 <li><a class="dropdown-item" href="/users">User Management</a></li>
                 <li><a class="dropdown-item" href="/admin/donors">Donor Management</a></li>
                 <li><a class="dropdown-item" href="/admin/profiles">Profile Management</a></li>
-         @* Added Profile Management link *@
+                @* Added Profile Management link *@
                 <li><a class="dropdown-item" href="/admin/campaigns">Campaign Management</a></li>
                 <li><a class="dropdown-item" href="/admin/settings">Admin Settings</a></li>
                 <li><a class="dropdown-item" href="/admin/phone-validation">Phone Validation</a></li>
@@ -110,9 +112,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        AuthService.AuthStateChanged += OnAuthStateChanged;
+        AuthService.AuthStateChanged += OnStateChanged;
+        UserProfileService.OnProfileChanged += OnStateChanged;
 
-        // Don't try to initialize auth state here during prerendering
         // Load user with profile data if already authenticated
         await LoadUserWithProfileAsync();
     }
@@ -125,8 +127,7 @@
             if (!AuthService.IsAuthenticated && !AuthService.IsInitialized)
             {
                 await AuthService.InitializeAuthenticationStateAsync();
-                await LoadUserWithProfileAsync();
-                StateHasChanged(); // Trigger a re-render if auth state changed
+                OnStateChanged();
             }
         }
     }
@@ -157,7 +158,7 @@
         }
     }
 
-    private async void OnAuthStateChanged()
+    private async void OnStateChanged()
     {
         // Reload user profile when auth state changes
         await LoadUserWithProfileAsync();
@@ -174,6 +175,7 @@
     public void Dispose()
     {
         // Unsubscribe from the event when the component is disposed
-        AuthService.AuthStateChanged -= OnAuthStateChanged;
+        AuthService.AuthStateChanged -= OnStateChanged;
+        UserProfileService.OnProfileChanged -= OnStateChanged;
     }
 }

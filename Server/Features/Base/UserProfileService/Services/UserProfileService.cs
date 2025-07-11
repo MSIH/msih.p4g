@@ -22,6 +22,7 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Services
         private readonly IUserService _userService;
         private readonly IProfileService _profileService;
         private readonly IFundraiserService _fundraiserService;
+        public event Action? OnProfileChanged;
 
         public UserProfileService(
             IUserService userService,
@@ -92,8 +93,10 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Services
         /// <returns>The updated profile</returns>
         public async Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "System")
         {
-            // Update the profile using the profile service
-            return await _profileService.UpdateAsync(profile, modifiedBy);
+            // Update the profile using the profile service            
+            var updatedProfile = await _profileService.UpdateAsync(profile, modifiedBy);
+            OnProfileChanged?.Invoke();
+            return updatedProfile;
         }
     }
 }
