@@ -164,6 +164,8 @@ builder.Services.AddScoped<CampaignDataSeeder>();
 
 builder.Services.AddScoped<AdminInitializationService>();
 
+builder.Services.AddScoped<msih.p4g.Server.Common.Interfaces.ICacheStrategy, msih.p4g.Server.Common.Services.MemoryCacheStrategy>();
+
 var app = builder.Build();
 
 // Apply pending migrations and create database/tables if needed
