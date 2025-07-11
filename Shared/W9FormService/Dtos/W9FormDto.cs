@@ -32,7 +32,7 @@ namespace msih.p4g.Shared.W9FormService.Dtos
         public string Name { get; set; }
 
         [Required(ErrorMessage = "First name is required")]
-        [MaxLength(100, ErrorMessage = "First name cannot exceed 100 characters")]
+        [MaxLength(200, ErrorMessage = "First name cannot exceed 200 characters")]
         public string FirstName { get; set; }
 
         [Required(ErrorMessage = "Last name is required")]
