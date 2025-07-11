@@ -5,8 +5,8 @@
 //  */
 
 using Microsoft.EntityFrameworkCore;
-using msih.p4g.Server.Common.Models;
 using msih.p4g.Server.Common.Interfaces;
+using msih.p4g.Server.Common.Models;
 using System.Linq.Expressions;
 
 namespace msih.p4g.Server.Common.Data.Repositories
@@ -200,11 +200,42 @@ namespace msih.p4g.Server.Common.Data.Repositories
 
         public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, bool includeInactive = false)
         {
-            // Try cache first if strategy is available
-            if (_cacheStrategy != null)
+            string? keyValue = null;
+
+            // Special handling for Setting entity and s => s.Key == key
+            if (typeof(T).Name == "Setting" && predicate.Body is BinaryExpression binaryExpr)
+            {
+                if (binaryExpr.Left is MemberExpression memberExpr && memberExpr.Member.Name == "Key")
+                {
+                    object? value = null;
+                    if (binaryExpr.Right is ConstantExpression constExpr)
+                    {
+                        value = constExpr.Value;
+                    }
+                    else if (binaryExpr.Right is MemberExpression rightMember)
+                    {
+                        // Handles closure variables (e.g., s => s.Key == key)
+                        var objectMember = Expression.Convert(rightMember, typeof(object));
+                        var getterLambda = Expression.Lambda<Func<object>>(objectMember);
+                        value = getterLambda.Compile().Invoke();
+                    }
+                    keyValue = value?.ToString();
+                }
+            }
+
+            string cacheKey;
+            if (keyValue != null)
+            {
+                cacheKey = $"{_entityTypeName}:Find:Key:{keyValue}:IncludeInactive:{includeInactive}";
+            }
+            else
             {
                 var predicateHash = predicate.ToString().GetHashCode().ToString();
-                var cacheKey = GetCacheKeyForFind(predicateHash, includeInactive);
+                cacheKey = GetCacheKeyForFind(predicateHash, includeInactive);
+            }
+
+            if (_cacheStrategy != null)
+            {
                 var cachedEntities = await _cacheStrategy.GetAsync<List<T>>(cacheKey);
                 if (cachedEntities != null)
                 {
@@ -226,8 +257,6 @@ namespace msih.p4g.Server.Common.Data.Repositories
             // Cache the result if strategy is available
             if (_cacheStrategy != null)
             {
-                var predicateHash = predicate.ToString().GetHashCode().ToString();
-                var cacheKey = GetCacheKeyForFind(predicateHash, includeInactive);
                 await _cacheStrategy.SetAsync(cacheKey, entities);
             }
 
