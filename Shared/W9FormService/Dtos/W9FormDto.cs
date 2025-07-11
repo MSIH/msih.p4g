@@ -36,7 +36,7 @@ namespace msih.p4g.Shared.W9FormService.Dtos
         public string FirstName { get; set; }
 
         [Required(ErrorMessage = "Last name is required")]
-        [MaxLength(100, ErrorMessage = "Last name cannot exceed 100 characters")]
+        [MaxLength(200, ErrorMessage = "Last name cannot exceed 200 characters")]
         public string LastName { get; set; }
 
         /// <summary>
