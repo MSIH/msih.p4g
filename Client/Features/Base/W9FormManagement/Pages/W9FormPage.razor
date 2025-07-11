@@ -259,7 +259,7 @@
                                 </div>
                             </div>
 
-                            <div class="text-center my-3">OR</div>
+                            <div class="text my-3"><strong>Or</strong></div>
 
                             <div class="row mb-3">
                                 <div class="col-md-6">
@@ -324,14 +324,14 @@
                             }
                         </div>
                     </div>
-
+                    <div>
+                        @if (!isCertificationChecked)
+                        {
+                            <span class="text-danger">You must certify the form before saving.</span>
+                        }
+                    </div>
                     <div class="d-flex justify-content-start mb-4">
-                        <div>
-                            @if (!isCertificationChecked)
-                            {
-                                <span class="text-danger">You must certify the form before saving.</span>
-                            }
-                        </div>
+             
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary" disabled="@(!isCertificationChecked)">
                                 @if (IsSaving)
@@ -605,14 +605,19 @@
         }
     }
 }
-
+<!-- Style for the W-9 form page -->
 <style>
-    .w-9-form-container {
-        margin-bottom: 2rem;
-    }
+.w-9-form-container {
+  margin-bottom: 2rem;
+}
 
-    .w9-header {
-        text-align: center;
-        padding: 1rem 0;
-    }
+.w9-header {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.validation-message {
+  color: #dc3545; /* Bootstrap's "danger" red */
+  font-size: 0.95em;
+}
 </style>
