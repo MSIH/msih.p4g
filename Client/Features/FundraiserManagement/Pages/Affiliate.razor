@@ -59,9 +59,7 @@
                                 <div class="card-body">
                                     <div class="alert alert-info">
                                         <p class="mb-1">Share this link to track Affiliate:</p>
-                                        <ReferralLinkComponent 
-                                                               Profile="@profile"
-                                                
+                                        <ReferralLinkComponent Profile="@profile"
                                                                OnError="@HandleReferralLinkError"
                                                                OnUrlCopied="@HandleUrlCopied" />
                                     </div>
@@ -145,7 +143,7 @@
 
             @if (statistics != null)
             {
-@*                 <div class="card mb-4">
+                @*                 <div class="card mb-4">
                     <div class="card-header">
                         <h3 class="card-title">Donation Statistics</h3>
                     </div>
@@ -335,13 +333,7 @@
 
     private void NavigateToW9Form()
     {
-        if (fundraiser != null && fundraiser.Id > 0)
-        {
-            NavigationManager.NavigateTo($"/w9form/{fundraiser.Id}");
-        }
-        else
-        {
-            NavigationManager.NavigateTo("/w9form");
-        }
+        // Navigate to the W9 form page
+        NavigationManager.NavigateTo("/w9form");
     }
 }
