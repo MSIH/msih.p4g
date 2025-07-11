@@ -74,7 +74,7 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
                 Donations = donations.Select(d => new DonationInfo
                 {
                     Id = d.Id,
-                    DonorName = $"{d.Donor.User.Profile.FirstName} {d.Donor.User.Profile.LastName}",
+                    DonorName = $"{d.Donor.User.Profile.FirstName} {(!string.IsNullOrEmpty(d.Donor.User.Profile.LastName) ? d.Donor.User.Profile.LastName[0] + "." : "")}",
                     Amount = d.DonationAmount,
                     DonationDate = d.CreatedOn,
                     Message = d.DonationMessage ?? string.Empty,
@@ -113,13 +113,10 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
             var fundraiserReferralCode = fundraiser.User.Profile.ReferralCode;
 
             // Get all donors with the fundraiser's referral code who have confirmed their email or made a donation
-
-
             var donorsFromReferral = await context.Donors
                 .Where(d => d.ReferralCode == fundraiserReferralCode)
                 .Where(d => d.User.EmailConfirmedAt != null || d.Donations.Any())
                 .ToListAsync();
-
 
             return donorsFromReferral.Select(ftd => new FirstTimeDonorInfo
             {

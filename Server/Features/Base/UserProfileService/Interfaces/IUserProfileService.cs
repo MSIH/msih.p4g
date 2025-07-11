@@ -1,6 +1,11 @@
-using System.Threading.Tasks;
-using msih.p4g.Server.Features.Base.UserService.Models;
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 using msih.p4g.Server.Features.Base.ProfileService.Model;
+using msih.p4g.Server.Features.Base.UserService.Models;
 
 namespace msih.p4g.Server.Features.Base.UserProfileService.Interfaces
 {
@@ -17,7 +22,7 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Interfaces
         /// <param name="createdBy">Who created these records</param>
         /// <returns>The created profile with generated referral code</returns>
         Task<Profile> CreateUserWithProfileAsync(User user, Profile profile, string createdBy = "System");
-        
+
         /// <summary>
         /// Gets a user's profile by the user's email address
         /// </summary>
@@ -32,5 +37,10 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Interfaces
         /// <param name="modifiedBy">Who modified the profile</param>
         /// <returns>The updated profile</returns>
         Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "System");
+
+        /// <summary>
+        /// Event triggered when a profile is changed
+        /// </summary>
+        event Action? OnProfileChanged;
     }
 }
