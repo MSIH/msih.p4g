@@ -75,11 +75,11 @@ namespace msih.p4g.Server.Features.Base.W9FormService.Services
             try
             {
                 // Check if the user is accessing their own form or is an admin
-                if (!IsUserOrAdmin(userId))
-                {
-                    _logger.LogWarning("User attempted to access W9 form for user {UserId} without permission", userId);
-                    return null;
-                }
+                //if (!IsUserOrAdmin(userId))
+                //{
+                //    _logger.LogWarning("User attempted to access W9 form for user {UserId} without permission", userId);
+                //    return null;
+                //}
 
                 var w9Form = await _dbContext.W9Forms
                     .Where(w => w.UserId == userId)
@@ -117,12 +117,12 @@ namespace msih.p4g.Server.Features.Base.W9FormService.Services
                     return null;
                 }
 
-                // Check if user has access to this form
-                if (!await UserHasAccessToFormAsync(w9Form))
-                {
-                    _logger.LogWarning("User attempted to access W9 form for fundraiser {FundraiserId} without permission", fundraiserId);
-                    return null;
-                }
+                //// Check if user has access to this form
+                //if (!await UserHasAccessToFormAsync(w9Form))
+                //{
+                //    _logger.LogWarning("User attempted to access W9 form for fundraiser {FundraiserId} without permission", fundraiserId);
+                //    return null;
+                //}
 
                 return MapToDto(w9Form);
             }

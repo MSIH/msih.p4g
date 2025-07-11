@@ -1,9 +1,16 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using msih.p4g.Server.Common.Models;
+using msih.p4g.Server.Features.Base.ProfileService.Model;
 using System.ComponentModel.DataAnnotations;
 
 namespace msih.p4g.Server.Features.Base.W9FormService.Models
@@ -15,10 +22,17 @@ namespace msih.p4g.Server.Features.Base.W9FormService.Models
     {
         /// <summary>
         /// Name of entity/individual as shown on tax return
-        /// </summary>
+        /// deprecated: use FirstName and LastName instead
+        /// </summary>        
+        public string Name { get; set; }
+
         [Required]
         [MaxLength(200)]
-        public string Name { get; set; }
+        public string FirstName { get; set; }
+
+        [Required]
+        [MaxLength(200)]
+        public string LastName { get; set; }
 
         /// <summary>
         /// Business name/disregarded entity name, if different from above
@@ -110,7 +124,7 @@ namespace msih.p4g.Server.Features.Base.W9FormService.Models
         /// Associated fundraiser ID 
         /// </summary>
         public int? FundraiserId { get; set; }
-        
+
         /// <summary>
         /// Associated user ID for this W9
         /// </summary>
@@ -122,5 +136,7 @@ namespace msih.p4g.Server.Features.Base.W9FormService.Models
         [Required]
         [MaxLength(50)]
         public string Status { get; set; } = "Draft";
+
+        public Profile? Profile { get; set; }
     }
 }
