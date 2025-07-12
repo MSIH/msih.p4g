@@ -9,7 +9,6 @@
 @using msih.p4g.Client.Features.Donations.Components
 @using msih.p4g.Client.Features.Authentication.Services
 @using msih.p4g.Server.Features.DonationService.Interfaces
-@using msih.p4g.Server.Features.DonationService.Models
 @using msih.p4g.Shared.Dtos
 @inject IDonationService DonationService
 @inject AuthService AuthService
@@ -24,170 +23,10 @@
                 <h2 class="mb-0">My Donations</h2>
             </div>
 
-            <!-- Search and Filter Section -->
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search donations..."
-                               @bind="searchTerm" @bind:event="oninput" @onkeypress="OnSearchKeyPress" />
-                        <button class="btn btn-outline-secondary" type="button" @onclick="SearchDonations">
-                            <span class="oi oi-magnifying-glass"></span>
-                        </button>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <select class="form-select" @bind="filterType" @bind:after="FilterDonations">
-                        <option value="all">All Donations</option>
-                        <option value="onetime">One-time</option>
-                        <option value="monthly">Monthly</option>
-                        <option value="annual">Annual</option>
-                        <option value="recurring">All Recurring</option>
-                    </select>
-                </div>
-            </div>
-
-            @if (isLoading)
-            {
-                <!-- Loading State -->
-                <div class="d-flex justify-content-center p-4">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            }
-            else if (filteredDonations == null || !filteredDonations.Any())
-            {
-                <!-- No Donations Message -->
-                <div class="text-center p-5">
-                    <span class="oi oi-heart display-1 text-muted mb-3"></span>
-                    <h4 class="text-muted">No donations found</h4>
-                    <p class="text-muted">
-                        @if (!string.IsNullOrWhiteSpace(searchTerm))
-                        {
-                            <span>No donations match your search criteria.</span>
-                        }
-                        else
-                        {
-                            <span>You haven't made any donations yet.</span>
-                        }
-                    </p>
-                </div>
-            }
-            else
-            {
-                <!-- Donations List -->
-                <!-- Summary Cards -->
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <h5 class="card-title text-primary">@donations.Count</h5>
-                                <p class="card-text text-muted">Total Donations</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <h5 class="card-title text-success">$@donations.Sum(d => d.DonationAmount).ToString("F2")</h5>
-                                <p class="card-text text-muted">Total Donated</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <h5 class="card-title text-info">@donations.Count(d => d.IsMonthly)</h5>
-                                <p class="card-text text-muted">Monthly Donations</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <h5 class="card-title text-warning">@donations.Count(d => d.IsAnnual)</h5>
-                                <p class="card-text text-muted">Annual Donations</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Donations Table -->
-                <div class="card">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Amount</th>
-                                        <th>Type</th>
-                                        <th>Campaign</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var donation in filteredDonations.OrderByDescending(d => d.CreatedOn))
-                                    {
-                                        <tr>
-                                            <td>@donation.CreatedOn.ToString("MMM dd, yyyy")</td>
-                                            <td>
-                                                <strong>$@donation.DonationAmount.ToString("F2")</strong>
-                                                @if (donation.PayTransactionFee)
-                                                {
-                                                    <br />
-                                        
-                                                    <small class="text-muted">Total: $@donation.TotalAmount.ToString("F2")</small>
-                                                }
-                                            </td>
-                                            <td>
-                                                <span class="badge @GetRecurrenceBadgeClass(donation)">
-                                                    @donation.RecurrenceType
-                                                </span>
-                                            </td>
-                                            <td>
-                                                @if (!string.IsNullOrEmpty(donation.CampaignCode))
-                                                {
-                                                    <span class="badge bg-light text-dark">@donation.CampaignCode</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted">General</span>
-                                                }
-                                            </td>
-                                            <td>
-                                                @if (donation.IsMonthly || donation.IsAnnual)
-                                                {
-                                                    <span class="badge @(donation.IsActive ? "bg-success" : "bg-secondary")">
-                                                        @(donation.IsActive ? "Active" : "Paused")
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-info">Completed</span>
-                                                }
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewDonation(donation)">
-                                                    @if (donation.IsMonthly || donation.IsAnnual)
-                                                    {
-                                                        <span>Edit</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span>View</span>
-                                                    }
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            }
+            <!-- Donation History Component -->
+            <DonationHistoryComponent ShowSummary="true" 
+                                    ShowActions="true" 
+                                    OnDonationClick="ViewDonation" />
         </div>
     </div>
 </div>
@@ -200,108 +39,8 @@
                    OnCancel="CancelDonation" />
 
 @code {
-    private List<DonationDto> donations = new();
-    private List<DonationDto> filteredDonations = new();
-    private string searchTerm = string.Empty;
-    private string filterType = "all";
-    private bool isLoading = true;
     private bool showEditModal = false;
     private DonationDto? selectedDonation;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadDonations();
-    }
-
-    private async Task LoadDonations()
-    {
-        isLoading = true;
-        StateHasChanged();
-
-        try
-        {
-            if (AuthService.IsAuthenticated && !string.IsNullOrEmpty(AuthService.CurrentUser?.Email))
-            {
-                var serverDonations = await DonationService.GetByUserEmailAsync(AuthService.CurrentUser.Email);
-                donations = ConvertToDto(serverDonations);
-                ApplyFilters();
-            }
-            else
-            {
-                donations = new List<DonationDto>();
-                ApplyFilters();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading donations: {ex.Message}");
-            donations = new List<DonationDto>();
-            ApplyFilters();
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged();
-        }
-    }
-
-    private async Task SearchDonations()
-    {
-        if (string.IsNullOrWhiteSpace(searchTerm))
-        {
-            await LoadDonations();
-        }
-        else
-        {
-            isLoading = true;
-            StateHasChanged();
-
-            try
-            {
-                if (AuthService.IsAuthenticated && !string.IsNullOrEmpty(AuthService.CurrentUser?.Email))
-                {
-                    var serverDonations = await DonationService.SearchByUserEmailAsync(AuthService.CurrentUser.Email, searchTerm);
-                    donations = ConvertToDto(serverDonations);
-                    ApplyFilters();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error searching donations: {ex.Message}");
-            }
-            finally
-            {
-                isLoading = false;
-                StateHasChanged();
-            }
-        }
-    }
-
-    private async Task OnSearchKeyPress(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter")
-        {
-            await SearchDonations();
-        }
-    }
-
-    private void FilterDonations()
-    {
-        ApplyFilters();
-    }
-
-    private void ApplyFilters()
-    {
-        filteredDonations = filterType switch
-        {
-            "onetime" => donations.Where(d => !d.IsMonthly && !d.IsAnnual).ToList(),
-            "monthly" => donations.Where(d => d.IsMonthly).ToList(),
-            "annual" => donations.Where(d => d.IsAnnual).ToList(),
-            "recurring" => donations.Where(d => d.IsMonthly || d.IsAnnual).ToList(),
-            _ => donations.ToList()
-        };
-        StateHasChanged();
-    }
 
     private void ViewDonation(DonationDto donation)
     {
@@ -331,17 +70,11 @@
 
                 if (success)
                 {
-                    // Update the local donation object
-                    var localDonation = donations.FirstOrDefault(d => d.Id == donation.Id);
-                    if (localDonation != null)
-                    {
-                        localDonation.DonationAmount = donation.DonationAmount;
-                        localDonation.IsActive = donation.IsActive;
-                    }
-
                     CloseEditModal();
                     await JSRuntime.InvokeVoidAsync("alert", "Donation updated successfully!");
-                    ApplyFilters();
+                    
+                    // Refresh the component by triggering a reload
+                    StateHasChanged();
                 }
                 else
                 {
@@ -371,16 +104,11 @@
 
                     if (success)
                     {
-                        // Update the local donation object
-                        var localDonation = donations.FirstOrDefault(d => d.Id == donationId);
-                        if (localDonation != null)
-                        {
-                            localDonation.IsActive = false;
-                        }
-
                         CloseEditModal();
                         await JSRuntime.InvokeVoidAsync("alert", "Recurring donation cancelled successfully!");
-                        ApplyFilters();
+                        
+                        // Refresh the component by triggering a reload
+                        StateHasChanged();
                     }
                     else
                     {
@@ -394,33 +122,5 @@
             Console.WriteLine($"Error canceling donation: {ex.Message}");
             await JSRuntime.InvokeVoidAsync("alert", "An error occurred while canceling the donation.");
         }
-    }
-
-    private string GetRecurrenceBadgeClass(DonationDto donation)
-    {
-        return donation.RecurrenceType switch
-        {
-            "Monthly" => "bg-primary",
-            "Annual" => "bg-success",
-            _ => "bg-secondary"
-        };
-    }
-
-    private List<DonationDto> ConvertToDto(List<Donation> serverDonations)
-    {
-        return serverDonations.Select(d => new DonationDto
-        {
-            Id = d.Id,
-            DonationAmount = d.DonationAmount,
-            PayTransactionFee = d.PayTransactionFee,
-            PayTransactionFeeAmount = d.PayTransactionFeeAmount,
-            IsMonthly = d.IsMonthly,
-            IsAnnual = d.IsAnnual,
-            DonationMessage = d.DonationMessage,
-            ReferralCode = d.ReferralCode,
-            CampaignCode = d.CampaignCode,
-            CreatedOn = d.CreatedOn,
-            IsActive = d.IsActive
-        }).ToList();
     }
 }
