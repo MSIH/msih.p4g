@@ -64,18 +64,24 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
                 if (fundraiser == null || fundraiser.IsSuspended)
                     return false;
 
+                string? suspensionReason = null;
+
+                // Count unqualified accounts linked to this affiliate
+                var unqualifiedCountFirst = await CountUnqualifiedDonorsBeforeFirstDonationAsync(referralCode);
+
+                if (unqualifiedCountFirst == 2)
+                {
+                    // Suspend if first 2 accounts are unqualified
+                    suspensionReason = "First two accounts associated with affiliate are unqualified.";
+                }
+
                 // Count unqualified accounts linked to this affiliate
                 var unqualifiedCount = await CountUnqualifiedAccountsAsync(referralCode);
 
-                string? suspensionReason = null;
+
 
                 // Check suspension criteria
-                if (unqualifiedCount == 2)
-                {
-                    // Suspend if first 2 accounts are unqualified
-                    suspensionReason = "First two accounts associated with affiliate are unqualified (have not donated).";
-                }
-                else if (unqualifiedCount > 9)
+                if (unqualifiedCount > 9)
                 {
                     // Suspend if more than 9 unqualified accounts
                     suspensionReason = $"More than nine unqualified accounts ({unqualifiedCount}) are associated with affiliate.";
@@ -83,7 +89,7 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
 
                 if (!string.IsNullOrEmpty(suspensionReason))
                 {
-                    _logger.LogInformation("Suspending affiliate {ReferralCode} - Reason: {Reason}", 
+                    _logger.LogInformation("Suspending affiliate {ReferralCode} - Reason: {Reason}",
                         referralCode, suspensionReason);
 
                     // Suspend the affiliate
@@ -121,6 +127,33 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
             return unqualifiedCount;
         }
 
+
+        /// <summary>
+        /// Counts the number of donor accounts (with no donations) created before the first donor with a donation for a given referral code.
+        /// This helps identify if a referral code is being used to create accounts that do not donate.
+        /// </summary>
+        public async Task<int> CountUnqualifiedDonorsBeforeFirstDonationAsync(string referralCode)
+        {
+            if (string.IsNullOrEmpty(referralCode))
+                return 0;
+
+            // Get all donors with this referral code, ordered by creation date (assuming Id is incremental)
+            var donors = await _context.Donors
+                .Where(d => d.ReferralCode == referralCode && d.IsActive)
+                .OrderBy(d => d.Id)
+                .ToListAsync();
+
+            int count = 0;
+            foreach (var donor in donors)
+            {
+                if (donor.Donations.Any())
+                    break; // Stop at the first donor who made a donation
+                count++;
+            }
+
+            return count;
+        }
+
         /// <summary>
         /// Suspends an affiliate account
         /// </summary>
@@ -153,7 +186,7 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
             {
                 if (profile.User?.Email == null)
                 {
-                    _logger.LogWarning("Cannot send suspension notification - no email found for affiliate {ReferralCode}", 
+                    _logger.LogWarning("Cannot send suspension notification - no email found for affiliate {ReferralCode}",
                         profile.ReferralCode);
                     return false;
                 }
@@ -189,13 +222,13 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
                     htmlContent: htmlContent
                 );
 
-                _logger.LogInformation("Suspension notification sent to affiliate {ReferralCode} at {Email}", 
+                _logger.LogInformation("Suspension notification sent to affiliate {ReferralCode} at {Email}",
                     profile.ReferralCode, profile.User.Email);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error sending suspension notification to affiliate {ReferralCode}", 
+                _logger.LogError(ex, "Error sending suspension notification to affiliate {ReferralCode}",
                     profile.ReferralCode);
                 return false;
             }

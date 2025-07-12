@@ -4,6 +4,7 @@
 //  * Unauthorized copying, modification, distribution, or use is prohibited.
 //  */
 
+using msih.p4g.Server.Features.Base.AffiliateMonitoringService.Interfaces;
 using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Models;
@@ -17,7 +18,6 @@ using msih.p4g.Server.Features.DonationService.Models;
 using msih.p4g.Server.Features.DonorService.Interfaces;
 using msih.p4g.Server.Features.DonorService.Model;
 using msih.p4g.Shared.Models;
-using msih.p4g.Server.Features.Base.AffiliateMonitoringService.Interfaces;
 
 namespace msih.p4g.Server.Features.DonationService.Services
 {
@@ -127,8 +127,8 @@ namespace msih.p4g.Server.Features.DonationService.Services
                         }
                         catch (Exception affiliateEx)
                         {
-                            _logger.LogError(affiliateEx, 
-                                "Error checking affiliate suspension for referral code {ReferralCode}", 
+                            _logger.LogError(affiliateEx,
+                                "Error checking affiliate suspension for referral code {ReferralCode}",
                                 dto.ReferralCode);
                             // Don't fail the entire donor creation process for affiliate monitoring errors
                         }
@@ -252,22 +252,6 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 };
                 donor = await _donorService.AddAsync(donor);
                 newDonorCreated = true;
-
-                // Check affiliate suspension after donor creation
-                if (!string.IsNullOrEmpty(dto.ReferralCode))
-                {
-                    try
-                    {
-                        await _affiliateMonitoringService.CheckAffiliateAfterDonorCreationAsync(dto.ReferralCode);
-                    }
-                    catch (Exception affiliateEx)
-                    {
-                        _logger.LogError(affiliateEx, 
-                            "Error checking affiliate suspension for referral code {ReferralCode}", 
-                            dto.ReferralCode);
-                        // Don't fail the entire donation process for affiliate monitoring errors
-                    }
-                }
             }
 
             // Calculate transaction fee and total amount
