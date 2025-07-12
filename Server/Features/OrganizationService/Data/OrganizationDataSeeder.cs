@@ -58,7 +58,7 @@ namespace msih.p4g.Server.Features.OrganizationService.Data
                         MissionStatement = "Provide charitable and educational assistance to the general public to help them make a positive impact on the world.",
                         IsActive = true,
                         CreatedOn = DateTime.UtcNow,
-                        CreatedBy = "System"
+                        CreatedBy = "OrganizationService"
                     };
 
                     dbContext.Organizations.Add(organization);

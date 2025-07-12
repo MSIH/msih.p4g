@@ -93,7 +93,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                 return false;
 
             user.EmailConfirmed = false;
-            await _userRepository.UpdateAsync(user, "System");
+            await _userRepository.UpdateAsync(user, "UserService");
             return true;
         }
     }

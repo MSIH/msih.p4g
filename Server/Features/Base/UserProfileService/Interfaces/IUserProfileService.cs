@@ -21,7 +21,7 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Interfaces
         /// <param name="profile">The profile to create and associate with the user</param>
         /// <param name="createdBy">Who created these records</param>
         /// <returns>The created profile with generated referral code</returns>
-        Task<Profile> CreateUserWithProfileAsync(User user, Profile profile, string createdBy = "System");
+        Task<Profile> CreateUserWithProfileAsync(User user, Profile profile, string createdBy = "UserProfileService");
 
         /// <summary>
         /// Gets a user's profile by the user's email address

@@ -676,7 +676,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
             // Set audit properties
             template.CreatedOn = DateTime.UtcNow;
             template.IsActive = true;
-            template.CreatedBy = template.CreatedBy ?? "System";
+            template.CreatedBy = template.CreatedBy ?? "SettingService";
 
             // Create the template
             return await _templateRepository.AddAsync(template);

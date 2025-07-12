@@ -42,7 +42,7 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Services
         /// <param name="profile">The profile to create and associate with the user</param>
         /// <param name="createdBy">Who created these records</param>
         /// <returns>The created profile with generated referral code</returns>
-        public async Task<Profile> CreateUserWithProfileAsync(User user, Profile profile, string createdBy = "System")
+        public async Task<Profile> CreateUserWithProfileAsync(User user, Profile profile, string createdBy = "UserProfileService")
         {
             // Step 1: Create the user first to get the UserId
             var createdUser = await _userService.AddAsync(user, createdBy);

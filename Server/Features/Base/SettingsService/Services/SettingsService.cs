@@ -165,7 +165,7 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Services
                 foreach (var entry in entriesToRemove)
                 {
                     // Since ISettingRepository doesn't have Remove methods, we'll deactivate instead
-                    await _settingsRepository.SetActiveStatusAsync(entry.Id, false, "System");
+                    await _settingsRepository.SetActiveStatusAsync(entry.Id, false, "SettingsService");
                     removedCount++;
                 }
 
@@ -192,7 +192,7 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Services
             foreach (var entry in invalidEntries)
             {
                 // Deactivate invalid entries since we can't delete them
-                await _settingsRepository.SetActiveStatusAsync(entry.Id, false, "System");
+                await _settingsRepository.SetActiveStatusAsync(entry.Id, false, "SettingsService");
                 removedCount++;
             }
 
