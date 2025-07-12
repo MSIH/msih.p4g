@@ -11,6 +11,8 @@ using msih.p4g.Server.Features.Base.EmailService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
+using msih.p4g.Server.Features.FundraiserService.Interfaces;
+using msih.p4g.Server.Features.FundraiserService.Model;
 
 namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
 {
@@ -21,6 +23,7 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IProfileService _profileService;
+        private readonly IFundraiserService _fundraiserService;
         private readonly IUserService _userService;
         private readonly IEmailService _emailService;
         private readonly ILogger<AffiliateMonitoringService> _logger;
@@ -28,12 +31,14 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
         public AffiliateMonitoringService(
             ApplicationDbContext context,
             IProfileService profileService,
+            IFundraiserService fundraiserService,
             IUserService userService,
             IEmailService emailService,
             ILogger<AffiliateMonitoringService> logger)
         {
             _context = context;
             _profileService = profileService;
+            _fundraiserService = fundraiserService;
             _userService = userService;
             _emailService = emailService;
             _logger = logger;
@@ -49,9 +54,14 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
 
             try
             {
-                // Get the affiliate profile
-                var affiliate = await _profileService.GetByReferralCodeAsync(referralCode);
-                if (affiliate == null || affiliate.IsSuspended)
+                // Get the affiliate profile to get the user information
+                var affiliateProfile = await _profileService.GetByReferralCodeAsync(referralCode);
+                if (affiliateProfile == null)
+                    return false;
+
+                // Get the fundraiser record for this user
+                var fundraiser = await _fundraiserService.GetByUserIdAsync(affiliateProfile.UserId);
+                if (fundraiser == null || fundraiser.IsSuspended)
                     return false;
 
                 // Count unqualified accounts linked to this affiliate
@@ -77,10 +87,10 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
                         referralCode, suspensionReason);
 
                     // Suspend the affiliate
-                    await SuspendAffiliateAsync(affiliate, suspensionReason);
+                    await SuspendAffiliateAsync(fundraiser, suspensionReason);
 
                     // Send notification email
-                    await SendSuspensionNotificationAsync(affiliate, suspensionReason);
+                    await SendSuspensionNotificationAsync(affiliateProfile, fundraiser, suspensionReason);
 
                     return true;
                 }
@@ -114,22 +124,22 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
         /// <summary>
         /// Suspends an affiliate account
         /// </summary>
-        public async Task<bool> SuspendAffiliateAsync(Profile profile, string reason)
+        public async Task<bool> SuspendAffiliateAsync(Fundraiser fundraiser, string reason)
         {
             try
             {
-                profile.IsSuspended = true;
-                profile.SuspensionReason = reason;
-                profile.SuspendedDate = DateTime.UtcNow;
+                fundraiser.IsSuspended = true;
+                fundraiser.SuspensionReason = reason;
+                fundraiser.SuspendedDate = DateTime.UtcNow;
 
-                await _profileService.UpdateAsync(profile, "AffiliateMonitoringService");
+                await _fundraiserService.UpdateAsync(fundraiser);
 
-                _logger.LogInformation("Affiliate {ReferralCode} suspended successfully", profile.ReferralCode);
+                _logger.LogInformation("Affiliate fundraiser {FundraiserId} suspended successfully", fundraiser.Id);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error suspending affiliate {ReferralCode}", profile.ReferralCode);
+                _logger.LogError(ex, "Error suspending affiliate fundraiser {FundraiserId}", fundraiser.Id);
                 return false;
             }
         }
@@ -137,7 +147,7 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
         /// <summary>
         /// Sends suspension notification email to the affiliate
         /// </summary>
-        public async Task<bool> SendSuspensionNotificationAsync(Profile profile, string reason)
+        public async Task<bool> SendSuspensionNotificationAsync(Profile profile, Fundraiser fundraiser, string reason)
         {
             try
             {
@@ -160,7 +170,7 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
                         <p><strong>Reason:</strong> {reason}</p>
                         
                         <p>Your affiliate referral code: <strong>{profile.ReferralCode}</strong></p>
-                        <p>Suspension date: <strong>{profile.SuspendedDate:yyyy-MM-dd HH:mm:ss} UTC</strong></p>
+                        <p>Suspension date: <strong>{fundraiser.SuspendedDate:yyyy-MM-dd HH:mm:ss} UTC</strong></p>
                         
                         <p>If you believe this suspension was made in error or if you have any questions, 
                         please contact our support team for assistance.</p>

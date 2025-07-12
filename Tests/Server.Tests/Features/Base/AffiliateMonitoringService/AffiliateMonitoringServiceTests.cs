@@ -16,6 +16,8 @@ using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
 using msih.p4g.Server.Features.DonationService.Models;
 using msih.p4g.Server.Features.DonorService.Model;
+using msih.p4g.Server.Features.FundraiserService.Interfaces;
+using msih.p4g.Server.Features.FundraiserService.Model;
 
 namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
 {
@@ -24,6 +26,7 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
     {
         private ApplicationDbContext _context;
         private Mock<IProfileService> _mockProfileService;
+        private Mock<IFundraiserService> _mockFundraiserService;
         private Mock<IUserService> _mockUserService;
         private Mock<IEmailService> _mockEmailService;
         private Mock<ILogger<msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services.AffiliateMonitoringService>> _mockLogger;
@@ -39,6 +42,7 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
 
             _context = new ApplicationDbContext(options);
             _mockProfileService = new Mock<IProfileService>();
+            _mockFundraiserService = new Mock<IFundraiserService>();
             _mockUserService = new Mock<IUserService>();
             _mockEmailService = new Mock<IEmailService>();
             _mockLogger = new Mock<ILogger<msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services.AffiliateMonitoringService>>();
@@ -46,6 +50,7 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             _service = new msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services.AffiliateMonitoringService(
                 _context,
                 _mockProfileService.Object,
+                _mockFundraiserService.Object,
                 _mockUserService.Object,
                 _mockEmailService.Object,
                 _mockLogger.Object
@@ -86,31 +91,29 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
         }
 
         [TestMethod]
-        public async Task SuspendAffiliateAsync_ValidProfile_ReturnsTrueAndUpdateProfile()
+        public async Task SuspendAffiliateAsync_ValidFundraiser_ReturnsTrueAndUpdateFundraiser()
         {
             // Arrange
-            var profile = new Profile 
+            var fundraiser = new Fundraiser 
             { 
                 Id = 1, 
-                ReferralCode = "TEST123", 
-                IsSuspended = false,
-                FirstName = "Test",
-                LastName = "User"
+                UserId = 1,
+                IsSuspended = false
             };
             var reason = "Test suspension";
 
-            _mockProfileService.Setup(x => x.UpdateAsync(It.IsAny<Profile>(), It.IsAny<string>()))
-                .ReturnsAsync(profile);
+            _mockFundraiserService.Setup(x => x.UpdateAsync(It.IsAny<Fundraiser>()))
+                .Returns(Task.CompletedTask);
 
             // Act
-            var result = await _service.SuspendAffiliateAsync(profile, reason);
+            var result = await _service.SuspendAffiliateAsync(fundraiser, reason);
 
             // Assert
             Assert.IsTrue(result);
-            Assert.IsTrue(profile.IsSuspended);
-            Assert.AreEqual(reason, profile.SuspensionReason);
-            Assert.IsNotNull(profile.SuspendedDate);
-            _mockProfileService.Verify(x => x.UpdateAsync(profile, "AffiliateMonitoringService"), Times.Once);
+            Assert.IsTrue(fundraiser.IsSuspended);
+            Assert.AreEqual(reason, fundraiser.SuspensionReason);
+            Assert.IsNotNull(fundraiser.SuspendedDate);
+            _mockFundraiserService.Verify(x => x.UpdateAsync(fundraiser), Times.Once);
         }
 
         [TestMethod]
@@ -125,10 +128,15 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
                 UserId = 1, 
                 ReferralCode = referralCode, 
                 IsActive = true,
-                IsSuspended = false,
                 FirstName = "Test",
                 LastName = "User",
                 User = user
+            };
+            var fundraiser = new Fundraiser
+            {
+                Id = 1,
+                UserId = 1,
+                IsSuspended = false
             };
 
             // Create 2 unqualified donors
@@ -142,11 +150,13 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             _context.Users.Add(user);
             _context.Donors.AddRange(donors);
             await _context.SaveChangesAsync();
+            
             _mockProfileService.Setup(x => x.GetByReferralCodeAsync(referralCode))
                 .ReturnsAsync(profile);
-
-            _mockProfileService.Setup(x => x.UpdateAsync(It.IsAny<Profile>(), It.IsAny<string>()))
-                .ReturnsAsync(profile);
+            _mockFundraiserService.Setup(x => x.GetByUserIdAsync(1))
+                .ReturnsAsync(fundraiser);
+            _mockFundraiserService.Setup(x => x.UpdateAsync(It.IsAny<Fundraiser>()))
+                .Returns(Task.CompletedTask);
             _mockEmailService.Setup(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
@@ -155,7 +165,7 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
 
             // Assert
             Assert.IsTrue(result);
-            _mockProfileService.Verify(x => x.UpdateAsync(It.IsAny<Profile>(), "AffiliateMonitoringService"), Times.Once);
+            _mockFundraiserService.Verify(x => x.UpdateAsync(It.IsAny<Fundraiser>()), Times.Once);
             _mockEmailService.Verify(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
@@ -171,10 +181,15 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
                 UserId = 1, 
                 ReferralCode = referralCode, 
                 IsActive = true,
-                IsSuspended = false,
                 FirstName = "Test",
                 LastName = "User",
                 User = user
+            };
+            var fundraiser = new Fundraiser
+            {
+                Id = 1,
+                UserId = 1,
+                IsSuspended = false
             };
 
             // Create 10 unqualified donors
@@ -187,12 +202,14 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             _context.Profiles.Add(profile);
             _context.Users.Add(user);
             _context.Donors.AddRange(donors);
+            await _context.SaveChangesAsync();
+            
             _mockProfileService.Setup(x => x.GetByReferralCodeAsync(referralCode))
                 .ReturnsAsync(profile);
-            await _context.SaveChangesAsync();
-
-            _mockProfileService.Setup(x => x.UpdateAsync(It.IsAny<Profile>(), It.IsAny<string>()))
-                .ReturnsAsync(profile);
+            _mockFundraiserService.Setup(x => x.GetByUserIdAsync(1))
+                .ReturnsAsync(fundraiser);
+            _mockFundraiserService.Setup(x => x.UpdateAsync(It.IsAny<Fundraiser>()))
+                .Returns(Task.CompletedTask);
             _mockEmailService.Setup(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
@@ -201,7 +218,7 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
 
             // Assert
             Assert.IsTrue(result);
-            _mockProfileService.Verify(x => x.UpdateAsync(It.IsAny<Profile>(), "AffiliateMonitoringService"), Times.Once);
+            _mockFundraiserService.Verify(x => x.UpdateAsync(It.IsAny<Fundraiser>()), Times.Once);
             _mockEmailService.Verify(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
@@ -217,10 +234,15 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
                 UserId = 1, 
                 ReferralCode = referralCode, 
                 IsActive = true,
-                IsSuspended = false,
                 FirstName = "Test",
                 LastName = "User",
                 User = user
+            };
+            var fundraiser = new Fundraiser
+            {
+                Id = 1,
+                UserId = 1,
+                IsSuspended = false
             };
 
             // Create 2 qualified donors (with donations)
@@ -244,15 +266,18 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             _context.Donors.AddRange(donors);
             _context.Donations.AddRange(donations);
             await _context.SaveChangesAsync();
+            
             _mockProfileService.Setup(x => x.GetByReferralCodeAsync(referralCode))
                 .ReturnsAsync(profile);
+            _mockFundraiserService.Setup(x => x.GetByUserIdAsync(1))
+                .ReturnsAsync(fundraiser);
 
             // Act
             var result = await _service.CheckAffiliateAfterDonorCreationAsync(referralCode);
 
             // Assert
             Assert.IsFalse(result);
-            _mockProfileService.Verify(x => x.UpdateAsync(It.IsAny<Profile>(), It.IsAny<string>()), Times.Never);
+            _mockFundraiserService.Verify(x => x.UpdateAsync(It.IsAny<Fundraiser>()), Times.Never);
             _mockEmailService.Verify(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
     }

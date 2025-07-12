@@ -5,6 +5,7 @@
 //  */
 
 using msih.p4g.Server.Features.Base.ProfileService.Model;
+using msih.p4g.Server.Features.FundraiserService.Model;
 
 namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Interfaces
 {
@@ -30,17 +31,18 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Interfaces
         /// <summary>
         /// Suspends an affiliate account
         /// </summary>
-        /// <param name="profile">The affiliate profile to suspend</param>
+        /// <param name="fundraiser">The affiliate fundraiser to suspend</param>
         /// <param name="reason">Reason for suspension</param>
         /// <returns>True if successfully suspended</returns>
-        Task<bool> SuspendAffiliateAsync(Profile profile, string reason);
+        Task<bool> SuspendAffiliateAsync(Fundraiser fundraiser, string reason);
 
         /// <summary>
         /// Sends suspension notification email to the affiliate
         /// </summary>
-        /// <param name="profile">The suspended affiliate profile</param>
+        /// <param name="profile">The affiliate profile (for contact info)</param>
+        /// <param name="fundraiser">The suspended affiliate fundraiser</param>
         /// <param name="reason">Reason for suspension</param>
         /// <returns>True if email was sent successfully</returns>
-        Task<bool> SendSuspensionNotificationAsync(Profile profile, string reason);
+        Task<bool> SendSuspensionNotificationAsync(Profile profile, Fundraiser fundraiser, string reason);
     }
 }

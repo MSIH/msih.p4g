@@ -50,22 +50,6 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Model
         public string ReferralCode { get; set; } = string.Empty;
 
         /// <summary>
-        /// Indicates whether this affiliate account is suspended.
-        /// </summary>
-        public bool IsSuspended { get; set; } = false;
-
-        /// <summary>
-        /// The reason for suspension if the account is suspended.
-        /// </summary>
-        [MaxLength(500)]
-        public string? SuspensionReason { get; set; }
-
-        /// <summary>
-        /// The date when the account was suspended (if applicable).
-        /// </summary>
-        public DateTime? SuspendedDate { get; set; }
-
-        /// <summary>
         /// Generates a unique referral code for this profile based on the UserId.
         /// Call this method once when creating the profile.
         /// </summary>
