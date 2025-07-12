@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -8,10 +14,6 @@ using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.MessageService.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.Base.MessageService.Repositories
 {
@@ -61,9 +63,9 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
 
             // Try to find a template marked as default
             var defaultTemplate = await context.Set<MessageTemplate>()
-                .Where(t => t.Category == category && 
-                           t.MessageType == messageType && 
-                           t.IsDefault && 
+                .Where(t => t.Category == category &&
+                           t.MessageType == messageType &&
+                           t.IsDefault &&
                            t.IsActive)
                 .FirstOrDefaultAsync();
 
@@ -71,8 +73,8 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
             if (defaultTemplate == null)
             {
                 defaultTemplate = await context.Set<MessageTemplate>()
-                    .Where(t => t.Category == category && 
-                               t.MessageType == messageType && 
+                    .Where(t => t.Category == category &&
+                               t.MessageType == messageType &&
                                t.IsActive)
                     .OrderBy(t => t.CreatedOn)
                     .FirstOrDefaultAsync();
@@ -112,9 +114,9 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
             {
                 // Clear default flag from all templates in the same category and message type
                 var templates = await context.Set<MessageTemplate>()
-                    .Where(t => t.Category == template.Category && 
-                               t.MessageType == template.MessageType && 
-                               t.IsDefault && 
+                    .Where(t => t.Category == template.Category &&
+                               t.MessageType == template.MessageType &&
+                               t.IsDefault &&
                                t.IsActive)
                     .ToListAsync();
 
@@ -122,13 +124,13 @@ namespace msih.p4g.Server.Features.Base.MessageService.Repositories
                 {
                     existingDefault.IsDefault = false;
                     existingDefault.ModifiedOn = DateTime.UtcNow;
-                    existingDefault.ModifiedBy = "System";
+                    existingDefault.ModifiedBy = "MessageService";
                 }
 
                 // Set the new template as default
                 template.IsDefault = true;
                 template.ModifiedOn = DateTime.UtcNow;
-                template.ModifiedBy = "System";
+                template.ModifiedBy = "MessageService";
 
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
