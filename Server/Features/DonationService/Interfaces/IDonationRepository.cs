@@ -11,6 +11,7 @@
  */
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.DonationService.Models;
+using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Features.DonationService.Interfaces
 {
@@ -19,6 +20,14 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
     /// </summary>
     public interface IDonationRepository : IGenericRepository<Donation>
     {
-        // Add Donation-specific repository methods here if needed
+        /// <summary>
+        /// Gets paginated donations for a specific user by email.
+        /// </summary>
+        Task<PagedResult<Donation>> GetPagedByUserEmailAsync(string email, PaginationParameters parameters);
+
+        /// <summary>
+        /// Searches for paginated donations for a specific user by email.
+        /// </summary>
+        Task<PagedResult<Donation>> SearchPagedByUserEmailAsync(string email, PaginationParameters parameters);
     }
 }

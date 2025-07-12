@@ -112,5 +112,15 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         /// This returns the base donation amount (excluding transaction fees).
         /// </summary>
         Task<decimal> GetTotalAmountByDonorIdAsync(int donorId);
+
+        /// <summary>
+        /// Gets paginated donations for a specific user by email.
+        /// </summary>
+        Task<PagedResult<Donation>> GetPagedByUserEmailAsync(string email, PaginationParameters parameters);
+
+        /// <summary>
+        /// Searches for paginated donations for a specific user by email.
+        /// </summary>
+        Task<PagedResult<Donation>> SearchPagedByUserEmailAsync(string email, PaginationParameters parameters);
     }
 }
