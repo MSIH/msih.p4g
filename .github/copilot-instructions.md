@@ -1,6 +1,8 @@
 
 This is an MVP (Minimum Viable Product) application using .NET 9 Blazor Server framework. Blazor server does not use web api instead the client uses SignalR. The application will be built using C# and will follow best practices for clean arcitecture and microsoft coding standards. If possible code a strcture to make allow for easy refactor to use blazor auto interactive mode which uses both server and webassembly (with web api).
 
+The target Framework for the project is .NET 9.0. ```<TargetFramework>net9.0</TargetFramework>```
+
 Always create unit tests for critical functions. Write comments to explain complex logic or important decisions. The code should be modular, allowing for easy updates and maintenance. Use dependency injection to manage service lifetimes and dependencies effectively. Only define interfaces for the service that ordinarly have more than one implementation. Use meaningful variable and function names. Use error handling to manage exceptions gracefully.
 
 Folder structure should be as follows:
@@ -16,7 +18,7 @@ Shared - this is for code that is shared between the server and the client. It s
 
 Settings should be stored in the database with correspond User interface. If setting is not in database then it should be in the appsettings.json file. The settings should be loaded into a service that can be injected into the components that need them. The settings should be strongly typed and use the Options pattern.
 
-Local development will use SQLlite and production will use mySQL. Make sure datatypes support both databases.
+Local development and production will use MS SQL Server. Make sure datatypes support both databases.
 
 
 
