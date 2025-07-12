@@ -17,6 +17,7 @@ using msih.p4g.Server.Features.DonationService.Models;
 using msih.p4g.Server.Features.DonorService.Interfaces;
 using msih.p4g.Server.Features.DonorService.Model;
 using msih.p4g.Shared.Models;
+using msih.p4g.Server.Features.Base.AffiliateMonitoringService.Interfaces;
 
 namespace msih.p4g.Server.Features.DonationService.Services
 {
@@ -32,6 +33,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
         private readonly IPaymentService _paymentService;
         private readonly IUserProfileService _userProfileService;
         private readonly IMessageService _messageService;
+        private readonly IAffiliateMonitoringService _affiliateMonitoringService;
         private readonly ILogger<DonationService> _logger;
 
         // Standard transaction fee percentage (can be moved to configuration in the future)
@@ -47,6 +49,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             IPaymentService paymentService,
             IUserProfileService userProfileService,
             IMessageService messageService,
+            IAffiliateMonitoringService affiliateMonitoringService,
             ILogger<DonationService> logger)
         {
             _userRepository = userRepository;
@@ -56,6 +59,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             _paymentService = paymentService;
             _userProfileService = userProfileService;
             _messageService = messageService;
+            _affiliateMonitoringService = affiliateMonitoringService;
             _logger = logger;
         }
 
@@ -113,6 +117,22 @@ namespace msih.p4g.Server.Features.DonationService.Services
                     donor = await _donorService.AddAsync(donor);
 
                     donorCreated = true;
+
+                    // Check affiliate suspension after donor creation
+                    if (!string.IsNullOrEmpty(dto.ReferralCode))
+                    {
+                        try
+                        {
+                            await _affiliateMonitoringService.CheckAffiliateAfterDonorCreationAsync(dto.ReferralCode);
+                        }
+                        catch (Exception affiliateEx)
+                        {
+                            _logger.LogError(affiliateEx, 
+                                "Error checking affiliate suspension for referral code {ReferralCode}", 
+                                dto.ReferralCode);
+                            // Don't fail the entire donor creation process for affiliate monitoring errors
+                        }
+                    }
                 }
             }
 
@@ -217,6 +237,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
 
             // 2. Find or create donor using navigation property
             Donor? donor = user.Donor;
+            bool newDonorCreated = false;
 
             if (donor == null)
             {
@@ -230,6 +251,23 @@ namespace msih.p4g.Server.Features.DonationService.Services
                     ReferralCode = dto.ReferralCode
                 };
                 donor = await _donorService.AddAsync(donor);
+                newDonorCreated = true;
+
+                // Check affiliate suspension after donor creation
+                if (!string.IsNullOrEmpty(dto.ReferralCode))
+                {
+                    try
+                    {
+                        await _affiliateMonitoringService.CheckAffiliateAfterDonorCreationAsync(dto.ReferralCode);
+                    }
+                    catch (Exception affiliateEx)
+                    {
+                        _logger.LogError(affiliateEx, 
+                            "Error checking affiliate suspension for referral code {ReferralCode}", 
+                            dto.ReferralCode);
+                        // Don't fail the entire donation process for affiliate monitoring errors
+                    }
+                }
             }
 
             // Calculate transaction fee and total amount
