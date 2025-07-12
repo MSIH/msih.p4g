@@ -714,7 +714,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
             existingTemplate.AvailablePlaceholders = template.AvailablePlaceholders;
             existingTemplate.IsDefault = template.IsDefault;
             existingTemplate.ModifiedOn = DateTime.UtcNow;
-            existingTemplate.ModifiedBy = template.ModifiedBy ?? "System";
+            existingTemplate.ModifiedBy = template.ModifiedBy ?? "MessageService";
 
             await _templateRepository.UpdateAsync(existingTemplate);
             return existingTemplate;
@@ -736,7 +736,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
                 // Soft delete if there are messages using this template
                 template.IsActive = false;
                 template.ModifiedOn = DateTime.UtcNow;
-                template.ModifiedBy = "System";
+                template.ModifiedBy = "MessageService";
                 await _templateRepository.UpdateAsync(template);
             }
             else
@@ -744,7 +744,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
                 // Also soft delete for consistency
                 template.IsActive = false;
                 template.ModifiedOn = DateTime.UtcNow;
-                template.ModifiedBy = "System";
+                template.ModifiedBy = "MessageService";
                 await _templateRepository.UpdateAsync(template);
             }
 
@@ -792,7 +792,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Services
             {
                 template.IsDefault = false;
                 template.ModifiedOn = DateTime.UtcNow;
-                template.ModifiedBy = "System";
+                template.ModifiedBy = "MessageService";
                 await _templateRepository.UpdateAsync(template);
             }
         }

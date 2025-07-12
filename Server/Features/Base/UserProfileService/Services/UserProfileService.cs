@@ -77,12 +77,12 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Services
         public async Task<Profile?> GetProfileByUserEmailAsync(string email)
         {
             // Find the user by email
-            var user = await _userService.GetByEmailAsync(email);
-            if (user == null)
+            var userProfile = await _userService.GetByEmailAsync(email, includeProfile: true);
+            if (userProfile == null)
                 return null;
 
             // Get the user's profile
-            return await _profileService.GetByIdAsync(user.Id);
+            return userProfile.Profile;
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Services
         /// <param name="profile">The profile with updated information</param>
         /// <param name="modifiedBy">Who modified the profile</param>
         /// <returns>The updated profile</returns>
-        public async Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "System")
+        public async Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "ProfileService")
         {
             // Update the profile using the profile service            
             var updatedProfile = await _profileService.UpdateAsync(profile, modifiedBy);

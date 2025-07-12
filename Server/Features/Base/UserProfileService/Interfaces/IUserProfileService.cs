@@ -36,7 +36,7 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Interfaces
         /// <param name="profile">The profile with updated information</param>
         /// <param name="modifiedBy">Who modified the profile</param>
         /// <returns>The updated profile</returns>
-        Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "System");
+        Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "UserProfileService");
 
         /// <summary>
         /// Event triggered when a profile is changed

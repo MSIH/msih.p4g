@@ -52,7 +52,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         }
 
         /// <inheritdoc />
-        public async Task<User> AddAsync(User user, string createdBy = "System")
+        public async Task<User> AddAsync(User user, string createdBy = "UserService")
         {
             return await _userRepository.AddAsync(user, createdBy);
         }
@@ -64,13 +64,13 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         }
 
         /// <inheritdoc />
-        public async Task UpdateAsync(User user, string modifiedBy = "System")
+        public async Task UpdateAsync(User user, string modifiedBy = "UserService")
         {
             await _userRepository.UpdateAsync(user, modifiedBy);
         }
 
         /// <inheritdoc />
-        public async Task SetActiveAsync(int userId, bool isActive, string modifiedBy = "System")
+        public async Task SetActiveAsync(int userId, bool isActive, string modifiedBy = "UserService")
         {
             await _userRepository.SetActiveStatusAsync(userId, isActive, modifiedBy);
         }

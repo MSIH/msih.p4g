@@ -40,7 +40,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Interfaces
         /// <param name="user">The user to create</param>
         /// <param name="createdBy">Who created the user</param>
         /// <returns>The created user with Id assigned</returns>
-        Task<User> AddAsync(User user, string createdBy = "System");
+        Task<User> AddAsync(User user, string createdBy = "UserService");
 
         /// <summary>
         /// Gets all active users in the system
@@ -54,7 +54,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Interfaces
         /// </summary>
         /// <param name="user">The user with updated information</param>
         /// <param name="modifiedBy">Who modified the user</param>
-        Task UpdateAsync(User user, string modifiedBy = "System");
+        Task UpdateAsync(User user, string modifiedBy = "UserService");
 
         /// <summary>
         /// Sets the active status of a user
@@ -62,7 +62,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Interfaces
         /// <param name="userId">The ID of the user</param>
         /// <param name="isActive">The new active status</param>
         /// <param name="modifiedBy">Who changed the status</param>
-        Task SetActiveAsync(int userId, bool isActive, string modifiedBy = "System");
+        Task SetActiveAsync(int userId, bool isActive, string modifiedBy = "UserService");
         Task<User?> GetUserByTokenAsync(string token);
         Task<bool> LogOutUserByIdAsync(int userId);
     }
