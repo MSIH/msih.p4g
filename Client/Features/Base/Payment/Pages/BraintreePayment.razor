@@ -250,7 +250,6 @@
                                     <div class="mb-3">
                                         <label class="form-label">Quick Amount Selection:</label>
                                         <div class="d-flex flex-wrap gap-2">
-                                            <button type="button" class="btn btn-outline-primary" @onclick="() => SetDonationAmount(25)">$25</button>
                                             <button type="button" class="btn btn-outline-primary" @onclick="() => SetDonationAmount(50)">$50</button>
                                             <button type="button" class="btn btn-outline-primary" @onclick="() => SetDonationAmount(100)">$100</button>
                                             <button type="button" class="btn btn-outline-primary" @onclick="() => SetDonationAmount(250)">$250</button>
@@ -267,7 +266,7 @@
                                         <label class="form-label">Amount You Want To Donate:</label>
                                         <div class="input-group">
                                             <span class="input-group-text">$</span>
-                                            <InputNumber id="amount" class="form-control" @bind-Value="donationRequest.DonationAmount" min="25" step="1" />
+                                            <InputNumber id="amount" class="form-control" @bind-Value="donationRequest.DonationAmount" step="1" />
                                         </div>
                                         <ValidationMessage For="@(() => donationRequest.DonationAmount)" />
                                         @if (donationRequest.DonationAmount < 25)
@@ -501,7 +500,7 @@
 
     private DonationRequestDto donationRequest = new DonationRequestDto
     {
-        DonationAmount = 25m,
+        DonationAmount = 100m,
         Address = new AddressModel
         {
             Street = string.Empty,
