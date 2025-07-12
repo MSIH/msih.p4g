@@ -277,14 +277,8 @@ namespace msih.p4g.Client.Features.FundraiserManagement.Component
         {
             if (donorCount <= 0) return 0;
 
-            // 1 donor = $15
-            if (donorCount == 1) return 15;
-
-            // 2 donors = $25
-            if (donorCount == 2) return 25;
-
-            // 3-4 donors still = $25 (no change until 5)
-            if (donorCount >= 3 && donorCount < 5) return 25;
+            // 3-4 donors still = $10 (no change until 5)
+            if (donorCount >= 3 && donorCount < 5) return 10;
 
             // 5 donors = $35
             if (donorCount == 5) return 35;
