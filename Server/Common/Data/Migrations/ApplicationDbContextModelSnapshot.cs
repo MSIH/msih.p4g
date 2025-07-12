@@ -893,6 +893,11 @@ namespace msih.p4g.Server.Common.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsSuspended")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("ModifiedBy")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -909,6 +914,13 @@ namespace msih.p4g.Server.Common.Data.Migrations
 
                     b.Property<int?>("PayoutAccountType")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("SuspendedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SuspensionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");

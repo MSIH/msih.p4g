@@ -28,6 +28,22 @@ namespace msih.p4g.Server.Features.FundraiserService.Model
         [MaxLength(500)]
         public string? W9Document { get; set; }
 
+        /// <summary>
+        /// Indicates whether this affiliate account is suspended.
+        /// </summary>
+        public bool IsSuspended { get; set; } = false;
+
+        /// <summary>
+        /// The reason for suspension if the account is suspended.
+        /// </summary>
+        [MaxLength(500)]
+        public string? SuspensionReason { get; set; }
+
+        /// <summary>
+        /// The date when the account was suspended (if applicable).
+        /// </summary>
+        public DateTime? SuspendedDate { get; set; }
+
         public int UserId { get; set; }
         public virtual Base.UserService.Models.User User { get; set; }
     }

@@ -52,6 +52,7 @@ using msih.p4g.Server.Features.OrganizationService.Data;
 using msih.p4g.Server.Features.OrganizationService.Interfaces;
 using msih.p4g.Server.Features.OrganizationService.Repositories;
 using msih.p4g.Server.Features.OrganizationService.Services;
+using msih.p4g.Server.Features.Base.AffiliateMonitoringService.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -112,6 +113,9 @@ builder.Services.AddScoped<IPaymentService>(provider =>
 
 // Register Settings Service and related dependencies
 builder.Services.AddSettingsServices();
+
+// Register Affiliate Monitoring Service
+builder.Services.AddAffiliateMonitoringServices();
 
 // Register common utilities
 builder.Services.AddScoped<ReferralURLGenerator>();

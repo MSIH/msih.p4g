@@ -36,6 +36,11 @@ namespace msih.p4g.Server.Common.Data
                 entity.Property(e => e.W9Document).HasMaxLength(500);
                 entity.Property(e => e.PayoutAccountType).IsRequired(false);
                 entity.Property(e => e.PayoutAccountFormat).IsRequired(false);
+                
+                // Suspension fields
+                entity.Property(e => e.IsSuspended).HasDefaultValue(false);
+                entity.Property(e => e.SuspensionReason).HasMaxLength(500).IsRequired(false);
+                entity.Property(e => e.SuspendedDate).IsRequired(false);
             });
         }
     }
