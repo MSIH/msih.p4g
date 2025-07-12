@@ -59,48 +59,6 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
         }
 
         [TestMethod]
-        public async Task GetAffiliateByReferralCodeAsync_ExistingCode_ReturnsProfile()
-        {
-            // Arrange
-            var referralCode = "TEST123";
-            var user = new User { Id = 1, Email = "test@example.com" };
-            var profile = new Profile 
-            { 
-                Id = 1, 
-                UserId = 1, 
-                ReferralCode = referralCode, 
-                IsActive = true,
-                FirstName = "Test",
-                LastName = "User",
-                User = user
-            };
-
-            _context.Profiles.Add(profile);
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            // Act
-            var result = await _service.GetAffiliateByReferralCodeAsync(referralCode);
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(referralCode, result.ReferralCode);
-        }
-
-        [TestMethod]
-        public async Task GetAffiliateByReferralCodeAsync_NonExistingCode_ReturnsNull()
-        {
-            // Arrange
-            var referralCode = "NONEXIST";
-
-            // Act
-            var result = await _service.GetAffiliateByReferralCodeAsync(referralCode);
-
-            // Assert
-            Assert.IsNull(result);
-        }
-
-        [TestMethod]
         public async Task CountUnqualifiedAccountsAsync_WithUnqualifiedDonors_ReturnsCorrectCount()
         {
             // Arrange
@@ -184,6 +142,8 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             _context.Users.Add(user);
             _context.Donors.AddRange(donors);
             await _context.SaveChangesAsync();
+            _mockProfileService.Setup(x => x.GetByReferralCodeAsync(referralCode))
+                .ReturnsAsync(profile);
 
             _mockProfileService.Setup(x => x.UpdateAsync(It.IsAny<Profile>(), It.IsAny<string>()))
                 .ReturnsAsync(profile);
@@ -227,6 +187,8 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             _context.Profiles.Add(profile);
             _context.Users.Add(user);
             _context.Donors.AddRange(donors);
+            _mockProfileService.Setup(x => x.GetByReferralCodeAsync(referralCode))
+                .ReturnsAsync(profile);
             await _context.SaveChangesAsync();
 
             _mockProfileService.Setup(x => x.UpdateAsync(It.IsAny<Profile>(), It.IsAny<string>()))
@@ -282,6 +244,8 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             _context.Donors.AddRange(donors);
             _context.Donations.AddRange(donations);
             await _context.SaveChangesAsync();
+            _mockProfileService.Setup(x => x.GetByReferralCodeAsync(referralCode))
+                .ReturnsAsync(profile);
 
             // Act
             var result = await _service.CheckAffiliateAfterDonorCreationAsync(referralCode);

@@ -21,13 +21,6 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Interfaces
         Task<bool> CheckAffiliateAfterDonorCreationAsync(string referralCode);
 
         /// <summary>
-        /// Gets the affiliate profile by referral code
-        /// </summary>
-        /// <param name="referralCode">The referral code</param>
-        /// <returns>The affiliate profile or null if not found</returns>
-        Task<Profile?> GetAffiliateByReferralCodeAsync(string referralCode);
-
-        /// <summary>
         /// Counts unqualified donor accounts linked to an affiliate
         /// </summary>
         /// <param name="referralCode">The affiliate's referral code</param>

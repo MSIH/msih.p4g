@@ -50,7 +50,7 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
             try
             {
                 // Get the affiliate profile
-                var affiliate = await GetAffiliateByReferralCodeAsync(referralCode);
+                var affiliate = await _profileService.GetByReferralCodeAsync(referralCode);
                 if (affiliate == null || affiliate.IsSuspended)
                     return false;
 
@@ -92,19 +92,6 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
                 _logger.LogError(ex, "Error checking affiliate suspension for referral code {ReferralCode}", referralCode);
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Gets the affiliate profile by referral code
-        /// </summary>
-        public async Task<Profile?> GetAffiliateByReferralCodeAsync(string referralCode)
-        {
-            if (string.IsNullOrEmpty(referralCode))
-                return null;
-
-            return await _context.Profiles
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(p => p.ReferralCode == referralCode && p.IsActive);
         }
 
         /// <summary>
