@@ -266,7 +266,7 @@
                                         <label class="form-label">Amount You Want To Donate:</label>
                                         <div class="input-group">
                                             <span class="input-group-text">$</span>
-                                            <InputNumber id="amount" class="form-control" @bind-Value="donationRequest.DonationAmount" min="25" step="1" />
+                                            <InputNumber id="amount" class="form-control" @bind-Value="donationRequest.DonationAmount" step="1" />
                                         </div>
                                         <ValidationMessage For="@(() => donationRequest.DonationAmount)" />
                                         @if (donationRequest.DonationAmount < 25)
@@ -500,7 +500,7 @@
 
     private DonationRequestDto donationRequest = new DonationRequestDto
     {
-        DonationAmount = 25m,
+        DonationAmount = 100m,
         Address = new AddressModel
         {
             Street = string.Empty,
