@@ -60,7 +60,7 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
                 string? suspensionReason = null;
 
                 // Check suspension criteria
-                if (unqualifiedCount >= 2 && unqualifiedCount <= 2)
+                if (unqualifiedCount == 2)
                 {
                     // Suspend if first 2 accounts are unqualified
                     suspensionReason = "First two accounts associated with affiliate are unqualified (have not donated).";
