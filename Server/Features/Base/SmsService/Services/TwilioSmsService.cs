@@ -144,7 +144,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
                     PhoneNumber = phoneNumber,
                     IsValid = false,
                     ValidatedOn = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = "SmsService"
                 };
             }
 
@@ -177,7 +177,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
                     IsValid = phoneNumberLookup?.Valid ?? false,
                     ValidatedOn = DateTime.UtcNow,
                     CountryCode = phoneNumberLookup?.CountryCode,
-                    CreatedBy = "System"
+                    CreatedBy = "SmsService"
                 };
 
                 // Check for line_type_intelligence and set IsMobile/Carrier accordingly
@@ -210,7 +210,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
                     PhoneNumber = phoneNumber,
                     IsValid = false,
                     ValidatedOn = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = "SmsService"
                 };
 
                 // Save the invalid number to the database

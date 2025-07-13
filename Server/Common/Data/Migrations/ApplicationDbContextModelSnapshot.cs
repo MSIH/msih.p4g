@@ -634,6 +634,11 @@ namespace msih.p4g.Server.Common.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<int?>("FundraiserId")
                         .HasColumnType("int");
 
@@ -643,6 +648,11 @@ namespace msih.p4g.Server.Common.Data.Migrations
                     b.Property<string>("LLCTaxClassification")
                         .HasMaxLength(1)
                         .HasColumnType("nvarchar(1)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("ModifiedBy")
                         .HasMaxLength(100)
@@ -883,6 +893,11 @@ namespace msih.p4g.Server.Common.Data.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsSuspended")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("ModifiedBy")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -899,6 +914,13 @@ namespace msih.p4g.Server.Common.Data.Migrations
 
                     b.Property<int?>("PayoutAccountType")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("SuspendedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SuspensionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");

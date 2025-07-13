@@ -42,6 +42,20 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         }
 
         /// <summary>
+        /// Gets a user by their profile referral code with optional related entities
+        /// </summary>
+        /// <param name="referralCode">The referral code of the user to retrieve</param>
+        /// <param name="includeProfile">Whether to include the user's profile</param>
+        /// <param name="includeDonor">Whether to include the user's donor record</param>
+        /// <param name="includeFundraiser">Whether to include the user's fundraiser record</param>
+        /// <param name="includeAddress">Whether to include the user's profile address information</param>
+        /// <returns>The user if found, otherwise null</returns>
+        public async Task<User?> GetByReferralCodeAsync(string referralCode, bool includeProfile = false, bool includeAddress = false, bool includeDonor = false, bool includeFundraiser = false)
+        {
+            return await _userRepository.GetByReferralCodeAsync(referralCode, includeProfile, includeAddress, includeDonor, includeFundraiser);
+        }
+
+        /// <summary>
         /// Gets a user by their ID
         /// </summary>
         /// <param name="userId">The ID of the user to retrieve</param>
@@ -52,7 +66,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         }
 
         /// <inheritdoc />
-        public async Task<User> AddAsync(User user, string createdBy = "System")
+        public async Task<User> AddAsync(User user, string createdBy = "UserService")
         {
             return await _userRepository.AddAsync(user, createdBy);
         }
@@ -64,13 +78,13 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         }
 
         /// <inheritdoc />
-        public async Task UpdateAsync(User user, string modifiedBy = "System")
+        public async Task UpdateAsync(User user, string modifiedBy = "UserService")
         {
             await _userRepository.UpdateAsync(user, modifiedBy);
         }
 
         /// <inheritdoc />
-        public async Task SetActiveAsync(int userId, bool isActive, string modifiedBy = "System")
+        public async Task SetActiveAsync(int userId, bool isActive, string modifiedBy = "UserService")
         {
             await _userRepository.SetActiveStatusAsync(userId, isActive, modifiedBy);
         }
@@ -93,7 +107,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                 return false;
 
             user.EmailConfirmed = false;
-            await _userRepository.UpdateAsync(user, "System");
+            await _userRepository.UpdateAsync(user, "UserService");
             return true;
         }
     }

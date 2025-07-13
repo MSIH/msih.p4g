@@ -99,7 +99,7 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         /// <summary>
         /// Sets the active status of a donation.
         /// </summary>
-        Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System");
+        Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "DonationService");
 
         /// <summary>
         /// Gets the total donation amount for a specific campaign.
@@ -112,5 +112,20 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         /// This returns the base donation amount (excluding transaction fees).
         /// </summary>
         Task<decimal> GetTotalAmountByDonorIdAsync(int donorId);
+
+        /// <summary>
+        /// Gets paginated donations for a specific user by email.
+        /// </summary>
+        Task<PagedResult<Donation>> GetPagedByUserEmailAsync(string email, PaginationParameters parameters);
+
+        /// <summary>
+        /// Searches for paginated donations for a specific user by email.
+        /// </summary>
+        Task<PagedResult<Donation>> SearchPagedByUserEmailAsync(string email, PaginationParameters parameters);
+
+        /// <summary>
+        /// Gets paginated donations for a specific referral code.
+        /// </summary>
+        Task<PagedResult<Donation>> GetPagedByReferralCodeAsync(string referralCode, PaginationParameters parameters);
     }
 }

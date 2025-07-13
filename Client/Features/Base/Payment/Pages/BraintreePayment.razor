@@ -203,7 +203,7 @@
                     <!-- Donation Form -->
                     <EditForm Model="@donationRequest" OnValidSubmit="@HandleValidSubmit">
                         <DataAnnotationsValidator />
-                        <ValidationSummary />
+                        @* <ValidationSummary /> *@
 
                         <!-- Donor Information Card -->
                         <div class="card mb-4">
@@ -266,9 +266,13 @@
                                         <label class="form-label">Amount You Want To Donate:</label>
                                         <div class="input-group">
                                             <span class="input-group-text">$</span>
-                                            <InputNumber id="amount" class="form-control" @bind-Value="donationRequest.DonationAmount" />
+                                            <InputNumber id="amount" class="form-control" @bind-Value="donationRequest.DonationAmount" step="1" />
                                         </div>
-                                        <ValidationMessage For="@(() => donationRequest.DonationAmount)" />
+                                       @*  <ValidationMessage For="@(() => donationRequest.DonationAmount)" /> *@
+                                        @if (donationRequest.DonationAmount < 25)
+                                        {
+                                            <small class="text-danger">Minimum donation is $25.00</small>
+                                        }
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Fees we pay @(donationRequest.PayTransactionFee ? "😀" : "😠")</label>
@@ -511,12 +515,14 @@
         try
         {
             // Process referral code first (doesn't require DB calls)
-            await ProcessReferralCode();
+
 
             // Execute database operations sequentially to avoid DbContext concurrency issues
             await LoadOrganizationAsync();
             await LoadAllCampaignAsync();
+            await ProcessReferralCode();
             await LoadReferrerAsync();
+
 
             // Find the appropriate campaign
             if (CampaignId.HasValue)

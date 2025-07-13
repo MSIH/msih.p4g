@@ -16,7 +16,10 @@ using Microsoft.Extensions.FileProviders;
 using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
+using msih.p4g.Server.Common.Interfaces;
+using msih.p4g.Server.Common.Services;
 using msih.p4g.Server.Common.Utilities;
+using msih.p4g.Server.Features.Base.AffiliateMonitoringService.Extensions;
 using msih.p4g.Server.Features.Base.EmailService.Extensions;
 using msih.p4g.Server.Features.Base.MessageService.Data;
 using msih.p4g.Server.Features.Base.MessageService.Extensions;
@@ -114,6 +117,9 @@ builder.Services.AddScoped<IPaymentService>(provider =>
 // Register Settings Service and related dependencies
 builder.Services.AddSettingsServices();
 
+// Register Affiliate Monitoring Service
+builder.Services.AddAffiliateMonitoringServices();
+
 // Register common utilities
 builder.Services.AddScoped<ReferralURLGenerator>();
 
@@ -122,7 +128,7 @@ builder.Services.AddScoped<IDonorRepository, DonorRepository>();
 builder.Services.AddScoped<IDonorService, DonorService>();
 
 // Register CampaignRepository and CampaignService for DI
-builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
+builder.Services.AddSingleton<ICampaignRepository, CampaignRepository>();
 builder.Services.AddScoped<ICampaignService, CampaignService>();
 
 // Register ProfileRepository and ProfileService for DI
@@ -149,7 +155,7 @@ builder.Services.AddScoped<IFundraiserService, FundraiserService>();
 builder.Services.AddScoped<IFundraiserStatisticsRepository, FundraiserStatisticsRepository>();
 builder.Services.AddScoped<IFundraiserStatisticsService, FundraiserStatisticsService>();
 
-builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+builder.Services.AddSingleton<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 
 // Register W9FormService for DI
@@ -165,7 +171,7 @@ builder.Services.AddScoped<CampaignDataSeeder>();
 
 builder.Services.AddScoped<AdminInitializationService>();
 
-builder.Services.AddScoped<msih.p4g.Server.Common.Interfaces.ICacheStrategy, msih.p4g.Server.Common.Services.MemoryCacheStrategy>();
+builder.Services.AddSingleton<ICacheStrategy, MemoryCacheStrategy>();
 
 var app = builder.Build();
 

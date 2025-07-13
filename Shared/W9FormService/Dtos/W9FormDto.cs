@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -16,13 +22,22 @@ namespace msih.p4g.Shared.W9FormService.Dtos
         /// Unique identifier
         /// </summary>
         public int Id { get; set; }
-        
+
         /// <summary>
         /// Name of entity/individual as shown on tax return
+        /// deprecated: use FirstName and LastName instead
         /// </summary>
         [Required(ErrorMessage = "Name is required")]
         [MaxLength(200, ErrorMessage = "Name cannot exceed 200 characters")]
         public string Name { get; set; }
+
+        [Required(ErrorMessage = "First name is required")]
+        [MaxLength(200, ErrorMessage = "First name cannot exceed 200 characters")]
+        public string FirstName { get; set; }
+
+        [Required(ErrorMessage = "Last name is required")]
+        [MaxLength(200, ErrorMessage = "Last name cannot exceed 200 characters")]
+        public string LastName { get; set; }
 
         /// <summary>
         /// Business name/disregarded entity name, if different from above
@@ -116,7 +131,7 @@ namespace msih.p4g.Shared.W9FormService.Dtos
         /// Associated fundraiser ID 
         /// </summary>
         public int? FundraiserId { get; set; }
-        
+
         /// <summary>
         /// Associated user ID for this W9
         /// </summary>
@@ -129,7 +144,7 @@ namespace msih.p4g.Shared.W9FormService.Dtos
         [Required(ErrorMessage = "Status is required")]
         [MaxLength(50)]
         public string Status { get; set; } = "Draft";
-        
+
         // Audit fields
         public DateTime CreatedOn { get; set; }
         public string CreatedBy { get; set; }

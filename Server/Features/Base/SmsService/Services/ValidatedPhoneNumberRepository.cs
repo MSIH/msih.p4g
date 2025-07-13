@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -8,8 +14,6 @@ using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.SmsService.Interfaces;
 using msih.p4g.Server.Features.Base.SmsService.Model;
-using System;
-using System.Threading.Tasks;
 
 namespace msih.p4g.Server.Features.Base.SmsService.Services
 {
@@ -21,7 +25,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
         public ValidatedPhoneNumberRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
         }
-        
+
         /// <inheritdoc />
         public async Task<ValidatedPhoneNumber> GetByPhoneNumberAsync(string phoneNumber)
         {
@@ -36,7 +40,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
         }
 
         /// <inheritdoc />
-        public override async Task<ValidatedPhoneNumber> AddAsync(ValidatedPhoneNumber entity, string createdBy = "System")
+        public override async Task<ValidatedPhoneNumber> AddAsync(ValidatedPhoneNumber entity, string createdBy = "SmsService")
         {
             if (entity == null)
             {
@@ -45,7 +49,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
 
             // Set validation time
             entity.ValidatedOn = DateTime.UtcNow;
-            
+
             return await base.AddAsync(entity, createdBy);
         }
 
@@ -58,7 +62,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
             }
 
             var existingRecord = await GetByPhoneNumberAsync(validatedPhoneNumber.PhoneNumber);
-            
+
             if (existingRecord == null)
             {
                 // Add new record
@@ -72,7 +76,7 @@ namespace msih.p4g.Server.Features.Base.SmsService.Services
                 existingRecord.CountryCode = validatedPhoneNumber.CountryCode;
                 existingRecord.IsValid = validatedPhoneNumber.IsValid;
                 existingRecord.ValidatedOn = DateTime.UtcNow;
-                
+
                 return await UpdateAsync(existingRecord);
             }
         }

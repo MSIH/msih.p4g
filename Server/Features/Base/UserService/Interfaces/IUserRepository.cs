@@ -16,5 +16,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Interfaces
 
         Task<User?> GetByEmailAsync(string email, bool includeProfile = false, bool includeAddress = false, bool includeDonor = false, bool includeFundraiser = false);
         Task<User?> GetUserByTokenAsync(string emailToken);
+
+        Task<User?> GetByReferralCodeAsync(string referralCode, bool includeProfile = false, bool includeAddress = false, bool includeDonor = false, bool includeFundraiser = false);
     }
 }

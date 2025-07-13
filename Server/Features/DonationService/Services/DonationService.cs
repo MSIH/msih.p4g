@@ -4,6 +4,7 @@
 //  * Unauthorized copying, modification, distribution, or use is prohibited.
 //  */
 
+using msih.p4g.Server.Features.Base.AffiliateMonitoringService.Interfaces;
 using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
 using msih.p4g.Server.Features.Base.PaymentService.Models;
@@ -32,6 +33,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
         private readonly IPaymentService _paymentService;
         private readonly IUserProfileService _userProfileService;
         private readonly IMessageService _messageService;
+        private readonly IAffiliateMonitoringService _affiliateMonitoringService;
         private readonly ILogger<DonationService> _logger;
 
         // Standard transaction fee percentage (can be moved to configuration in the future)
@@ -47,6 +49,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             IPaymentService paymentService,
             IUserProfileService userProfileService,
             IMessageService messageService,
+            IAffiliateMonitoringService affiliateMonitoringService,
             ILogger<DonationService> logger)
         {
             _userRepository = userRepository;
@@ -56,6 +59,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             _paymentService = paymentService;
             _userProfileService = userProfileService;
             _messageService = messageService;
+            _affiliateMonitoringService = affiliateMonitoringService;
             _logger = logger;
         }
 
@@ -101,6 +105,16 @@ namespace msih.p4g.Server.Features.DonationService.Services
                     // The UserProfileService handles setting the UserId and generating the referral code
                     profile = await _userProfileService.CreateUserWithProfileAsync(user, profile, "DonationService");
 
+                    // Check if the referral code belongs to the user making the donation (prevent self-referral)
+                    string? referralCodeToUse = dto.ReferralCode;
+                    if (!string.IsNullOrEmpty(dto.ReferralCode) && profile?.ReferralCode == dto.ReferralCode)
+                    {
+                        // User is trying to use their own referral code - silently ignore it
+                        referralCodeToUse = null;
+                        _logger.LogInformation("User {Email} attempted to use their own referral code {ReferralCode} during donor registration - ignoring referral code",
+                            dto.Email, dto.ReferralCode);
+                    }
+
                     // Create donor for the new user
                     var donor = new Donor
                     {
@@ -108,11 +122,27 @@ namespace msih.p4g.Server.Features.DonationService.Services
                         IsActive = true,
                         CreatedBy = "DonationService",
                         CreatedOn = DateTime.UtcNow,
-                        ReferralCode = dto.ReferralCode
+                        ReferralCode = referralCodeToUse
                     };
                     donor = await _donorService.AddAsync(donor);
 
                     donorCreated = true;
+
+                    // Check affiliate suspension after donor creation
+                    if (!string.IsNullOrEmpty(dto.ReferralCode))
+                    {
+                        try
+                        {
+                            await _affiliateMonitoringService.CheckAffiliateAfterDonorCreationAsync(dto.ReferralCode);
+                        }
+                        catch (Exception affiliateEx)
+                        {
+                            _logger.LogError(affiliateEx,
+                                "Error checking affiliate suspension for referral code {ReferralCode}",
+                                dto.ReferralCode);
+                            // Don't fail the entire donor creation process for affiliate monitoring errors
+                        }
+                    }
                 }
             }
 
@@ -217,9 +247,20 @@ namespace msih.p4g.Server.Features.DonationService.Services
 
             // 2. Find or create donor using navigation property
             Donor? donor = user.Donor;
+            bool newDonorCreated = false;
 
             if (donor == null)
             {
+                // Check if the referral code belongs to the user making the donation (prevent self-referral)
+                string? donorReferralCodeToUse = dto.ReferralCode;
+                if (!string.IsNullOrEmpty(dto.ReferralCode) && profile?.ReferralCode == dto.ReferralCode)
+                {
+                    // User is trying to use their own referral code - silently ignore it
+                    donorReferralCodeToUse = null;
+                    _logger.LogInformation("User {Email} attempted to use their own referral code {ReferralCode} during donor creation - ignoring referral code",
+                        dto.Email, dto.ReferralCode);
+                }
+
                 // Create a new donor
                 donor = new Donor
                 {
@@ -227,9 +268,10 @@ namespace msih.p4g.Server.Features.DonationService.Services
                     IsActive = true,
                     CreatedBy = "DonationService",
                     CreatedOn = DateTime.UtcNow,
-                    ReferralCode = dto.ReferralCode
+                    ReferralCode = donorReferralCodeToUse
                 };
                 donor = await _donorService.AddAsync(donor);
+                newDonorCreated = true;
             }
 
             // Calculate transaction fee and total amount
@@ -259,6 +301,16 @@ namespace msih.p4g.Server.Features.DonationService.Services
             }
 
             // 4. Create donation record
+            // Check if the referral code belongs to the user making the donation (prevent self-referral)
+            string? referralCodeToUse = dto.ReferralCode;
+            if (!string.IsNullOrEmpty(dto.ReferralCode) && profile?.ReferralCode == dto.ReferralCode)
+            {
+                // User is trying to use their own referral code - silently ignore it
+                referralCodeToUse = null;
+                _logger.LogInformation("User {Email} attempted to use their own referral code {ReferralCode} for donation - ignoring referral code",
+                    dto.Email, dto.ReferralCode);
+            }
+
             var donation = new Donation
             {
                 DonationAmount = dto.DonationAmount,
@@ -268,7 +320,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 IsMonthly = dto.IsMonthly,
                 IsAnnual = dto.IsAnnual,
                 DonationMessage = dto.DonationMessage,
-                ReferralCode = dto.ReferralCode, // Use the profile's referral code
+                ReferralCode = referralCodeToUse,
                 CampaignCode = dto.CampaignCode,
                 IsActive = true,
                 CreatedBy = "DonationService",
@@ -442,7 +494,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
         /// <summary>
         /// Sets the active status of a donation.
         /// </summary>
-        public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System")
+        public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "DonationService")
         {
             return await _donationRepository.SetActiveStatusAsync(id, isActive, modifiedBy);
         }
@@ -590,6 +642,52 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 _logger.LogError(ex, "Error canceling recurring donation {DonationId} for user {UserEmail}", donationId, userEmail);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Gets paginated donations for a specific user by email.
+        /// </summary>
+        public async Task<PagedResult<Donation>> GetPagedByUserEmailAsync(string email, PaginationParameters parameters)
+        {
+            if (string.IsNullOrEmpty(email))
+                return new PagedResult<Donation> { Items = new List<Donation>(), TotalCount = 0, PageNumber = parameters.PageNumber, PageSize = parameters.PageSize };
+
+            try
+            {
+                return await _donationRepository.GetPagedByUserEmailAsync(email, parameters);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting paginated donations for user {Email}", email);
+                return new PagedResult<Donation> { Items = new List<Donation>(), TotalCount = 0, PageNumber = parameters.PageNumber, PageSize = parameters.PageSize };
+            }
+        }
+
+        /// <summary>
+        /// Searches for paginated donations for a specific user by email.
+        /// </summary>
+        public async Task<PagedResult<Donation>> SearchPagedByUserEmailAsync(string email, PaginationParameters parameters)
+        {
+            if (string.IsNullOrEmpty(email))
+                return new PagedResult<Donation> { Items = new List<Donation>(), TotalCount = 0, PageNumber = parameters.PageNumber, PageSize = parameters.PageSize };
+
+            try
+            {
+                return await _donationRepository.SearchPagedByUserEmailAsync(email, parameters);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching paginated donations for user {Email}", email);
+                return new PagedResult<Donation> { Items = new List<Donation>(), TotalCount = 0, PageNumber = parameters.PageNumber, PageSize = parameters.PageSize };
+            }
+        }
+
+        /// <summary>
+        /// Gets paginated donations for a specific referral code.
+        /// </summary>
+        public async Task<PagedResult<Donation>> GetPagedByReferralCodeAsync(string referralCode, PaginationParameters parameters)
+        {
+            return await _donationRepository.GetPagedByReferralCodeAsync(referralCode, parameters);
         }
     }
 }

@@ -52,7 +52,7 @@ namespace msih.p4g.Server.Features.CampaignService.Data
             IsDefault = true,
             IsActive = true,
             CreatedOn = DateTime.UtcNow,
-            CreatedBy = "System"
+            CreatedBy = "CampaignService"
         },
                      new Campaign
         {
@@ -60,7 +60,7 @@ namespace msih.p4g.Server.Features.CampaignService.Data
             Description = "Our Water Testing program provides student scientists across America with free water testing kits and laboratory analysis (valued at $50 each) to help them investigate local water quality issues and develop solutions for their communities. Our goal is to distribute 5,000 testing kits nationwide—100 kits to student scientists in each of the 50 states—empowering the next generation to make a positive impact through hands-on science and community service.",
             IsActive = true,
             CreatedOn = DateTime.UtcNow,
-            CreatedBy = "System"
+            CreatedBy = "CampaignService"
         },
         new Campaign
         {
@@ -68,7 +68,7 @@ namespace msih.p4g.Server.Features.CampaignService.Data
             Description = "Provide charitable and educational assistance to high school and college students for academic research projects.",
             IsActive = true,
             CreatedOn = DateTime.UtcNow,
-            CreatedBy = "System"
+            CreatedBy = "CampaignService"
         },
         new Campaign
         {
@@ -76,7 +76,7 @@ namespace msih.p4g.Server.Features.CampaignService.Data
             Description = "Music in Public is a charitable and educational organization dedicated to supporting acoustic musicians who perform in public spaces, with a mission to facilitate and enhance the experience of live music in communities by providing assistance to student and local musicians who share their talents in parks, plazas, streets, and other public venues. Through our program, we aim to create 5,000 acoustic music performances across multiple states, fostering cultural enrichment and bringing the joy of live music directly to the public while providing meaningful support to emerging and established musicians. Donations to Music in Public directly support our musicians through performance compensation and fund the development of our digital platform, which connects performers with audiences and coordinates performance opportunities, helping us cultivate vibrant musical communities while ensuring that the universal language of music remains accessible to all.",
             IsActive = true,
             CreatedOn = DateTime.UtcNow,
-            CreatedBy = "System"
+            CreatedBy = "CampaignService"
         },
         new Campaign
         {
@@ -84,7 +84,7 @@ namespace msih.p4g.Server.Features.CampaignService.Data
             Description = "Provide charitable and educational assistance to empower low-income people to start a business.",
             IsActive = true,
             CreatedOn = DateTime.UtcNow,
-            CreatedBy = "System"
+            CreatedBy = "CampaignService"
         },
         new Campaign
         {
@@ -92,7 +92,7 @@ namespace msih.p4g.Server.Features.CampaignService.Data
             Description = "Provide information to food workers about salary, benefits, and tip policy for business in every state.",
             IsActive = true,
             CreatedOn = DateTime.UtcNow,
-            CreatedBy = "System"
+            CreatedBy = "CampaignService"
         },
         new Campaign
         {
@@ -100,7 +100,7 @@ namespace msih.p4g.Server.Features.CampaignService.Data
             Description = "Provide citizens of the United States of America a way to share their views and see how others' opinions on current topics and policies.",
             IsActive = true,
             CreatedOn = DateTime.UtcNow,
-            CreatedBy = "System"
+            CreatedBy = "CampaignService"
         }
     };
                 // Get existing campaign titles

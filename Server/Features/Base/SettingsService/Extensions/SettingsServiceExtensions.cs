@@ -1,9 +1,14 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
-using Microsoft.Extensions.DependencyInjection;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.SettingsService.Repositories;
 using msih.p4g.Server.Features.Base.SettingsService.Services;
@@ -23,14 +28,14 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Extensions
         public static IServiceCollection AddSettingsServices(this IServiceCollection services)
         {
             // Register SettingRepository for DI
-            services.AddScoped<ISettingRepository, SettingRepository>();
-            
+            services.AddSingleton<ISettingRepository, SettingRepository>();
+
             // Register SettingsService for DI
             services.AddScoped<ISettingsService, msih.p4g.Server.Features.Base.SettingsService.Services.SettingsService>();
-            
+
             // Register SettingsInitializer for DI
             services.AddScoped<SettingsInitializer>();
-            
+
             return services;
         }
     }

@@ -12,9 +12,9 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Interfaces
     {
         Task<IEnumerable<Profile>> GetAllAsync(bool includeInactive = false);
         Task<Profile> GetByIdAsync(int id);
-        Task<Profile> AddAsync(Profile profile, string createdBy = "System", bool consentReceiveEmail = true);
-        Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "System");
-        Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System");
+        Task<Profile> AddAsync(Profile profile, string createdBy = "ProfileService", bool consentReceiveEmail = true);
+        Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "ProfileService");
+        Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "ProfileService");
 
         /// <summary>
         /// Gets a profile by its referral code

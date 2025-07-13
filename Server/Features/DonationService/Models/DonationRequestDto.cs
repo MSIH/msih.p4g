@@ -32,6 +32,7 @@ namespace msih.p4g.Server.Features.DonationService.Models
         /// Gets or sets the amount of the donation. Donation amount entered plus transaction fee amount if PayTransactionFee is true.
         /// </summary>
         [Required]
+        [Range(25.00, double.MaxValue, ErrorMessage = "Donation amount must be at least $25.00")]
         public decimal DonationAmount { get; set; }
 
         public decimal PayTransactionFeeAmount { get; set; }
