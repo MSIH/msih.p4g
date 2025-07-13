@@ -111,7 +111,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
                     {
                         // User is trying to use their own referral code - silently ignore it
                         referralCodeToUse = null;
-                        _logger.LogInformation("User {Email} attempted to use their own referral code {ReferralCode} during donor registration - ignoring referral code", 
+                        _logger.LogInformation("User {Email} attempted to use their own referral code {ReferralCode} during donor registration - ignoring referral code",
                             dto.Email, dto.ReferralCode);
                     }
 
@@ -129,11 +129,11 @@ namespace msih.p4g.Server.Features.DonationService.Services
                     donorCreated = true;
 
                     // Check affiliate suspension after donor creation
-                    if (!string.IsNullOrEmpty(referralCodeToUse))
+                    if (!string.IsNullOrEmpty(dto.ReferralCode))
                     {
                         try
                         {
-                            await _affiliateMonitoringService.CheckAffiliateAfterDonorCreationAsync(referralCodeToUse);
+                            await _affiliateMonitoringService.CheckAffiliateAfterDonorCreationAsync(dto.ReferralCode);
                         }
                         catch (Exception affiliateEx)
                         {
@@ -257,7 +257,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 {
                     // User is trying to use their own referral code - silently ignore it
                     donorReferralCodeToUse = null;
-                    _logger.LogInformation("User {Email} attempted to use their own referral code {ReferralCode} during donor creation - ignoring referral code", 
+                    _logger.LogInformation("User {Email} attempted to use their own referral code {ReferralCode} during donor creation - ignoring referral code",
                         dto.Email, dto.ReferralCode);
                 }
 
@@ -307,7 +307,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
             {
                 // User is trying to use their own referral code - silently ignore it
                 referralCodeToUse = null;
-                _logger.LogInformation("User {Email} attempted to use their own referral code {ReferralCode} for donation - ignoring referral code", 
+                _logger.LogInformation("User {Email} attempted to use their own referral code {ReferralCode} for donation - ignoring referral code",
                     dto.Email, dto.ReferralCode);
             }
 
