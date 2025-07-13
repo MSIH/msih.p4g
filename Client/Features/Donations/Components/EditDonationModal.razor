@@ -123,14 +123,7 @@
             <div class="modal-footer">
                 @if (Donation?.IsMonthly == true || Donation?.IsAnnual == true)
                 {
-                    <button type="button" class="btn btn-danger" @onclick="CancelDonation" disabled="@isProcessing">
-                        @if (isProcessing)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                        }
-                        Cancel Donation
-                    </button>
-                    <button type="button" class="btn btn-primary" @onclick="SaveChanges" disabled="@isProcessing">
+                <button type="button" class="btn btn-primary" @onclick="SaveChanges" disabled="@isProcessing">
                         @if (isProcessing)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -192,24 +185,6 @@
             Donation.IsAnnual = editModel.IsActiveAnnualy;
 
             await OnSave.InvokeAsync(Donation);
-        }
-        finally
-        {
-            isProcessing = false;
-            StateHasChanged();
-        }
-    }
-
-    private async Task CancelDonation()
-    {
-        if (Donation == null) return;
-
-        isProcessing = true;
-        StateHasChanged();
-
-        try
-        {
-            await OnCancel.InvokeAsync(Donation.Id);
         }
         finally
         {
