@@ -84,15 +84,15 @@
                                                     <span>@quarter.PayoutDate.Value.ToString("MMM d, yyyy")</span>
                                                     @if (quarter.PayoutStatus == "PENDING")
                                                     {
-                                                        <br><small class="badge bg-warning">Pending</small>
+                                                        <span class="badge bg-warning ms-2">Pending</span>
                                                     }
                                                     else if (quarter.PayoutStatus == "SUCCESS")
                                                     {
-                                                        <br><small class="badge bg-success">Paid</small>
+                                                        <span class="badge bg-success ms-2">Paid</span>
                                                     }
                                                     else if (quarter.PayoutStatus == "FAILED")
                                                     {
-                                                        <br><small class="badge bg-danger">Failed</small>
+                                                        <span class="badge bg-danger ms-2">Failed</span>
                                                     }
                                                 }
                                                 else
@@ -100,8 +100,7 @@
                                                     @if (quarter.CommissionEarned > 0)
                                                     {
                                                         var nextPayoutDate = GetNextPayoutDate(quarter.Year, quarter.Quarter);
-                                                        <span class="text-muted">@nextPayoutDate.ToString("MMM d, yyyy")</span>
-                                                        <br><small class="text-muted">Expected</small>
+                                                        <span class="text-muted">@nextPayoutDate.ToString("MMM d, yyyy") <small class="text-muted">(Expected)</small></span>
                                                     }
                                                     else
                                                     {
