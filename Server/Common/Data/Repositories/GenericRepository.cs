@@ -37,15 +37,6 @@ namespace msih.p4g.Server.Common.Data.Repositories
         /// <param name="cacheStrategy">Optional caching strategy for repository operations</param>
         public GenericRepository(IDbContextFactory<ApplicationDbContext> contextFactory, ICacheStrategy? cacheStrategy = null)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of GenericRepository with optional caching strategy
-        /// </summary>
-        /// <param name="contextFactory">The database context factory</param>
-        /// <param name="cacheStrategy">Optional caching strategy for repository operations</param>
-        public GenericRepository(IDbContextFactory<ApplicationDbContext> contextFactory, ICacheStrategy? cacheStrategy = null)
-        {
             _contextFactory = contextFactory;
             _cacheStrategy = cacheStrategy;
             _entityTypeName = typeof(T).Name;
