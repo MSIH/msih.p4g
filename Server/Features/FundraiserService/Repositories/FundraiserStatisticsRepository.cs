@@ -112,10 +112,11 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
 
             var fundraiserReferralCode = fundraiser.User.Profile.ReferralCode;
 
-            // Get all donors with the fundraiser's referral code who have confirmed their email or made a donation
+            // Get all donors with the fundraiser's referral code who have made at least one donation
+            // This aligns with the AffiliateMonitoringService qualification criteria
             var donorsFromReferral = await context.Donors
                 .Where(d => d.ReferralCode == fundraiserReferralCode)
-                .Where(d => d.User.EmailConfirmedAt != null || d.Donations.Any())
+                .Where(d => d.Donations.Any()) // Only qualified donors who have made donations
                 .ToListAsync();
 
             return donorsFromReferral.Select(ftd => new FirstTimeDonorInfo
