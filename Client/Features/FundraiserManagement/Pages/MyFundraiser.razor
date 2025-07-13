@@ -5,12 +5,15 @@
 @using msih.p4g.Server.Features.FundraiserService.Model
 @using msih.p4g.Server.Features.FundraiserService.Interfaces
 @using msih.p4g.Server.Features.Base.UserService.Interfaces
+@using msih.p4g.Server.Features.Base.UserService.Models
 @using msih.p4g.Server.Features.Base.ProfileService.Interfaces
 @using msih.p4g.Server.Features.Base.ProfileService.Model
+@using msih.p4g.Server.Features.DonationService.Interfaces
 @using msih.p4g.Client.Common.Components
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @inject IFundraiserService FundraiserService
+@inject IDonationService DonationService
 @inject IUserService UserService
 @inject IProfileService ProfileService
 @inject msih.p4g.Server.Features.FundraiserService.Interfaces.IFundraiserStatisticsService FundraiserStatsService
@@ -36,7 +39,7 @@
                             </div>
                         </div>
                     }
-                    else if (fundraiser == null)
+                    else if (fundraiser == null && userPrincipal?.Role == UserRole.Fundraiser)
                     {
                         <div class="alert alert-warning">
                             <p>Fundraiser information not found. Please contact support if you believe this is an error.</p>
@@ -67,13 +70,94 @@
                                 </div>
                             </div>
                         }
+
+                        @* Only show fundraiser-specific forms and commission info if user is a fundraiser *@
+                        @if (userPrincipal?.Role == UserRole.Fundraiser && fundraiser != null)
+                        {
+                            <EditForm Model="@fundraiser" OnValidSubmit="HandleFundraiserUpdate">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Fundraiser Settings</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-4">
+                                            <label for="payoutAccount" class="form-label">Payout Account</label>
+                                            <InputText id="payoutAccount" @bind-Value="fundraiser.PayoutAccount" class="form-control" />
+                                            <small class="text-muted">This is the mobile, email, or handle where your commissions will be sent.</small>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="accountType" class="form-label">Payment Account Type</label>
+                                            <InputSelect id="accountType" @bind-Value="fundraiser.PayoutAccountType" class="form-control">
+                                                <option value="">-- Select Account Type --</option>
+                                                <option value="PayPal">PayPal</option>
+                                                <option value="Venmo">Venmo</option>
+                                            </InputSelect>
+                                            <small class="text-muted">Select your payment account type</small>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label for="paymentAccountFormat" class="form-label">Payment Account Format</label>
+                                            <InputSelect id="paymentAccountFormat" @bind-Value="fundraiser.PayoutAccountFormat" class="form-control">
+                                                <option value="">-- Select Format --</option>
+                                                <option value="Email">Email</option>
+                                                <option value="Handle">Handle (@@username)</option>
+                                                <option value="Mobile">Mobile Number</option>
+                                            </InputSelect>
+                                            <small class="text-muted">How your payment account is identified</small>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <label for="w9Document" class="form-label mb-0">W9 Tax Form</label>
+                                                <button type="button" class="btn btn-outline-primary btn-sm" @onclick="NavigateToW9Form">
+                                                    <span class="oi oi-document me-1"></span> @(string.IsNullOrEmpty(fundraiser.W9Document) ? "Complete W9 Form" : "View/Edit W9 Form")
+                                                </button>
+                                            </div>
+                                            <div class="mt-2">
+                                                @if (string.IsNullOrEmpty(fundraiser.W9Document))
+                                                {
+                                                    <div class="alert alert-warning py-2">
+                                                        <small class="mb-0">You need to complete a W9 tax form to receive payments over $600.</small>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="alert alert-success py-2">
+                                                        <small class="mb-0">W9 form submitted: @fundraiser.W9Document</small>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                                                @if (isSaving)
+                                                {
+                                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                    <span> Saving...</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Save Changes</span>
+                                                }
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </EditForm>
+                        }
                     }
                 </div>
             </div>
 
 
 
-            @if (statistics != null)
+            @* Show donation statistics and history for all users with referral codes *@
+            @if (profile != null && !string.IsNullOrEmpty(profile.ReferralCode) && statistics != null)
             {
                 <div class="card mb-4">
                     <div class="card-header">
@@ -110,6 +194,12 @@
                 </div>
 
                 <DonationHistoryComponent ShowSummary="false" ShowActions="false" ReferralCode="@profile.ReferralCode" />
+
+                @* Show commission information only for fundraisers *@
+                @if (userPrincipal?.Role == UserRole.Fundraiser && fundraiser != null)
+                {
+                    <msih.p4g.Client.Features.FundraiserManagement.Component.AffiliateComissions FundraiserId="@fundraiser.Id" Profile="@profile" />
+                }
             }
         </div>
     </div>
@@ -119,6 +209,7 @@
     private msih.p4g.Server.Features.FundraiserService.Model.Fundraiser fundraiser;
     private Profile profile;
     private FundraiserStatistics statistics;
+    private User userPrincipal;
     private bool isLoading = true;
     private bool isSaving = false;
     private string message = string.Empty;
@@ -136,7 +227,7 @@
         try
         {
             // Get the current user using the AuthService
-            var userPrincipal = await AuthService.GetCurrentUserAsync();
+            userPrincipal = await AuthService.GetCurrentUserAsync();
 
             // Check if user principal is null or has no valid ID
             if (userPrincipal == null || userPrincipal.Id <= 0)
@@ -146,32 +237,50 @@
                 return;
             }
 
-
-            // Get the fundraiser for this user
-            fundraiser = await FundraiserService.GetByUserIdAsync(userPrincipal.Id);
-
-            // Get user's profile for the referral code
+            // Get user's profile for the referral code (always load this for all user types)
             profile = await ProfileService.GetByIdAsync(userPrincipal.Id);
 
-            // Get donation statistics for this fundraiser
-            if (fundraiser != null)
+            // Only try to get fundraiser data if user is a fundraiser
+            if (userPrincipal.Role == UserRole.Fundraiser)
             {
-                statistics = await FundraiserStatsService.GetStatisticsAsync(fundraiser.Id);
+                fundraiser = await FundraiserService.GetByUserIdAsync(userPrincipal.Id);
+                
+                // If fundraiser is still null for a fundraiser user, create a default one
+                if (fundraiser == null)
+                {
+                    fundraiser = new msih.p4g.Server.Features.FundraiserService.Model.Fundraiser
+                    {
+                        PayoutAccount = string.Empty,
+                        W9Document = string.Empty
+                    };
+                }
             }
 
-            // If fundraiser is still null, create a default one
-            if (fundraiser == null)
+            // Get donation statistics based on referral code for all user types
+            if (profile != null && !string.IsNullOrEmpty(profile.ReferralCode))
             {
-                fundraiser = new msih.p4g.Server.Features.FundraiserService.Model.Fundraiser
+                // For fundraisers, use their fundraiser ID if available, otherwise calculate from donations
+                if (fundraiser != null)
                 {
-                    PayoutAccount = string.Empty,
-                    W9Document = string.Empty
-                };
+                    statistics = await FundraiserStatsService.GetStatisticsAsync(fundraiser.Id);
+                }
+                else
+                {
+                    // For non-fundraisers or fundraisers without a fundraiser record,
+                    // calculate statistics from donations by referral code
+                    var donations = await DonationService.GetByReferralCodeAsync(profile.ReferralCode);
+                    statistics = new FundraiserStatistics
+                    {
+                        DonationCount = donations.Count,
+                        TotalRaised = donations.Sum(d => d.DonationAmount),
+                        AverageDonation = donations.Any() ? donations.Average(d => d.DonationAmount) : 0
+                    };
+                }
             }
         }
         catch (Exception ex)
         {
-            message = $"Error loading fundraiser data: {ex.Message}";
+            message = $"Error loading data: {ex.Message}";
         }
         finally
         {
@@ -182,6 +291,13 @@
 
     private async Task HandleFundraiserUpdate()
     {
+        // Only allow fundraiser updates for fundraiser role
+        if (userPrincipal?.Role != UserRole.Fundraiser || fundraiser == null)
+        {
+            message = "Error: Only fundraisers can update fundraiser information.";
+            return;
+        }
+
         isSaving = true;
         message = string.Empty;
 
@@ -216,6 +332,13 @@
 
     private void NavigateToW9Form()
     {
+        // Only fundraisers can access W9 forms
+        if (userPrincipal?.Role != UserRole.Fundraiser)
+        {
+            message = "Error: Only fundraisers can access W9 forms.";
+            return;
+        }
+
         if (fundraiser != null && fundraiser.Id > 0)
         {
             NavigationManager.NavigateTo($"/w9form/{fundraiser.Id}");
