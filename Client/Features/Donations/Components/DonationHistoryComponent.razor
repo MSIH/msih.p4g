@@ -9,9 +9,12 @@
 @using msih.p4g.Client.Common.Components
 @using msih.p4g.Server.Features.DonationService.Interfaces
 @using msih.p4g.Server.Features.DonationService.Models
+@using msih.p4g.Server.Features.CampaignService.Interfaces
+@using msih.p4g.Server.Features.CampaignService.Model
 @using msih.p4g.Shared.Dtos
 @using msih.p4g.Shared.Models
 @inject IDonationService DonationService
+@inject ICampaignService CampaignService
 @inject AuthService AuthService
 @inject IJSRuntime JSRuntime
 
@@ -130,11 +133,11 @@ else
                                 <td>@donation.CreatedOn.ToString("MMM dd, yyyy")</td>
                                 <td>
                                     <strong>$@donation.DonationAmount.ToString("F2")</strong>
-                                    @if (donation.PayTransactionFee)
+                                    @* @if (donation.PayTransactionFee)
                                     {
                                         <br />
                                         <small class="text-muted">Total: $@donation.TotalAmount.ToString("F2")</small>
-                                    }
+                                    } *@
                                 </td>
                                 <td>
                                     <span class="badge @GetRecurrenceBadgeClass(donation)">
@@ -144,7 +147,7 @@ else
                                 <td>
                                     @if (!string.IsNullOrEmpty(donation.CampaignCode))
                                     {
-                                        <span class="badge bg-light text-dark">@donation.CampaignCode</span>
+                                        <span class="badge bg-light text-dark">@donation.CampaignName</span>
                                     }
                                     else
                                     {
@@ -198,6 +201,7 @@ else
     [Parameter] public bool ShowSummary { get; set; } = true;
     [Parameter] public bool ShowActions { get; set; } = true;
     [Parameter] public EventCallback<DonationDto> OnDonationClick { get; set; }
+    [Parameter] public string ReferralCode { get; set; }
 
     private PagedResult<Donation> pagedDonations = new();
     private string searchTerm = string.Empty;
@@ -211,9 +215,45 @@ else
     private int monthlyCount = 0;
     private int annualCount = 0;
 
+    private List<Campaign> campaigns = new();
+
     protected override async Task OnInitializedAsync()
     {
+        await LoadCampaigns();
         await LoadDonations();
+
+    }
+
+    private async Task LoadCampaigns()
+    {
+        try
+        {
+            var allCampaigns = await CampaignService.GetAllAsync();
+            campaigns = allCampaigns.ToList();
+        }
+        catch (Exception ex)
+        {
+            // Logger.LogError(ex, "Error loading campaigns");
+            campaigns = new List<Campaign>();
+        }
+    }
+
+    private string? GetCampaignName(string? campaignCode)
+    {
+        // First try to find by CampaignCode if available
+        if (!string.IsNullOrEmpty(campaignCode))
+        {
+            //try to convert campaignCode to int
+            if (int.TryParse(campaignCode, out int campaignId))
+            {
+                var campaignById = campaigns.FirstOrDefault(c => c.Id == campaignId);
+                if (campaignById != null)
+                    return campaignById.Title;
+            }
+        }
+
+        // Return the campaign code as fallback if no campaign found
+        return null;
     }
 
     private async Task LoadDonations()
@@ -223,7 +263,19 @@ else
 
         try
         {
-            if (AuthService.IsAuthenticated && !string.IsNullOrEmpty(AuthService.CurrentUser?.Email))
+            if (!string.IsNullOrEmpty(ReferralCode))
+            {
+                var parameters = new PaginationParameters
+                {
+                    PageNumber = currentPage,
+                    PageSize = pageSize,
+                    SearchTerm = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm,
+                    FilterType = filterType == "all" ? null : filterType
+                };
+                pagedDonations = await DonationService.GetPagedByReferralCodeAsync(ReferralCode, parameters);
+                await LoadSummaryStatistics();
+            }
+            else if (AuthService.IsAuthenticated && !string.IsNullOrEmpty(AuthService.CurrentUser?.Email))
             {
                 var parameters = new PaginationParameters
                 {
@@ -265,9 +317,17 @@ else
     {
         try
         {
-            if (AuthService.IsAuthenticated && !string.IsNullOrEmpty(AuthService.CurrentUser?.Email))
+            if (!string.IsNullOrEmpty(ReferralCode))
             {
-                // Load all donations for summary (not paginated)
+                var allDonations = await DonationService.GetByReferralCodeAsync(ReferralCode);
+                var donationDtos = ConvertToDto(allDonations);
+
+                totalAmount = donationDtos.Sum(d => d.DonationAmount);
+                monthlyCount = donationDtos.Count(d => d.IsMonthly);
+                annualCount = donationDtos.Count(d => d.IsAnnual);
+            }
+            else if (AuthService.IsAuthenticated && !string.IsNullOrEmpty(AuthService.CurrentUser?.Email))
+            {
                 var allDonations = await DonationService.GetByUserEmailAsync(AuthService.CurrentUser.Email);
                 var donationDtos = ConvertToDto(allDonations);
 
@@ -320,13 +380,21 @@ else
         await OnDonationClick.InvokeAsync(donation);
     }
 
+    // Helper: Get badge class for recurrence type
     private string GetRecurrenceBadgeClass(DonationDto donation)
     {
-        if (donation.IsMonthly) return "bg-primary";
-        if (donation.IsAnnual) return "bg-success";
-        return "bg-secondary";
+        if (donation == null) return "bg-secondary";
+        return donation.RecurrenceType switch
+        {
+            "Monthly" => "bg-info",
+            "Annual" => "bg-warning",
+            "OneTime" => "bg-primary",
+            "Recurring" => "bg-success",
+            _ => "bg-secondary"
+        };
     }
 
+    // Helper: Convert List<Donation> to List<DonationDto>
     private List<DonationDto> ConvertToDto(List<Donation> serverDonations)
     {
         return serverDonations.Select(d => new DonationDto
@@ -340,17 +408,19 @@ else
             DonationMessage = d.DonationMessage,
             ReferralCode = d.ReferralCode,
             CampaignCode = d.CampaignCode,
-            CampaignName = d.Campaign?.Title,
+            CampaignName = GetCampaignName(d.CampaignCode),
             CreatedOn = d.CreatedOn,
             IsActive = d.IsActive
         }).ToList();
     }
 
+    // Helper: Create generic paged result for pagination component
     private PagedResult<object> CreateGenericPagedResult()
     {
+        var dtos = ConvertToDto(pagedDonations.Items?.ToList() ?? new List<Donation>());
         return new PagedResult<object>
         {
-            Items = pagedDonations.Items.Cast<object>().ToList(),
+            Items = dtos.Cast<object>().ToList(),
             TotalCount = pagedDonations.TotalCount,
             PageNumber = pagedDonations.PageNumber,
             PageSize = pagedDonations.PageSize

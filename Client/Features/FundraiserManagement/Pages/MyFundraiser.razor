@@ -1,6 +1,7 @@
 @page "/fundraiser"
 @namespace msih.p4g.Client.Features.FundraiserManagement.Pages
 @using msih.p4g.Client.Features.Authentication.Services
+@using msih.p4g.Client.Features.Donations.Components
 @using msih.p4g.Server.Features.FundraiserService.Model
 @using msih.p4g.Server.Features.FundraiserService.Interfaces
 @using msih.p4g.Server.Features.Base.UserService.Interfaces
@@ -108,55 +109,7 @@
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Donation History</h3>
-                    </div>
-                    <div class="card-body">
-                        @if (statistics.Donations.Count == 0)
-                        {
-                            <div class="alert alert-info">
-                                <p class="mb-0">No donations have been made using your referral code yet.</p>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="table-responsive">
-
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 80px;">Date</th>
-                                            <th style="width: 100px;" class="text-end">Amount</th>
-                                            <th>Donor</th>
-                                            <th>Message</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var donation in statistics.Donations)
-                                        {
-                                            <tr>
-                                                <td>@donation.DonationDate.ToString("MM/dd/yyyy")</td>
-                                                <td class="text-end">$@donation.Amount.ToString("N2")</td>
-                                                <td>@donation.DonorName</td>
-                                                <td>
-                                                    @if (string.IsNullOrEmpty(donation.Message))
-                                                    {
-                                                        <span class="text-muted">(No message)</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        @donation.Message
-                                                    }
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
-                    </div>
-                </div>
+                <DonationHistoryComponent ShowSummary="false" ShowActions="false" ReferralCode="@profile.ReferralCode" />
             }
         </div>
     </div>

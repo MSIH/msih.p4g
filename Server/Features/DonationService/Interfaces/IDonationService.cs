@@ -122,5 +122,10 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         /// Searches for paginated donations for a specific user by email.
         /// </summary>
         Task<PagedResult<Donation>> SearchPagedByUserEmailAsync(string email, PaginationParameters parameters);
+
+        /// <summary>
+        /// Gets paginated donations for a specific referral code.
+        /// </summary>
+        Task<PagedResult<Donation>> GetPagedByReferralCodeAsync(string referralCode, PaginationParameters parameters);
     }
 }

@@ -629,5 +629,13 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 return new PagedResult<Donation> { Items = new List<Donation>(), TotalCount = 0, PageNumber = parameters.PageNumber, PageSize = parameters.PageSize };
             }
         }
+
+        /// <summary>
+        /// Gets paginated donations for a specific referral code.
+        /// </summary>
+        public async Task<PagedResult<Donation>> GetPagedByReferralCodeAsync(string referralCode, PaginationParameters parameters)
+        {
+            return await _donationRepository.GetPagedByReferralCodeAsync(referralCode, parameters);
+        }
     }
 }
