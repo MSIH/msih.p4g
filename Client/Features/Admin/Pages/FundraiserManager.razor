@@ -1,0 +1,182 @@
+@* Copyright (c) 2025 MSIH LLC. All rights reserved.
+   This file is developed for Make Sure It Happens Inc.
+   Unauthorized copying, modification, distribution, or use is prohibited. *@
+@page "/admin/fundraisers"
+@layout AdminLayout
+
+@using msih.p4g.Server.Features.FundraiserService.Model
+@using msih.p4g.Server.Features.FundraiserService.Interfaces
+@inject IFundraiserService FundraiserService
+@inject NavigationManager Navigation
+@inject AuthorizationService AuthorizationService
+
+<h3>Manage Fundraisers</h3>
+
+@if (isLoading)
+{
+    <div>Loading fundraisers...</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Payout Account</th>
+                <th>Account Type</th>
+                <th>Account Format</th>
+                <th>Suspended</th>
+                <th>Suspension Reason</th>
+                <th>Suspended Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var fundraiser in fundraisers)
+            {
+                <tr>
+                    <td>@fundraiser.Id</td>
+                    <td>
+                        @if (editingFundraiserId == fundraiser.Id)
+                        {
+                            <input class="form-control" @bind="editPayoutAccount" maxlength="200" />
+                        }
+                        else
+                        {
+                            <span>@fundraiser.PayoutAccount</span>
+                        }
+                    </td>
+                    <td>
+                        @if (editingFundraiserId == fundraiser.Id)
+                        {
+                            <select class="form-select" @bind="editAccountType">
+                                <option value="">--</option>
+                                @foreach (var type in Enum.GetValues<AccountType>())
+                                {
+                                    <option value="@type">@type</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <span>@fundraiser.PayoutAccountType</span>
+                        }
+                    </td>
+                    <td>
+                        @if (editingFundraiserId == fundraiser.Id)
+                        {
+                            <select class="form-select" @bind="editAccountFormat">
+                                <option value="">--</option>
+                                @foreach (var format in Enum.GetValues<AccountFormat>())
+                                {
+                                    <option value="@format">@format</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <span>@fundraiser.PayoutAccountFormat</span>
+                        }
+                    </td>
+                    <td>
+                        @if (editingFundraiserId == fundraiser.Id)
+                        {
+                            <input type="checkbox" @bind="editIsSuspended" />
+                        }
+                        else
+                        {
+                            <span>@(fundraiser.IsSuspended ? "Yes" : "No")</span>
+                        }
+                    </td>
+                    <td>
+                        @if (editingFundraiserId == fundraiser.Id)
+                        {
+                            <input class="form-control" @bind="editSuspensionReason" maxlength="500" />
+                        }
+                        else
+                        {
+                            <span>@fundraiser.SuspensionReason</span>
+                        }
+                    </td>
+                    <td>
+                        <span>@(fundraiser.SuspendedDate?.ToString("yyyy-MM-dd HH:mm") ?? "")</span>
+                    </td>
+                    <td>
+                        @if (editingFundraiserId == fundraiser.Id)
+                        {
+                            <button class="btn btn-success btn-sm me-1" @onclick="() => SaveEdit(fundraiser)">Save</button>
+                            <button class="btn btn-secondary btn-sm me-1" @onclick="CancelEdit">Cancel</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-primary btn-sm me-1" @onclick="() => StartEdit(fundraiser)">Edit</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Fundraiser> fundraisers = new();
+    private bool isLoading = true;
+    private int? editingFundraiserId = null;
+    private string editPayoutAccount = "";
+    private AccountType? editAccountType = null;
+    private AccountFormat? editAccountFormat = null;
+    private bool editIsSuspended = false;
+    private string editSuspensionReason = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFundraisers();
+    }
+
+    private async Task LoadFundraisers()
+    {
+        isLoading = true;
+        fundraisers = (await FundraiserService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void StartEdit(Fundraiser fundraiser)
+    {
+        editingFundraiserId = fundraiser.Id;
+        editPayoutAccount = fundraiser.PayoutAccount ?? "";
+        editAccountType = fundraiser.PayoutAccountType;
+        editAccountFormat = fundraiser.PayoutAccountFormat;
+        editIsSuspended = fundraiser.IsSuspended;
+        editSuspensionReason = fundraiser.SuspensionReason ?? "";
+    }
+
+    private async Task SaveEdit(Fundraiser fundraiser)
+    {
+        fundraiser.PayoutAccount = editPayoutAccount;
+        fundraiser.PayoutAccountType = editAccountType;
+        fundraiser.PayoutAccountFormat = editAccountFormat;
+        fundraiser.IsSuspended = editIsSuspended;
+        fundraiser.SuspensionReason = editSuspensionReason;
+        if (editIsSuspended)
+        {
+            fundraiser.SuspendedDate = fundraiser.SuspendedDate ?? DateTime.UtcNow;
+        }
+        else
+        {
+            fundraiser.SuspendedDate = null;
+        }
+        await FundraiserService.UpdateAsync(fundraiser);
+        await LoadFundraisers();
+        editingFundraiserId = null;
+    }
+
+    private void CancelEdit()
+    {
+        editingFundraiserId = null;
+        editPayoutAccount = "";
+        editAccountType = null;
+        editAccountFormat = null;
+        editIsSuspended = false;
+        editSuspensionReason = "";
+    }
+}
