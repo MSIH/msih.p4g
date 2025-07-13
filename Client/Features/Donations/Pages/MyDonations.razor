@@ -227,7 +227,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading campaigns: {ex.Message}");
+            Logger.LogError(ex, "Error loading campaigns");
             campaigns = new List<Campaign>();
         }
     }
