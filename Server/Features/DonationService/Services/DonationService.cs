@@ -613,5 +613,51 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 return false;
             }
         }
+
+        /// <summary>
+        /// Gets paginated donations for a specific user by email.
+        /// </summary>
+        public async Task<PagedResult<Donation>> GetPagedByUserEmailAsync(string email, PaginationParameters parameters)
+        {
+            if (string.IsNullOrEmpty(email))
+                return new PagedResult<Donation> { Items = new List<Donation>(), TotalCount = 0, PageNumber = parameters.PageNumber, PageSize = parameters.PageSize };
+
+            try
+            {
+                return await _donationRepository.GetPagedByUserEmailAsync(email, parameters);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting paginated donations for user {Email}", email);
+                return new PagedResult<Donation> { Items = new List<Donation>(), TotalCount = 0, PageNumber = parameters.PageNumber, PageSize = parameters.PageSize };
+            }
+        }
+
+        /// <summary>
+        /// Searches for paginated donations for a specific user by email.
+        /// </summary>
+        public async Task<PagedResult<Donation>> SearchPagedByUserEmailAsync(string email, PaginationParameters parameters)
+        {
+            if (string.IsNullOrEmpty(email))
+                return new PagedResult<Donation> { Items = new List<Donation>(), TotalCount = 0, PageNumber = parameters.PageNumber, PageSize = parameters.PageSize };
+
+            try
+            {
+                return await _donationRepository.SearchPagedByUserEmailAsync(email, parameters);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error searching paginated donations for user {Email}", email);
+                return new PagedResult<Donation> { Items = new List<Donation>(), TotalCount = 0, PageNumber = parameters.PageNumber, PageSize = parameters.PageSize };
+            }
+        }
+
+        /// <summary>
+        /// Gets paginated donations for a specific referral code.
+        /// </summary>
+        public async Task<PagedResult<Donation>> GetPagedByReferralCodeAsync(string referralCode, PaginationParameters parameters)
+        {
+            return await _donationRepository.GetPagedByReferralCodeAsync(referralCode, parameters);
+        }
     }
 }
