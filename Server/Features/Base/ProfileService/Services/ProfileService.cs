@@ -27,7 +27,7 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Services
             return await _profileRepository.GetByIdAsync(id);
         }
 
-        public async Task<Profile> AddAsync(Profile profile, string createdBy = "System", bool consentReceiveEmail = true)
+        public async Task<Profile> AddAsync(Profile profile, string createdBy = "ProfileService", bool consentReceiveEmail = true)
         {
             // Generate a unique referral code before adding to the repository
             profile.GenerateReferralCode();
@@ -35,12 +35,12 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Services
             return await _profileRepository.AddAsync(profile, createdBy);
         }
 
-        public async Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "System")
+        public async Task<Profile> UpdateAsync(Profile profile, string modifiedBy = "ProfileService")
         {
             return await _profileRepository.UpdateAsync(profile, modifiedBy);
         }
 
-        public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System")
+        public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "ProfileService")
         {
             return await _profileRepository.SetActiveStatusAsync(id, isActive, modifiedBy);
         }

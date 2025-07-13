@@ -1,16 +1,18 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
+using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Repositories;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using msih.p4g.Server.Features.Base.PaymentService.Models;
 
 namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
@@ -23,7 +25,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         public PaymentTransactionRepository(IDbContextFactory<ApplicationDbContext> contextFactory) : base(contextFactory)
         {
         }
-        
+
         /// <summary>
         /// Gets a payment transaction by its provider-specific transaction ID
         /// </summary>
@@ -36,7 +38,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
                 .Where(t => t.TransactionId == transactionId && t.IsActive)
                 .FirstOrDefaultAsync();
         }
-        
+
         /// <summary>
         /// Gets payment transactions by their status
         /// </summary>
@@ -50,7 +52,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
                 .OrderByDescending(t => t.ProcessedOn)
                 .ToListAsync();
         }
-        
+
         /// <summary>
         /// Gets payment transactions for a specific order
         /// </summary>
@@ -64,7 +66,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
                 .OrderByDescending(t => t.ProcessedOn)
                 .ToListAsync();
         }
-        
+
         /// <summary>
         /// Gets payment transactions by customer email
         /// </summary>
@@ -78,7 +80,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
                 .OrderByDescending(t => t.ProcessedOn)
                 .ToListAsync();
         }
-        
+
         /// <summary>
         /// Gets payment transactions within a date range
         /// </summary>
@@ -93,7 +95,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
                 .OrderByDescending(t => t.ProcessedOn)
                 .ToListAsync();
         }
-        
+
         /// <summary>
         /// Updates the status of a payment transaction
         /// </summary>
@@ -102,7 +104,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
         /// <param name="errorMessage">Optional error message if status is Failed</param>
         /// <param name="modifiedBy">The user who updated the status</param>
         /// <returns>True if the transaction was updated, false otherwise</returns>
-        public async Task<bool> UpdateStatusAsync(int id, PaymentStatus status, string? errorMessage = null, string modifiedBy = "System")
+        public async Task<bool> UpdateStatusAsync(int id, PaymentStatus status, string? errorMessage = null, string modifiedBy = "PaymentService")
         {
             using var context = await _contextFactory.CreateDbContextAsync();
             var transaction = await context.Set<PaymentTransaction>().FindAsync(id);
@@ -110,19 +112,19 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Repositories
             {
                 return false;
             }
-            
+
             transaction.Status = status;
-            
+
             if (status == PaymentStatus.Failed && !string.IsNullOrEmpty(errorMessage))
             {
                 transaction.ErrorMessage = errorMessage;
             }
-            
+
             transaction.ModifiedOn = DateTime.UtcNow;
             transaction.ModifiedBy = modifiedBy;
-            
+
             await context.SaveChangesAsync();
-            
+
             return true;
         }
     }

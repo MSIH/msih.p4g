@@ -196,7 +196,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                             ExpirationMonth = transaction.CreditCard?.ExpirationMonth,
                             ExpirationYear = transaction.CreditCard?.ExpirationYear
                         }),
-                        CreatedBy = "System"
+                        CreatedBy = "PaymentService"
                     };
 
                     await _transactionRepository.AddAsync(paymentTransaction);
@@ -234,7 +234,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                         CustomerEmail = request.CustomerEmail ?? "",
                         OrderReference = request.OrderReference ?? "",
                         ErrorMessage = errorMessage,
-                        CreatedBy = "System"
+                        CreatedBy = "PaymentService"
                     };
 
                     await _transactionRepository.AddAsync(paymentTransaction);
@@ -267,7 +267,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                     CustomerEmail = request.CustomerEmail ?? "",
                     OrderReference = request.OrderReference ?? "",
                     ErrorMessage = ex.Message,
-                    CreatedBy = "System"
+                    CreatedBy = "PaymentService"
                 };
 
                 await _transactionRepository.AddAsync(paymentTransaction);
@@ -322,7 +322,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                             originalTransaction.Id,
                             refundedStatus,
                             null,
-                            "System");
+                            "PaymentService");
                     }
 
                     // Save the refund transaction
@@ -342,7 +342,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                             OriginalTransactionId = request.TransactionId,
                             Reason = request.Reason
                         }),
-                        CreatedBy = "System"
+                        CreatedBy = "PaymentService"
                     };
 
                     await _transactionRepository.AddAsync(refundRecord);
@@ -408,7 +408,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                             transaction.Id,
                             PaymentStatus.Voided,
                             null,
-                            "System");
+                            "PaymentService");
                     }
 
                     return true;
@@ -475,7 +475,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                         CustomerEmail = "",
                         OrderReference = braintreeTransaction.OrderId ?? "",
                         ErrorMessage = "",
-                        CreatedBy = "System"
+                        CreatedBy = "PaymentService"
                     };
 
                     await _transactionRepository.AddAsync(paymentTransaction);
@@ -523,7 +523,7 @@ namespace msih.p4g.Server.Features.Base.PaymentService.Services
                             transaction.Id,
                             newStatus,
                             null,
-                            "System");
+                            "PaymentService");
 
                         transaction.Status = newStatus;
                     }
