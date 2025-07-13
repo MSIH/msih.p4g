@@ -241,8 +241,8 @@
             profile = await ProfileService.GetByIdAsync(userPrincipal.Id);
 
             // Only try to get fundraiser data if user is a fundraiser
-            if (userPrincipal.Role == UserRole.Fundraiser)
-            {
+            // if (userPrincipal.Role == UserRole.Fundraiser)
+            // {
                 fundraiser = await FundraiserService.GetByUserIdAsync(userPrincipal.Id);
                 
                 // If fundraiser is still null for a fundraiser user, create a default one
@@ -254,7 +254,7 @@
                         W9Document = string.Empty
                     };
                 }
-            }
+            // }
 
             // Get donation statistics based on referral code for all user types
             if (profile != null && !string.IsNullOrEmpty(profile.ReferralCode))
