@@ -515,12 +515,14 @@
         try
         {
             // Process referral code first (doesn't require DB calls)
-            await ProcessReferralCode();
+
 
             // Execute database operations sequentially to avoid DbContext concurrency issues
             await LoadOrganizationAsync();
             await LoadAllCampaignAsync();
+            await ProcessReferralCode();
             await LoadReferrerAsync();
+
 
             // Find the appropriate campaign
             if (CampaignId.HasValue)
