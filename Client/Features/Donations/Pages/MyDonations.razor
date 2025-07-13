@@ -11,6 +11,7 @@
 @using msih.p4g.Server.Features.DonationService.Interfaces
 @using msih.p4g.Shared.Dtos
 @inject IDonationService DonationService
+@inject ICampaignService CampaignService
 @inject AuthService AuthService
 @inject IJSRuntime JSRuntime
 
@@ -23,10 +24,12 @@
                 <h2 class="mb-0">My Donations</h2>
             </div>
 
+
             <!-- Donation History Component -->
             <DonationHistoryComponent ShowSummary="true" 
                                     ShowActions="true" 
                                     OnDonationClick="ViewDonation" />
+
         </div>
     </div>
 </div>
@@ -39,8 +42,10 @@
                    OnCancel="CancelDonation" />
 
 @code {
+
     private bool showEditModal = false;
-    private DonationDto? selectedDonation;
+    private DonationDto? selectedDonation = null;
+
 
     private void ViewDonation(DonationDto donation)
     {
