@@ -7,9 +7,10 @@
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Features.Base.AffiliateMonitoringService.Interfaces;
-using msih.p4g.Server.Features.Base.EmailService.Interfaces;
+using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
+using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.FundraiserService.Interfaces;
 using msih.p4g.Server.Features.FundraiserService.Model;
@@ -25,22 +26,24 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
         private readonly IProfileService _profileService;
         private readonly IFundraiserService _fundraiserService;
         private readonly IUserService _userService;
-        private readonly IEmailService _emailService;
+        private readonly IMessageService _messageService;
         private readonly ILogger<AffiliateMonitoringService> _logger;
+        private readonly ISettingsService _settingService; // Add this field
 
         public AffiliateMonitoringService(
             ApplicationDbContext context,
             IProfileService profileService,
             IFundraiserService fundraiserService,
             IUserService userService,
-            IEmailService emailService,
-            ILogger<AffiliateMonitoringService> logger)
+            IMessageService messageService,
+            ILogger<AffiliateMonitoringService> logger,
+            ISettingsService settingService)
         {
             _context = context;
             _profileService = profileService;
             _fundraiserService = fundraiserService;
             _userService = userService;
-            _emailService = emailService;
+            _messageService = messageService;
             _logger = logger;
         }
 
@@ -54,14 +57,13 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
 
             try
             {
-                // Get the affiliate profile to get the user information
-                var affiliateProfile = await _profileService.GetByReferralCodeAsync(referralCode);
-                if (affiliateProfile == null)
+                // get user with profile and fundraiser information
+                var user = await _userService.GetByReferralCodeAsync(referralCode, includeProfile: true, includeFundraiser: true);
+
+                if (user == null)
                     return false;
 
-                // Get the fundraiser record for this user
-                var fundraiser = await _fundraiserService.GetByUserIdAsync(affiliateProfile.UserId);
-                if (fundraiser == null || fundraiser.IsSuspended)
+                if (user.Fundraiser == null || user.Fundraiser.IsSuspended)
                     return false;
 
                 string? suspensionReason = null;
@@ -78,8 +80,6 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
                 // Count unqualified accounts linked to this affiliate
                 var unqualifiedCount = await CountUnqualifiedAccountsAsync(referralCode);
 
-
-
                 // Check suspension criteria
                 if (unqualifiedCount > 9)
                 {
@@ -93,10 +93,10 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
                         referralCode, suspensionReason);
 
                     // Suspend the affiliate
-                    await SuspendAffiliateAsync(fundraiser, suspensionReason);
+                    await SuspendAffiliateAsync(user.Fundraiser, suspensionReason);
 
                     // Send notification email
-                    await SendSuspensionNotificationAsync(affiliateProfile, fundraiser, suspensionReason);
+                    await SendSuspensionNotificationAsync(user.Profile, user.Fundraiser, suspensionReason);
 
                     return true;
                 }
@@ -215,9 +215,10 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
                     </body>
                     </html>";
 
-                await _emailService.SendEmailAsync(
+
+
+                await _messageService.SendEmailAsync(
                     to: profile.User.Email,
-                    from: "noreply@makesureithappens.org", // This should be configurable
                     subject: subject,
                     htmlContent: htmlContent
                 );

@@ -59,5 +59,30 @@ namespace msih.p4g.Server.Features.Base.UserService.Repositories
                 .FirstOrDefaultAsync(u => u.EmailVerificationToken == token && u.IsActive);
             return user;
         }
+
+        public async Task<User?> GetByReferralCodeAsync(string referralCode, bool includeProfile = false, bool includeAddress = false, bool includeDonor = false, bool includeFundraiser = false)
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+            var query = context.Set<User>().AsQueryable();
+
+            // If we need to include the profile
+            if (includeProfile)
+            {
+                // If we also need the address, use ThenInclude
+                if (includeAddress)
+                    query = query.Include(u => u.Profile)
+                                 .ThenInclude(p => p.Address);
+                else
+                    query = query.Include(u => u.Profile);
+            }
+
+            if (includeDonor)
+                query = query.Include(u => u.Donor);
+
+            if (includeFundraiser)
+                query = query.Include(u => u.Fundraiser);
+
+            return await query.FirstOrDefaultAsync(u => u.Profile.ReferralCode == referralCode && u.IsActive);
+        }
     }
 }

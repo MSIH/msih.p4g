@@ -40,6 +40,17 @@ namespace msih.p4g.Server.Features.Base.UserService.Interfaces
         /// <param name="user">The user to create</param>
         /// <param name="createdBy">Who created the user</param>
         /// <returns>The created user with Id assigned</returns>
+        /// <summary>
+        /// Gets a user by their profile referral code with optional related entities
+        /// </summary>
+        /// <param name="referralCode">The referral code of the user to retrieve</param>
+        /// <param name="includeProfile">Whether to include the user's profile</param>
+        /// <param name="includeAddress">Whether to include the user's profile address information</param>
+        /// <param name="includeDonor">Whether to include the user's donor record</param>
+        /// <param name="includeFundraiser">Whether to include the user's fundraiser record</param>
+        /// <returns>The user if found, otherwise null</returns>
+        Task<User?> GetByReferralCodeAsync(string referralCode, bool includeProfile = false, bool includeAddress = false, bool includeDonor = false, bool includeFundraiser = false);
+
         Task<User> AddAsync(User user, string createdBy = "System");
 
         /// <summary>
