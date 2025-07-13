@@ -105,6 +105,16 @@ namespace msih.p4g.Server.Features.DonationService.Services
                     // The UserProfileService handles setting the UserId and generating the referral code
                     profile = await _userProfileService.CreateUserWithProfileAsync(user, profile, "DonationService");
 
+                    // Check if the referral code belongs to the user making the donation (prevent self-referral)
+                    string? referralCodeToUse = dto.ReferralCode;
+                    if (!string.IsNullOrEmpty(dto.ReferralCode) && profile?.ReferralCode == dto.ReferralCode)
+                    {
+                        // User is trying to use their own referral code - silently ignore it
+                        referralCodeToUse = null;
+                        _logger.LogInformation("User {Email} attempted to use their own referral code {ReferralCode} during donor registration - ignoring referral code",
+                            dto.Email, dto.ReferralCode);
+                    }
+
                     // Create donor for the new user
                     var donor = new Donor
                     {
@@ -112,7 +122,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
                         IsActive = true,
                         CreatedBy = "DonationService",
                         CreatedOn = DateTime.UtcNow,
-                        ReferralCode = dto.ReferralCode
+                        ReferralCode = referralCodeToUse
                     };
                     donor = await _donorService.AddAsync(donor);
 
@@ -241,6 +251,16 @@ namespace msih.p4g.Server.Features.DonationService.Services
 
             if (donor == null)
             {
+                // Check if the referral code belongs to the user making the donation (prevent self-referral)
+                string? donorReferralCodeToUse = dto.ReferralCode;
+                if (!string.IsNullOrEmpty(dto.ReferralCode) && profile?.ReferralCode == dto.ReferralCode)
+                {
+                    // User is trying to use their own referral code - silently ignore it
+                    donorReferralCodeToUse = null;
+                    _logger.LogInformation("User {Email} attempted to use their own referral code {ReferralCode} during donor creation - ignoring referral code",
+                        dto.Email, dto.ReferralCode);
+                }
+
                 // Create a new donor
                 donor = new Donor
                 {
@@ -248,7 +268,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
                     IsActive = true,
                     CreatedBy = "DonationService",
                     CreatedOn = DateTime.UtcNow,
-                    ReferralCode = dto.ReferralCode
+                    ReferralCode = donorReferralCodeToUse
                 };
                 donor = await _donorService.AddAsync(donor);
                 newDonorCreated = true;
@@ -281,6 +301,16 @@ namespace msih.p4g.Server.Features.DonationService.Services
             }
 
             // 4. Create donation record
+            // Check if the referral code belongs to the user making the donation (prevent self-referral)
+            string? referralCodeToUse = dto.ReferralCode;
+            if (!string.IsNullOrEmpty(dto.ReferralCode) && profile?.ReferralCode == dto.ReferralCode)
+            {
+                // User is trying to use their own referral code - silently ignore it
+                referralCodeToUse = null;
+                _logger.LogInformation("User {Email} attempted to use their own referral code {ReferralCode} for donation - ignoring referral code",
+                    dto.Email, dto.ReferralCode);
+            }
+
             var donation = new Donation
             {
                 DonationAmount = dto.DonationAmount,
@@ -290,7 +320,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 IsMonthly = dto.IsMonthly,
                 IsAnnual = dto.IsAnnual,
                 DonationMessage = dto.DonationMessage,
-                ReferralCode = dto.ReferralCode, // Use the profile's referral code
+                ReferralCode = referralCodeToUse,
                 CampaignCode = dto.CampaignCode,
                 IsActive = true,
                 CreatedBy = "DonationService",
