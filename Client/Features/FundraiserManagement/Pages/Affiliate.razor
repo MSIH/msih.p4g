@@ -71,31 +71,31 @@
                             <DataAnnotationsValidator />
                             <ValidationSummary />
 
-                            <div class="mb-4">
-                                <label for="payoutAccount" class="form-label">Payout Account</label>
-                                <InputText id="payoutAccount" @bind-Value="fundraiser.PayoutAccount" class="form-control" />
-                                <small class="text-muted">This is the mobile, email, or handle where your commissions will be sent.</small>
-                            </div>
-
-                            <div class="mb-4">
-                                <label for="accountType" class="form-label">Payment Account Type</label>
-                                <InputSelect id="accountType" @bind-Value="fundraiser.PayoutAccountType" class="form-control">
-                                    <option value="">-- Select Account Type --</option>
-                                    <option value="PayPal">PayPal</option>
-                                    <option value="Venmo">Venmo</option>
-                                </InputSelect>
-                                <small class="text-muted">Select your payment account type</small>
-                            </div>
-
-                            <div class="mb-4">
-                                <label for="paymentAccountFormat" class="form-label">Payment Account Format</label>
-                                <InputSelect id="paymentAccountFormat" @bind-Value="fundraiser.PayoutAccountFormat" class="form-control">
-                                    <option value="">-- Select Format --</option>
-                                    <option value="Email">Email</option>
-                                    <option value="Handle">Handle (@@username)</option>
-                                    <option value="Mobile">Mobile Number</option>
-                                </InputSelect>
-                                <small class="text-muted">How your payment account is identified</small>
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    <label for="payoutAccount" class="form-label">Payout Account</label>
+                                    <InputText id="payoutAccount" @bind-Value="fundraiser.PayoutAccount" class="form-control" />
+                                    <small class="text-muted">This is the mobile, email, or handle where your commissions will be sent.</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="accountType" class="form-label">Payment Account Type</label>
+                                    <InputSelect id="accountType" @bind-Value="fundraiser.PayoutAccountType" class="form-control">
+                                        <option value="">-- Select Account Type --</option>
+                                        <option value="PayPal">PayPal</option>
+                                        <option value="Venmo">Venmo</option>
+                                    </InputSelect>
+                                    <small class="text-muted">Select your payment account type</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="paymentAccountFormat" class="form-label">Payment Account Format</label>
+                                    <InputSelect id="paymentAccountFormat" @bind-Value="fundraiser.PayoutAccountFormat" class="form-control">
+                                        <option value="">-- Select Format --</option>
+                                        <option value="Email">Email</option>
+                                        <option value="Handle">Handle (@@username)</option>
+                                        <option value="Mobile">Mobile Number</option>
+                                    </InputSelect>
+                                    <small class="text-muted">How your payment account is identified</small>
+                                </div>
                             </div>
 
                             <div class="mb-4">
