@@ -1,3 +1,9 @@
+// /**
+//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
+//  * This file is developed for Make Sure It Happens Inc.
+//  * Unauthorized copying, modification, distribution, or use is prohibited.
+//  */
+
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
@@ -63,7 +69,7 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Services
         /// <summary>
         /// Sets or updates a setting value in the DB.
         /// </summary>
-        public async Task SetValueAsync(string key, string? value, string modifiedBy = "System")
+        public async Task SetValueAsync(string key, string? value, string modifiedBy = "SettingsService")
         {
             var setting = (await _settingsRepository.FindAsync(s => s.Key == key)).FirstOrDefault();
             if (setting == null)
@@ -159,7 +165,7 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Services
                 foreach (var entry in entriesToRemove)
                 {
                     // Since ISettingRepository doesn't have Remove methods, we'll deactivate instead
-                    await _settingsRepository.SetActiveStatusAsync(entry.Id, false, "System");
+                    await _settingsRepository.SetActiveStatusAsync(entry.Id, false, "SettingsService");
                     removedCount++;
                 }
 
@@ -186,7 +192,7 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Services
             foreach (var entry in invalidEntries)
             {
                 // Deactivate invalid entries since we can't delete them
-                await _settingsRepository.SetActiveStatusAsync(entry.Id, false, "System");
+                await _settingsRepository.SetActiveStatusAsync(entry.Id, false, "SettingsService");
                 removedCount++;
             }
 

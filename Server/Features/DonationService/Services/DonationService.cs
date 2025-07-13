@@ -464,7 +464,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
         /// <summary>
         /// Sets the active status of a donation.
         /// </summary>
-        public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System")
+        public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "DonationService")
         {
             return await _donationRepository.SetActiveStatusAsync(id, isActive, modifiedBy);
         }

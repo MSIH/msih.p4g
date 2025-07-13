@@ -130,7 +130,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                     IsDefault = true,
                     IsActive = true,
                     CreatedOn = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = "MessageService"
                 },
 
                 // Donor Thank You Email Template
@@ -205,7 +205,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                     IsDefault = false, // Not default since MVP version exists
                     IsActive = true,
                     CreatedOn = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = "MessageService"
                 },
 
                 // MVP Donor Thank You Email Template
@@ -278,7 +278,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                     IsDefault = true,
                     IsActive = true,
                     CreatedOn = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = "MessageService"
                 },
 
                 // Fundraiser Report Email Template
@@ -350,7 +350,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                     IsDefault = true,
                     IsActive = true,
                     CreatedOn = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = "MessageService"
                 },
 
                 // End of Year Tax Letter to Donor
@@ -459,7 +459,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                     IsDefault = true,
                     IsActive = true,
                     CreatedOn = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = "MessageService"
                 },
 
                 // Fundraiser Notice of Donation
@@ -530,7 +530,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                     IsDefault = true,
                     IsActive = true,
                     CreatedOn = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = "MessageService"
                 },
 
                 // Donor Thank You SMS
@@ -546,7 +546,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                     IsDefault = true,
                     IsActive = true,
                     CreatedOn = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = "MessageService"
                 },
 
                 // Fundraiser Donation Notification SMS
@@ -562,7 +562,7 @@ namespace msih.p4g.Server.Features.Base.MessageService.Data
                     IsDefault = true,
                     IsActive = true,
                     CreatedOn = DateTime.UtcNow,
-                    CreatedBy = "System"
+                    CreatedBy = "MessageService"
                 }
             };
         }

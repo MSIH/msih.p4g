@@ -27,7 +27,7 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Interfaces
         /// <summary>
         /// Sets or updates a setting value in the DB.
         /// </summary>
-        Task SetValueAsync(string key, string? value, string modifiedBy = "System");
+        Task SetValueAsync(string key, string? value, string modifiedBy = "SettingsService");
 
         /// <summary>
         /// Gets all settings from the DB as a dictionary.

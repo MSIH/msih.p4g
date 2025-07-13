@@ -27,7 +27,7 @@ namespace msih.p4g.Server.Features.DonationService.Models
         /// The total amount charged to the donor (Amount + TransactionFeeAmount if PayTransactionFee is true).
         /// </summary>
         [Required]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0")]
+        [Range(25.00, double.MaxValue, ErrorMessage = "Donation amount must be at least $25.00")]
         public decimal DonationAmount { get; set; }
 
         /// <summary>

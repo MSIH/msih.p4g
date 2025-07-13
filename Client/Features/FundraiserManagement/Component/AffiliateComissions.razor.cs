@@ -271,20 +271,14 @@ namespace msih.p4g.Client.Features.FundraiserManagement.Component
 
         /// <summary>
         /// Calculate commission based on the total number of new donors
-        /// New structure: 1 donor = $15, 2 donors = $25, 5 donors = $35, then +$35 for every 5 additional donors
+        /// New structure: 3 donor = $10,  5 donors = $35, then +$35 for every 5 additional donors
         /// </summary>
         private decimal CalculateCommissionForDonorCount(int donorCount)
         {
             if (donorCount <= 0) return 0;
 
-            // 1 donor = $15
-            if (donorCount == 1) return 15;
-
-            // 2 donors = $25
-            if (donorCount == 2) return 25;
-
-            // 3-4 donors still = $25 (no change until 5)
-            if (donorCount >= 3 && donorCount < 5) return 25;
+            // 3-4 donors still = $10 (no change until 5)
+            if (donorCount >= 3 && donorCount < 5) return 10;
 
             // 5 donors = $35
             if (donorCount == 5) return 35;

@@ -232,7 +232,7 @@ else
                     Key = s.Key, 
                     Value = s.Value,
                     IsActive = true,
-                    CreatedBy = "System"
+                    CreatedBy = "SettingsService"
                 })
                 .OrderBy(s => s.Key)
                 .ToList();
@@ -304,7 +304,7 @@ else
                 Key = newSettingKey, 
                 Value = newSettingValue,
                 IsActive = true,
-                CreatedBy = "System"
+                CreatedBy = "SettingService"
             };
 
             settings.Add(newSetting);

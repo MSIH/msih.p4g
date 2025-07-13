@@ -99,7 +99,7 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         /// <summary>
         /// Sets the active status of a donation.
         /// </summary>
-        Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "System");
+        Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "DonationService");
 
         /// <summary>
         /// Gets the total donation amount for a specific campaign.
