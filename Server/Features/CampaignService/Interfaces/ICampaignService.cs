@@ -19,10 +19,11 @@ namespace msih.p4g.Server.Features.CampaignService.Interfaces
     public interface ICampaignService
     {
         /// <summary>
-        /// Gets all active campaigns
+        /// Gets all campaigns
         /// </summary>
+        /// <param name="includeInactive">Whether to include inactive campaigns</param>
         /// <returns>List of campaigns</returns>
-        Task<IEnumerable<Campaign>> GetAllAsync();
+        Task<IEnumerable<Campaign>> GetAllAsync(bool includeInactive = false);
 
         /// <summary>
         /// Gets a campaign by ID
