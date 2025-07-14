@@ -51,9 +51,9 @@ namespace msih.p4g.Server.Features.CampaignService.Services
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<Campaign>> GetAllAsync()
+        public async Task<IEnumerable<Campaign>> GetAllAsync(bool includeInactive = false)
         {
-            return await _repository.GetAllAsync();
+            return await _repository.GetAllAsync(includeInactive);
         }
 
         /// <inheritdoc />

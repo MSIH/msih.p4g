@@ -99,7 +99,7 @@
 
     private async Task LoadCampaigns()
     {
-        campaigns = (await CampaignService.GetAllAsync()).ToList();
+        campaigns = (await CampaignService.GetAllAsync(includeInactive: true)).ToList();
     }
 
     private async Task AddCampaign()
