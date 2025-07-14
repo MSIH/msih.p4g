@@ -44,6 +44,35 @@
       <YearSum>$([MSBuild]::Add($(FirstDigit), $(SecondDigit)))</YearSum>
     </PropertyGroup>
 
+    <!-- Method 3: Git Branch Detection -->
+    <Exec Command="git branch --show-current"
+          ContinueOnError="true"
+          ConsoleToMSBuild="true"
+          Condition="'$(DetectedEnvironment)' == ''">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitBranch" />
+      <Output TaskParameter="ExitCode" PropertyName="GitBranchExitCode" />
+    </Exec>
+
+    <PropertyGroup Condition="'$(GitBranchExitCode)' == '0' AND '$(DetectedEnvironment)' == ''">
+      <CleanGitBranch>$(GitBranch.Trim())</CleanGitBranch>
+    </PropertyGroup>
+
+    <!-- Map git branches to environments -->
+    <PropertyGroup Condition="'$(DetectedEnvironment)' == ''">
+      <DetectedEnvironment Condition="'$(CleanGitBranch)' == 'production'">prod</DetectedEnvironment>
+      <DetectedEnvironment Condition="'$(CleanGitBranch)' == 'main' OR '$(CleanGitBranch)' == 'staging' OR '$(CleanGitBranch)' == 'testing'">stage</DetectedEnvironment>
+      <DetectedEnvironment Condition="'$(CleanGitBranch)' == 'develop' OR '$(CleanGitBranch)' == 'development'">dev</DetectedEnvironment>
+    </PropertyGroup>
+
+    <!-- Map environment to version number -->
+    <PropertyGroup>
+      <EnvironmentNumber Condition="'$(DetectedEnvironment)' == 'dev'">1</EnvironmentNumber>
+      <EnvironmentNumber Condition="'$(DetectedEnvironment)' == 'stage' OR '$(DetectedEnvironment)' == 'staging'">2</EnvironmentNumber>
+      <EnvironmentNumber Condition="'$(DetectedEnvironment)' == 'prod' OR '$(DetectedEnvironment)' == 'production'">3</EnvironmentNumber>
+      <!-- Default to dev if somehow not set -->
+      <EnvironmentNumber Condition="'$(EnvironmentNumber)' == ''">0</EnvironmentNumber>
+    </PropertyGroup>
+
     <!-- Try to get git commit hash and count -->
     <Exec Command="git rev-parse --short HEAD"
           ContinueOnError="true"
@@ -79,29 +108,28 @@
       <CommitNumber>$([MSBuild]::Add($([MSBuild]::Multiply($(CurrentHour), 100)), $(CurrentMinute)))</CommitNumber>
     </PropertyGroup>
 
-    <!-- Build numeric version: YearSum.M.D.CommitNumber (all numeric for .NET compatibility) -->
+    <!-- Build version: YearSum.Month.EnvironmentNumber.CommitNumber -->
     <PropertyGroup>
-      <NumericVersion>$(YearSum).$(CurrentMonth).$(CurrentDay).$(CommitNumber)</NumericVersion>
+      <NumericVersion>$(YearSum).$(CurrentMonth).$(EnvironmentNumber).$(CommitNumber)</NumericVersion>
+      <SemanticVersion>$(YearSum).$(CurrentMonth).$(EnvironmentNumber).$(CommitHash)</SemanticVersion>
 
-      <!-- Build semantic version with git hash for display: YearSum.M.D.CommitHash -->
-      <SemanticVersion>$(YearSum).$(CurrentMonth).$(CurrentDay).$(CommitHash)</SemanticVersion>
-
-      <!-- Set .NET version properties (must be numeric) -->
+      <!-- Set .NET version properties -->
       <Version Condition="'$(Version)' == ''">$(NumericVersion)</Version>
       <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(NumericVersion)</AssemblyVersion>
       <FileVersion Condition="'$(FileVersion)' == ''">$(NumericVersion)</FileVersion>
       <PackageVersion Condition="'$(PackageVersion)' == ''">$(NumericVersion)</PackageVersion>
 
-      <!-- Enhanced informational version (can contain strings) -->
-      <InformationalVersion Condition="'$(InformationalVersion)' == ''">$(SemanticVersion)+$(GITHUB_SHA)</InformationalVersion>
-      <InformationalVersion Condition="'$(GITHUB_SHA)' == ''">$(SemanticVersion)+local</InformationalVersion>
+      <!-- Enhanced informational version -->
+      <InformationalVersion Condition="'$(InformationalVersion)' == ''">$(SemanticVersion)+$(GITHUB_SHA)+$(DetectedEnvironment)</InformationalVersion>
+      <InformationalVersion Condition="'$(GITHUB_SHA)' == ''">$(SemanticVersion)+local+$(DetectedEnvironment)</InformationalVersion>
     </PropertyGroup>
 
-    <!-- Store version components for later use -->
+    <!-- Store version components -->
     <PropertyGroup>
       <VersionYearSum>$(YearSum)</VersionYearSum>
       <VersionMonth>$(CurrentMonth)</VersionMonth>
-      <VersionDay>$(CurrentDay)</VersionDay>
+      <VersionEnvironment>$(EnvironmentNumber)</VersionEnvironment>
+      <VersionEnvironmentName>$(DetectedEnvironment)</VersionEnvironmentName>
       <VersionCommitHash>$(CommitHash)</VersionCommitHash>
       <VersionCommitNumber>$(CommitNumber)</VersionCommitNumber>
       <VersionFullYear>$(CurrentYear)</VersionFullYear>
@@ -109,19 +137,18 @@
       <VersionSemantic>$(SemanticVersion)</VersionSemantic>
     </PropertyGroup>
 
-    <!-- Update description with version info -->
+    <!-- Update description -->
     <PropertyGroup>
-      <Description>dev-gd4-org v$(SemanticVersion) - Built $(CurrentYear)-$(CurrentMonth.ToString().PadLeft(2, '0'))-$(CurrentDay.ToString().PadLeft(2, '0'))</Description>
+      <Description>$(DetectedEnvironment) v$(SemanticVersion) - Built $(CurrentYear)-$(CurrentMonth.ToString().PadLeft(2, '0'))-$(CurrentDay.ToString().PadLeft(2, '0'))</Description>
     </PropertyGroup>
 
     <!-- Display version information -->
-    <Message Text="🏷️  Generated .NET Version (numeric): $(NumericVersion)" Importance="high" />
-    <Message Text="🏷️  Generated Semantic Version (display): $(SemanticVersion)" Importance="high" />
-    <Message Text="📅 Year $(CurrentYear) -> Sum: $(YearSum), Month: $(CurrentMonth), Day: $(CurrentDay)" Importance="normal" />
-    <Message Text="📝 Commit Hash: $(CommitHash), Commit Number: $(CommitNumber)" Importance="normal" />
-    <Message Text="🌐 Target: Azure Web App (dev-gd4-org)" Importance="normal" />
+    <Message Text="🏷️  Generated Version: $(NumericVersion) ($(DetectedEnvironment))" Importance="high" />
+    <Message Text="🏷️  Semantic Version: $(SemanticVersion)" Importance="high" />
+    <Message Text="🌍 Environment: $(DetectedEnvironment) ($(EnvironmentNumber))" Importance="high" />
+    <Message Text="📅 Year $(CurrentYear) -> Sum: $(YearSum), Month: $(CurrentMonth), Env: $(EnvironmentNumber)" Importance="normal" />
+    <Message Text="📝 Git Branch: $(CleanGitBranch), Commit: $(CommitHash)" Importance="normal" />
   </Target>
-
   <!-- Create build info during publish -->
   <Target Name="CreateBuildInfo" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
     <PropertyGroup>
