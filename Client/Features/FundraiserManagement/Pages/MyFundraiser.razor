@@ -16,7 +16,7 @@
 @inject IDonationService DonationService
 @inject IUserService UserService
 @inject IProfileService ProfileService
-@inject msih.p4g.Server.Features.FundraiserService.Interfaces.IFundraiserStatisticsService FundraiserStatsService
+@inject IUserRepository UserRepository
 @inject IJSRuntime JSRuntime
 @inject AuthService AuthService
 @inject NavigationManager NavigationManager
@@ -72,7 +72,7 @@
                         }
 
                         @* Only show fundraiser-specific forms and commission info if user is a fundraiser *@
-                        @if (userPrincipal?.Role == UserRole.Fundraiser && fundraiser != null)
+                        @if (userPrincipal?.Role == UserRole.Fundraiser)
                         {
                             <EditForm Model="@fundraiser" OnValidSubmit="HandleFundraiserUpdate">
                                 <DataAnnotationsValidator />
@@ -153,59 +153,23 @@
                     }
                 </div>
             </div>
-
-
-
-            @* Show donation statistics and history for all users with referral codes *@
-            @if (profile != null && !string.IsNullOrEmpty(profile.ReferralCode) && statistics != null)
+            @if (profile != null)
             {
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h3 class="card-title">Donation Statistics</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="card bg-light mb-3">
-                                    <div class="card-body text-center">
-                                        <h5 class="card-title">Total Donations</h5>
-                                        <p class="display-4">@statistics.DonationCount</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card bg-light mb-3">
-                                    <div class="card-body text-center">
-                                        <h5 class="card-title">Total Raised</h5>
-                                        <p class="display-4">$@statistics.TotalRaised.ToString("N2")</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card bg-light mb-3">
-                                    <div class="card-body text-center">
-                                        <h5 class="card-title">Average Donation</h5>
-                                        <p class="display-4">$@statistics.AverageDonation.ToString("N2")</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <DonationHistoryComponent ShowSummary="false" ShowActions="false" ReferralCode="@profile.ReferralCode" />
+            }
 
                 @* Show commission information only for fundraisers *@
-                @if (userPrincipal?.Role == UserRole.Fundraiser && fundraiser != null)
+                @if (userPrincipal?.Role == UserRole.Fundraiser)
                 {
                     <msih.p4g.Client.Features.FundraiserManagement.Component.AffiliateComissions FundraiserId="@fundraiser.Id" Profile="@profile" />
                 }
-            }
+            
         </div>
     </div>
 </div>
 
 @code {
-    private msih.p4g.Server.Features.FundraiserService.Model.Fundraiser fundraiser;
+    private Fundraiser fundraiser;
     private Profile profile;
     private FundraiserStatistics statistics;
     private User userPrincipal;
@@ -237,45 +201,20 @@
             }
 
             // Get user's profile for the referral code (always load this for all user types)
-            profile = await ProfileService.GetByIdAsync(userPrincipal.Id);
+            var user = await UserRepository.GetByEmailAsync(
+                    email: userPrincipal.Email,
+                    includeProfile: true,
+                    includeAddress: false,
+                    includeDonor: false,
+                    includeFundraiser: false);
 
-            // Only try to get fundraiser data if user is a fundraiser
-            // if (userPrincipal.Role == UserRole.Fundraiser)
-            // {
-                fundraiser = await FundraiserService.GetByUserIdAsync(userPrincipal.Id);
-                
-                // If fundraiser is still null for a fundraiser user, create a default one
-                if (fundraiser == null)
-                {
-                    fundraiser = new msih.p4g.Server.Features.FundraiserService.Model.Fundraiser
-                    {
-                        PayoutAccount = string.Empty,
-                        W9Document = string.Empty
-                    };
-                }
-            // }
-
-            // Get donation statistics based on referral code for all user types
-            if (profile != null && !string.IsNullOrEmpty(profile.ReferralCode))
+            if (user == null)
             {
-                // For fundraisers, use their fundraiser ID if available, otherwise calculate from donations
-                if (fundraiser != null)
-                {
-                    statistics = await FundraiserStatsService.GetStatisticsAsync(fundraiser.Id);
-                }
-                else
-                {
-                    // For non-fundraisers or fundraisers without a fundraiser record,
-                    // calculate statistics from donations by referral code
-                    var donations = await DonationService.GetByReferralCodeAsync(profile.ReferralCode);
-                    statistics = new FundraiserStatistics
-                    {
-                        DonationCount = donations.Count,
-                        TotalRaised = donations.Sum(d => d.DonationAmount),
-                        AverageDonation = donations.Any() ? donations.Average(d => d.DonationAmount) : 0
-                    };
-                }
+                message = "Error: User profile not found. Please contact support.";
+                return;
             }
+
+            profile = user.Profile; // Assigning the retrieved user's profile to the profile variable
         }
         catch (Exception ex)
         {
