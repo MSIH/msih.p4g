@@ -1,10 +1,184 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project>
+  <!-- Automatic Semantic Versioning via MSBuild -->
   <PropertyGroup>
+    <!-- Enable automatic version generation -->
+    <GenerateSemanticVersion Condition="'$(GenerateSemanticVersion)' == ''">true</GenerateSemanticVersion>
+
+    <!-- Common assembly metadata -->
     <Company>MSIH LLC</Company>
-    <Authors>Make Sure It Happens Inc.</Authors>
-    <Copyright>Copyright (c) 2025 MSIH LLC. All rights reserved.</Copyright>
+    <Authors>MSIH LLC</Authors>
     <Product>msih.p4g</Product>
-    <NeutralLanguage>en-US</NeutralLanguage>
+    <Copyright>Copyright © MSIH LLC. All rights reserved. $([System.DateTime]::Now.Year)</Copyright>
+
+    <!-- Enable deterministic builds -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+
+    <!-- Azure Web App specific settings -->
+    <PublishProfile Condition="'$(PublishProfile)' == ''">FolderProfile</PublishProfile>
+    <WebPublishMethod Condition="'$(WebPublishMethod)' == ''">FileSystem</WebPublishMethod>
+
+    <!-- Include symbols for debugging -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <PublishSingleFile>false</PublishSingleFile>
+  </PropertyGroup>
+
+  <!-- Generate semantic version automatically -->
+  <Target Name="GenerateSemanticVersion" BeforeTargets="GetAssemblyVersion;GetPackageVersion" Condition="'$(GenerateSemanticVersion)' == 'true'">
+
+    <!-- Get current date components -->
+    <PropertyGroup>
+      <CurrentYear>$([System.DateTime]::Now.Year)</CurrentYear>
+      <CurrentMonth>$([System.DateTime]::Now.Month)</CurrentMonth>
+      <CurrentDay>$([System.DateTime]::Now.Day)</CurrentDay>
+    </PropertyGroup>
+
+    <!-- Calculate year sum (last two digits) -->
+    <PropertyGroup>
+      <YearString>$(CurrentYear)</YearString>
+      <LastTwoDigits>$(YearString.Substring($([MSBuild]::Subtract($(YearString.Length), 2))))</LastTwoDigits>
+      <FirstDigit>$(LastTwoDigits.Substring(0, 1))</FirstDigit>
+      <SecondDigit>$(LastTwoDigits.Substring(1, 1))</SecondDigit>
+      <YearSum>$([MSBuild]::Add($(FirstDigit), $(SecondDigit)))</YearSum>
+    </PropertyGroup>
+
+    <!-- Try to get git commit hash and count -->
+    <Exec Command="git rev-parse --short HEAD"
+          ContinueOnError="true"
+          ConsoleToMSBuild="true"
+          Condition="'$(CommitHash)' == ''">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+      <Output TaskParameter="ExitCode" PropertyName="GitHashExitCode" />
+    </Exec>
+
+    <Exec Command="git rev-list --count HEAD"
+          ContinueOnError="true"
+          ConsoleToMSBuild="true"
+          Condition="'$(CommitNumber)' == ''">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCount" />
+      <Output TaskParameter="ExitCode" PropertyName="GitCountExitCode" />
+    </Exec>
+
+    <!-- Clean up git outputs (remove any whitespace) -->
+    <PropertyGroup>
+      <CommitHash Condition="'$(CommitHash)' == '' AND '$(GitHashExitCode)' == '0'">$(GitCommitHash.Trim())</CommitHash>
+      <CommitNumber Condition="'$(CommitNumber)' == '' AND '$(GitCountExitCode)' == '0'">$(GitCommitCount.Trim())</CommitNumber>
+    </PropertyGroup>
+
+    <!-- Fallback values if git is not available -->
+    <PropertyGroup Condition="'$(GitHashExitCode)' != '0' OR '$(CommitHash)' == ''">
+      <CommitHash>dev$(CurrentYear.Substring(2))$(CurrentMonth.ToString().PadLeft(2, '0'))$(CurrentDay.ToString().PadLeft(2, '0'))</CommitHash>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(GitCountExitCode)' != '0' OR '$(CommitNumber)' == ''">
+      <!-- Use hour and minute as fallback numeric revision -->
+      <CurrentHour>$([System.DateTime]::Now.Hour)</CurrentHour>
+      <CurrentMinute>$([System.DateTime]::Now.Minute)</CurrentMinute>
+      <CommitNumber>$([MSBuild]::Add($([MSBuild]::Multiply($(CurrentHour), 100)), $(CurrentMinute)))</CommitNumber>
+    </PropertyGroup>
+
+    <!-- Build numeric version: YearSum.M.D.CommitNumber (all numeric for .NET compatibility) -->
+    <PropertyGroup>
+      <NumericVersion>$(YearSum).$(CurrentMonth).$(CurrentDay).$(CommitNumber)</NumericVersion>
+
+      <!-- Build semantic version with git hash for display: YearSum.M.D.CommitHash -->
+      <SemanticVersion>$(YearSum).$(CurrentMonth).$(CurrentDay).$(CommitHash)</SemanticVersion>
+
+      <!-- Set .NET version properties (must be numeric) -->
+      <Version Condition="'$(Version)' == ''">$(NumericVersion)</Version>
+      <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(NumericVersion)</AssemblyVersion>
+      <FileVersion Condition="'$(FileVersion)' == ''">$(NumericVersion)</FileVersion>
+      <PackageVersion Condition="'$(PackageVersion)' == ''">$(NumericVersion)</PackageVersion>
+
+      <!-- Enhanced informational version (can contain strings) -->
+      <InformationalVersion Condition="'$(InformationalVersion)' == ''">$(SemanticVersion)+$(GITHUB_SHA)</InformationalVersion>
+      <InformationalVersion Condition="'$(GITHUB_SHA)' == ''">$(SemanticVersion)+local</InformationalVersion>
+    </PropertyGroup>
+
+    <!-- Store version components for later use -->
+    <PropertyGroup>
+      <VersionYearSum>$(YearSum)</VersionYearSum>
+      <VersionMonth>$(CurrentMonth)</VersionMonth>
+      <VersionDay>$(CurrentDay)</VersionDay>
+      <VersionCommitHash>$(CommitHash)</VersionCommitHash>
+      <VersionCommitNumber>$(CommitNumber)</VersionCommitNumber>
+      <VersionFullYear>$(CurrentYear)</VersionFullYear>
+      <VersionNumeric>$(NumericVersion)</VersionNumeric>
+      <VersionSemantic>$(SemanticVersion)</VersionSemantic>
+    </PropertyGroup>
+
+    <!-- Update description with version info -->
+    <PropertyGroup>
+      <Description>dev-gd4-org v$(SemanticVersion) - Built $(CurrentYear)-$(CurrentMonth.ToString().PadLeft(2, '0'))-$(CurrentDay.ToString().PadLeft(2, '0'))</Description>
+    </PropertyGroup>
+
+    <!-- Display version information -->
+    <Message Text="🏷️  Generated .NET Version (numeric): $(NumericVersion)" Importance="high" />
+    <Message Text="🏷️  Generated Semantic Version (display): $(SemanticVersion)" Importance="high" />
+    <Message Text="📅 Year $(CurrentYear) -> Sum: $(YearSum), Month: $(CurrentMonth), Day: $(CurrentDay)" Importance="normal" />
+    <Message Text="📝 Commit Hash: $(CommitHash), Commit Number: $(CommitNumber)" Importance="normal" />
+    <Message Text="🌐 Target: Azure Web App (dev-gd4-org)" Importance="normal" />
+  </Target>
+
+  <!-- Create build info during publish -->
+  <Target Name="CreateBuildInfo" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
+    <PropertyGroup>
+      <BuildInfoContent>
+        {
+        "version": "$(Version)",
+        "semanticVersion": "$(VersionSemantic)",
+        "numericVersion": "$(VersionNumeric)",
+        "buildDate": "$([System.DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'))",
+        "fullYear": $(VersionFullYear),
+        "yearSum": $(VersionYearSum),
+        "month": $(VersionMonth),
+        "day": $(VersionDay),
+        "commitHash": "$(VersionCommitHash)",
+        "commitNumber": $(VersionCommitNumber),
+        "fullCommitSha": "$(GITHUB_SHA)",
+        "branch": "$(GITHUB_REF_NAME)",
+        "workflow": "$(GITHUB_WORKFLOW)",
+        "runNumber": $(GITHUB_RUN_NUMBER),
+        "azureAppName": "dev-gd4-org",
+        "environment": "development",
+        "buildMachine": "$(COMPUTERNAME)",
+        "buildUser": "$(USERNAME)",
+        "msbuildVersion": "$(MSBuildVersion)",
+        "targetFramework": "$(TargetFramework)"
+        }
+      </BuildInfoContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(PublishDir)build-info.json"
+                      Lines="$(BuildInfoContent)"
+                      Overwrite="true" />
+
+    <Message Text="📋 Created build-info.json in $(PublishDir)" Importance="normal" />
+  </Target>
+
+  <!-- .NET 9 specific settings -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <EnablePreviewFeatures>false</EnablePreviewFeatures>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsNotAsErrors />
+  </PropertyGroup>
+
+  <!-- Azure deployment optimizations -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>true</Optimize>
+    <PublishTrimmed>false</PublishTrimmed>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!-- Allow version override from CI/CD -->
+  <PropertyGroup Condition="'$(CI_SEMANTIC_VERSION)' != ''">
+    <Version>$(CI_SEMANTIC_VERSION)</Version>
+    <AssemblyVersion>$(CI_SEMANTIC_VERSION)</AssemblyVersion>
+    <FileVersion>$(CI_SEMANTIC_VERSION)</FileVersion>
+    <PackageVersion>$(CI_SEMANTIC_VERSION)</PackageVersion>
   </PropertyGroup>
 </Project>

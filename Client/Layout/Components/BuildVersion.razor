@@ -1,5 +1,8 @@
+@using msih.p4g.Server.Common.Utilities
+
 Version @version
 
 @code {
-    Version version = typeof(Program).Assembly.GetName().Version;
+   // Version version = typeof(Program).Assembly.GetName().Version;
+    string version = VersionHelper.SemanticVersion;
 }
