@@ -322,6 +322,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
                 DonationMessage = dto.DonationMessage,
                 ReferralCode = referralCodeToUse,
                 CampaignCode = dto.CampaignCode,
+                CampaignId = dto.CampaignId,
                 IsActive = true,
                 CreatedBy = "DonationService",
                 CreatedOn = DateTime.UtcNow
