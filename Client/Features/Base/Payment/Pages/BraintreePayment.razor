@@ -449,36 +449,19 @@
             if (campaign != null)
             {
                 donationRequest.CampaignCode = campaign.Id.ToString();
+                donationRequest.CampaignId = campaign.Id;
             }
         }
         else
         {
             campaign = null;
             donationRequest.CampaignCode = null;
+            donationRequest.CampaignId = null; // Update to new property
         }
         StateHasChanged();
     }
 
-    private async Task OnCampaignChanged(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), out var id))
-        {
-            // selectedCampaignId is already updated by @bind-Value
-            campaign = campaigns.FirstOrDefault(c => c.Id == id);
-            if (campaign != null)
-            {
-                donationRequest.CampaignCode = campaign.Id.ToString();
-            }
-        }
-        else
-        {
-            campaign = null;
-            donationRequest.CampaignCode = null;
-        }
-        StateHasChanged(); // Ensure UI updates
-    }
-
-    private void SetAnnual(bool value)
+     private void SetAnnual(bool value)
     {
         donationRequest.IsAnnual = value;
         if (value)
