@@ -49,6 +49,8 @@ namespace msih.p4g.Server.Features.DonationService.Models
 
         public string? CampaignCode { get; set; }
 
+        public int? CampaignId { get; set; }
+
         [Required]
         public string PaymentToken { get; set; }
     }
