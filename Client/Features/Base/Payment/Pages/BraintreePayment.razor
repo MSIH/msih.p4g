@@ -269,9 +269,9 @@
                                             <InputNumber id="amount" class="form-control" @bind-Value="donationRequest.DonationAmount" step="1" />
                                         </div>
                                        @*  <ValidationMessage For="@(() => donationRequest.DonationAmount)" /> *@
-                                        @if (donationRequest.DonationAmount < 25)
+                                        @if (donationRequest.DonationAmount < 10)
                                         {
-                                            <small class="text-danger">Minimum donation is $25.00</small>
+                                            <small class="text-danger">Minimum donation is $10.00</small>
                                         }
                                     </div>
                                     <div class="col-md-4">
