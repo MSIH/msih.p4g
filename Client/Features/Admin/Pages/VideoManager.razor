@@ -151,7 +151,7 @@
             isLoadingVideos = true;
             StateHasChanged();
 
-            var response = await Http.GetAsync("api/video/list");
+            var response = await Http.GetAsync("/api/video/list");
 
             if (response.IsSuccessStatusCode)
             {
@@ -191,7 +191,7 @@
     {
         try
         {
-            var response = await Http.DeleteAsync($"api/video/delete/{campaignId}");
+            var response = await Http.DeleteAsync($"/api/video/delete/{campaignId}");
 
             if (response.IsSuccessStatusCode)
             {

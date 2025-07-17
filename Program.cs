@@ -73,6 +73,7 @@ builder.Services.AddScoped<AuthService>();
 // Add HttpContextAccessor for accessing current user information
 builder.Services.AddHttpContextAccessor();
 
+
 // Add Data Protection services for sensitive data encryption
 builder.Services.AddDataProtection()
     .SetApplicationName("msih.p4g")

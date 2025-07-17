@@ -140,7 +140,7 @@
             }, null, 500, 500);
 
             // Upload file
-            var response = await Http.PostAsync("api/video/upload", content);
+            var response = await Http.PostAsync("/api/video/upload", content);
 
             progressTimer?.Dispose();
             uploadProgress = 100;
