@@ -32,13 +32,19 @@
 
 
             <div class="mb-3">
-                <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrlToClipboard">
+                <button class="btn btn-sm btn-secondary me-2" @onclick="CopyReferralUrlToClipboard">
                     <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
                 </button>
                 @if (copyUrlSuccess)
                 {
                     <span class="text-success ms-2">Copied!</span>
                 }
+                
+                <VideoDownloadComponent ReferralCode="@ReferralCode" 
+                                       CampaignId="@SelectedCampaignId" 
+                                       OnProcessingStarted="OnVideoProcessingStarted"
+                                       OnProcessingCompleted="OnVideoProcessingCompleted"
+                                       OnProcessingFailed="OnVideoProcessingFailed" />
             </div>
     </div>
 
@@ -212,6 +218,39 @@
             {
                 await OnError.InvokeAsync(errorMessage);
             }
+        }
+    }
+
+    /// <summary>
+    /// Handles video processing started event
+    /// </summary>
+    private async Task OnVideoProcessingStarted()
+    {
+        // Optional: Add any logic when video processing starts
+        // For example, logging or analytics
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Handles video processing completed event
+    /// </summary>
+    private async Task OnVideoProcessingCompleted(string videoUrl)
+    {
+        // Optional: Add any logic when video processing completes
+        // For example, analytics tracking or notifications
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Handles video processing failed event
+    /// </summary>
+    private async Task OnVideoProcessingFailed(string error)
+    {
+        // Optional: Add any logic when video processing fails
+        // For example, error logging or user notifications
+        if (OnError.HasDelegate)
+        {
+            await OnError.InvokeAsync(error);
         }
     }
 }
