@@ -185,7 +185,7 @@
                                     </label>
                                     <InputSelect id="campaignSelect" class="form-control" @bind-Value="selectedCampaignId">
                                         <option value="">-- Select Campaign --</option>
-                                        @foreach (var c in campaigns)
+                                        @foreach (var c in campaigns.OrderBy(c => c.Title))
                                         {
                                             <option value="@c.Id">
                                                 @c.Title
