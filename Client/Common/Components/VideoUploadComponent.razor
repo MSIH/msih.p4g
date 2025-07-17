@@ -148,6 +148,7 @@
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadAsStringAsync();
+                var completedCampaignId = selectedCampaignId.Value; // Store before reset
                 uploadSuccess = $"Video uploaded successfully for campaign {selectedCampaignId}";
                 
                 // Reset form
@@ -157,7 +158,7 @@
                 // Trigger success callback
                 if (OnUploadCompleted.HasDelegate)
                 {
-                    await OnUploadCompleted.InvokeAsync(selectedCampaignId.Value);
+                    await OnUploadCompleted.InvokeAsync(completedCampaignId);
                 }
             }
             else
