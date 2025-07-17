@@ -26,6 +26,7 @@
 <table class="table table-striped">
     <thead>
         <tr>
+            <th>ID</th>
             <th>Title</th>
             <th>Description</th>
             <th>Active</th>
@@ -34,9 +35,10 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var campaign in campaigns)
+        @foreach (var campaign in campaigns.OrderBy(c => c.Title))
         {
             <tr>
+                <td>@campaign.Id</td>
                 <td>
                     @if (editingCampaignId == campaign.Id)
                     {
