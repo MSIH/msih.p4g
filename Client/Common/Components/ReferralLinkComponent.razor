@@ -7,41 +7,47 @@
 <div class="mb-3">
     <h5 class="mt-2 mb-3">@GeneratedReferralLink</h5>
 
-    @if (ShowAppendNameOption)
-    {
+@if (ShowAppendNameOption)
+{
         <div class="mb-3">
             <label class="form-check-label">
                 <input type="checkbox" @bind="appendName" class="form-check-input me-2" />
                 Append my name to the referral code
             </label>
         </div>
-    }
-
-    <div class="mb-3">
-        <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrlToClipboard">
-            <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
-        </button>
-        @if (copyUrlSuccess)
-        {
-            <span class="text-success ms-2">Copied!</span>
-        }
-    </div>
-</div>
-
-@if (ShowSocialMediaLinks)
-{
-    <div class="mb-3">
-        <strong>Share your code:</strong>
-        <ul class="mt-2">
-            <li><a href="@InstagramUrl" target="_blank">Instagram</a></li>
-            <li><a href="@TikTokUrl" target="_blank">TikTok</a></li>
-            <li><a href="@FacebookUrl" target="_blank">Facebook</a></li>
-            <li><a href="@TwitterUrl" target="_blank">Twitter</a></li>
-            <li><a href="mailto:?subject=Join%20me&body=@GeneratedReferralLink" target="_blank">Email</a></li>
-            <li><a href="sms:?body=@GeneratedReferralLink" target="_blank">Text Message</a></li>
-        </ul>
-    </div>
 }
+
+@if (ShowCampaignDropdownOption)
+{
+
+            }
+
+
+            <div class="mb-3">
+                <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrlToClipboard">
+                    <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
+                </button>
+                @if (copyUrlSuccess)
+                {
+                    <span class="text-success ms-2">Copied!</span>
+                }
+            </div>
+    </div>
+
+    @if (ShowSocialMediaLinks)
+    {
+        <div class="mb-3">
+            <strong>Share your code:</strong>
+            <ul class="mt-2">
+                <li><a href="@InstagramUrl" target="_blank">Instagram</a></li>
+                <li><a href="@TikTokUrl" target="_blank">TikTok</a></li>
+                <li><a href="@FacebookUrl" target="_blank">Facebook</a></li>
+                <li><a href="@TwitterUrl" target="_blank">Twitter</a></li>
+                <li><a href="mailto:?subject=Join%20me&body=@GeneratedReferralLink" target="_blank">Email</a></li>
+                <li><a href="sms:?body=@GeneratedReferralLink" target="_blank">Text Message</a></li>
+            </ul>
+        </div>
+    }
 
 @code {
 
@@ -63,6 +69,11 @@
     /// Whether to show the checkbox option to append name
     /// </summary>
     [Parameter] public bool ShowAppendNameOption { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show the checkbox option to append name
+    /// </summary>
+    [Parameter] public bool ShowCampaignDropdownOption { get; set; } = true;
 
     /// <summary>
     /// Whether to show the social media sharing links
@@ -134,15 +145,16 @@
     /// Gets the generated referral link based on current settings
     /// </summary>
     private string GeneratedReferralLink => appendName && !string.IsNullOrEmpty(ComputedUserName)
-        ? $"{donationUrl.TrimEnd('/')}/{ReferralCode}-{ComputedUserName.Replace(" ", "")}"
-        : $"{donationUrl.TrimEnd('/')}/{ReferralCode}";
+    ? $"{donationUrl.TrimEnd('/')}/{ReferralCode}-{ComputedUserName.Replace(" ", "")}"
+    : $"{donationUrl.TrimEnd('/')}/{ReferralCode}";
 
     /// <summary>
     /// Social media sharing URLs
     /// </summary>
     private string InstagramUrl => $"https://www.instagram.com/?url={Uri.EscapeDataString(GeneratedReferralLink)}";
     private string TikTokUrl => $"https://www.tiktok.com/share?url={Uri.EscapeDataString(GeneratedReferralLink)}";
-    private string FacebookUrl => $"https://www.facebook.com/sharer/sharer.php?u={Uri.EscapeDataString(GeneratedReferralLink)}";
+    private string FacebookUrl =>
+    $"https://www.facebook.com/sharer/sharer.php?u={Uri.EscapeDataString(GeneratedReferralLink)}";
     private string TwitterUrl => $"https://twitter.com/intent/tweet?url={Uri.EscapeDataString(GeneratedReferralLink)}";
 
     /// <summary>
