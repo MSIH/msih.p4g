@@ -9,12 +9,11 @@
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
+using msih.p4g.Server.Common.Utilities;
 using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
-using msih.p4g.Server.Common.Utilities;
-using msih.p4g.Server.Common.Utilities;
 
 namespace msih.p4g.Server.Features.Base.UserService.Services
 {
