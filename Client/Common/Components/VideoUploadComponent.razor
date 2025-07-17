@@ -1,0 +1,204 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Net.Http.Headers
+@using System.Text.Json
+@inject HttpClient Http
+
+<div class="video-upload-component">
+    <div class="mb-3">
+        <label for="videoFile" class="form-label">Select Video File</label>
+        <InputFile id="videoFile" class="form-control" OnChange="HandleFileSelected" accept=".mp4,.mov,.avi,.mkv" disabled="@isUploading" />
+        <div class="form-text">Supported formats: MP4, MOV, AVI, MKV (Max size: 100MB)</div>
+    </div>
+
+    <div class="mb-3">
+        <label for="campaignSelect" class="form-label">Associate with Campaign</label>
+        <CampaignDropdown SelectedCampaignId="selectedCampaignId" SelectedCampaignIdChanged="@((int? value) => selectedCampaignId = value)" />
+    </div>
+
+    <button class="btn btn-primary" @onclick="UploadVideo" disabled="@(!CanUpload)">
+        @if (isUploading)
+        {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span>Uploading... @uploadProgress%</span>
+        }
+        else
+        {
+            <span class="oi oi-cloud-upload me-2"></span>
+            <span>Upload Video</span>
+        }
+    </button>
+
+    @if (!string.IsNullOrEmpty(uploadError))
+    {
+        <div class="alert alert-danger mt-3">
+            <strong>Error:</strong> @uploadError
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(uploadSuccess))
+    {
+        <div class="alert alert-success mt-3">
+            <strong>Success:</strong> @uploadSuccess
+        </div>
+    }
+
+    @if (selectedFile != null)
+    {
+        <div class="mt-3">
+            <h6>Selected File:</h6>
+            <ul class="list-unstyled">
+                <li><strong>Name:</strong> @selectedFile.Name</li>
+                <li><strong>Size:</strong> @FormatFileSize(selectedFile.Size)</li>
+                <li><strong>Type:</strong> @selectedFile.ContentType</li>
+            </ul>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Event callback fired when video upload completes successfully
+    /// </summary>
+    [Parameter] public EventCallback<int> OnUploadCompleted { get; set; }
+
+    /// <summary>
+    /// Event callback fired when video upload fails
+    /// </summary>
+    [Parameter] public EventCallback<string> OnUploadFailed { get; set; }
+
+    /// <summary>
+    /// Maximum file size in bytes (default: 100MB)
+    /// </summary>
+    [Parameter] public long MaxFileSize { get; set; } = 100 * 1024 * 1024; // 100MB
+
+    private IBrowserFile selectedFile;
+    private int? selectedCampaignId;
+    private bool isUploading = false;
+    private int uploadProgress = 0;
+    private string uploadError = string.Empty;
+    private string uploadSuccess = string.Empty;
+
+    private bool CanUpload => selectedFile != null && selectedCampaignId.HasValue && !isUploading;
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        uploadError = string.Empty;
+        uploadSuccess = string.Empty;
+
+        // Validate file size
+        if (selectedFile.Size > MaxFileSize)
+        {
+            uploadError = $"File size exceeds the maximum limit of {FormatFileSize(MaxFileSize)}";
+            selectedFile = null;
+            return;
+        }
+
+        // Validate file type
+        var allowedTypes = new[] { "video/mp4", "video/quicktime", "video/x-msvideo", "video/x-matroska" };
+        if (!allowedTypes.Contains(selectedFile.ContentType))
+        {
+            uploadError = "Invalid file type. Please select a video file (MP4, MOV, AVI, MKV).";
+            selectedFile = null;
+            return;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task UploadVideo()
+    {
+        if (!CanUpload) return;
+
+        try
+        {
+            isUploading = true;
+            uploadProgress = 0;
+            uploadError = string.Empty;
+            uploadSuccess = string.Empty;
+            StateHasChanged();
+
+            // Create multipart form data
+            using var content = new MultipartFormDataContent();
+            
+            // Add file
+            var fileContent = new StreamContent(selectedFile.OpenReadStream(MaxFileSize));
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
+            content.Add(fileContent, "File", selectedFile.Name);
+            
+            // Add campaign ID
+            content.Add(new StringContent(selectedCampaignId.ToString()), "CampaignId");
+
+            // Simulate progress (since we can't track real progress with HttpClient easily)
+            var progressTimer = new Timer((_) => {
+                if (uploadProgress < 90)
+                {
+                    uploadProgress += 10;
+                    InvokeAsync(StateHasChanged);
+                }
+            }, null, 500, 500);
+
+            // Upload file
+            var response = await Http.PostAsync("api/video/upload", content);
+
+            progressTimer?.Dispose();
+            uploadProgress = 100;
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                uploadSuccess = $"Video uploaded successfully for campaign {selectedCampaignId}";
+                
+                // Reset form
+                selectedFile = null;
+                selectedCampaignId = null;
+                
+                // Trigger success callback
+                if (OnUploadCompleted.HasDelegate)
+                {
+                    await OnUploadCompleted.InvokeAsync(selectedCampaignId.Value);
+                }
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                uploadError = $"Upload failed: {errorContent}";
+                
+                // Trigger error callback
+                if (OnUploadFailed.HasDelegate)
+                {
+                    await OnUploadFailed.InvokeAsync(uploadError);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            uploadError = $"Upload failed: {ex.Message}";
+            
+            // Trigger error callback
+            if (OnUploadFailed.HasDelegate)
+            {
+                await OnUploadFailed.InvokeAsync(uploadError);
+            }
+        }
+        finally
+        {
+            isUploading = false;
+            uploadProgress = 0;
+            StateHasChanged();
+        }
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+}
