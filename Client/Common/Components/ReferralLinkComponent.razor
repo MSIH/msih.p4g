@@ -1,6 +1,7 @@
 @using Microsoft.JSInterop
 @using msih.p4g.Server.Features.Base.SettingsService.Interfaces
 @using msih.p4g.Server.Features.Base.ProfileService.Model
+@using msih.p4g.Server.Common.Utilities
 @inject IJSRuntime JSRuntime
 @inject ISettingsService SettingsService
 
@@ -11,7 +12,7 @@
     {
         <div class="mb-3">
             <label class="form-check-label">
-                <input type="checkbox" @bind="appendName" class="form-check-input me-2" />
+                <input type="checkbox" @bind="appendName" @bind:after="UpdateReferralLinkAsync" class="form-check-input me-2" />
                 Append my name to the referral code
             </label>
         </div>
@@ -93,7 +94,7 @@
     [Parameter] public string ReferralCode { get; set; } = string.Empty;
 
     private bool copyUrlSuccess = false;
-    private string donationUrl = "https://msih.org/donate"; // Default fallback value
+    private string _generatedReferralLink = string.Empty;
 
     /// <summary>
     /// Computes the consistent username format from the Profile object.
@@ -103,39 +104,38 @@
     {
         get
         {
-            if (Profile?.FirstName != null)
-            {
-                var firstName = Profile.FirstName.Trim();
-                if (string.IsNullOrEmpty(firstName))
-                    return string.Empty;
-
-                return char.ToUpper(firstName[0]) + firstName.Substring(1).ToLower();
-            }
-
+            var username = ReferralLinkHelper.ComputeUsername(Profile);
+            
             // Fallback to UserName parameter for backward compatibility
-            return UserName;
+            return !string.IsNullOrEmpty(username) ? username : UserName;
         }
     }
 
     protected override async Task OnInitializedAsync()
     {
-        // Load the donation URL from settings service
-        var baseUrl = await SettingsService.GetValueAsync("BaseUrl") ?? "https://msih.org";
-        donationUrl = await SettingsService.GetValueAsync("donationUrl") ?? $"{baseUrl.TrimEnd('/')}/donate";
-
         // Ensure the referral code is generated if not already set
         if (Profile != null && !string.IsNullOrEmpty(Profile.ReferralCode))
         {
             ReferralCode = Profile.ReferralCode;
         }
+        
+        // Generate the referral link
+        await UpdateReferralLinkAsync();
     }
 
     /// <summary>
     /// Gets the generated referral link based on current settings
     /// </summary>
-    private string GeneratedReferralLink => appendName && !string.IsNullOrEmpty(ComputedUserName)
-        ? $"{donationUrl.TrimEnd('/')}/{ReferralCode}-{ComputedUserName.Replace(" ", "")}"
-        : $"{donationUrl.TrimEnd('/')}/{ReferralCode}";
+    private string GeneratedReferralLink => _generatedReferralLink;
+    
+    /// <summary>
+    /// Updates the referral link using the new async helper method
+    /// </summary>
+    private async Task UpdateReferralLinkAsync()
+    {
+        _generatedReferralLink = await ReferralLinkHelper.GenerateReferralLinkAsync(Profile, appendName: appendName);
+        StateHasChanged();
+    }
 
     /// <summary>
     /// Social media sharing URLs
