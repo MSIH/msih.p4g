@@ -129,20 +129,6 @@
     private bool copyUrlSuccess = false;
     private string _generatedReferralLink = string.Empty;
 
-    /// <summary>
-    /// Computes the consistent username format from the Profile object.
-    /// Format: "{FirstName}" (e.g., "John")
-    /// </summary>
-    private string ComputedUserName
-    {
-        get
-        {
-            var username = ReferralLinkHelper.ComputeUsername(Profile);
-
-            // Fallback to UserName parameter for backward compatibility
-            return !string.IsNullOrEmpty(username) ? username : UserName;
-        }
-    }
 
     protected override async Task OnInitializedAsync()
     {
