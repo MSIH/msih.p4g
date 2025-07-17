@@ -5,7 +5,7 @@
 @using msih.p4g.Server.Features.CampaignService.Interfaces
 @inject ICampaignService CampaignService
 
-<select class="form-select" @bind="SelectedCampaignId">
+<select class="form-select" @bind="SelectedCampaignId" @bind:after="OnSelectedCampaignIdChanged">
     <option value="">-- Select a Campaign --</option>
     @foreach (var campaign in campaigns.OrderBy(c => c.Title))
     {
@@ -36,5 +36,10 @@
         {
             campaigns = new List<Campaign>();
         }
+    }
+
+    private async Task OnSelectedCampaignIdChanged()
+    {
+        await SelectedCampaignIdChanged.InvokeAsync(SelectedCampaignId);
     }
 }
