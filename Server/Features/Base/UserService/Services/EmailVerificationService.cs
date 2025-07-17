@@ -13,7 +13,8 @@ using msih.p4g.Server.Features.Base.MessageService.Interfaces;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Interfaces;
 using msih.p4g.Server.Features.Base.UserService.Models;
-using Server.Common.Utilities;
+using msih.p4g.Server.Common.Utilities;
+using msih.p4g.Server.Common.Utilities;
 
 namespace msih.p4g.Server.Features.Base.UserService.Services
 {
@@ -24,19 +25,22 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
         private readonly ISettingsService _settingsService;
         private readonly IConfiguration _configuration;
         private readonly ILogger<EmailVerificationService> _logger;
+        private readonly ReferralLinkHelper _referralLinkHelper;
 
         public EmailVerificationService(
             IUserService userService,
             IMessageService messageService,
             ISettingsService settingsService,
             IConfiguration configuration,
-            ILogger<EmailVerificationService> logger)
+            ILogger<EmailVerificationService> logger,
+            ReferralLinkHelper referralLinkHelper)
         {
             _userService = userService;
             _messageService = messageService;
             _settingsService = settingsService;
             _configuration = configuration;
             _logger = logger;
+            _referralLinkHelper = referralLinkHelper;
         }
 
         public async Task<bool> SendVerificationEmailAsync(User user)
@@ -68,7 +72,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                 // Create the verification link
                 var verificationLink = $"{baseUrl}/verify-email?token={token}";
 
-                var referalURL = $"{donationUrl}/{user.Profile.ReferralCode}-{user.Profile.FirstName}"; // Updated to define referalURL
+                var referalURL = await _referralLinkHelper.GenerateReferralLinkAsync(user.Profile, donationUrl, appendName: true); // Updated to define referalURL
 
 
                 // Set up email placeholders
