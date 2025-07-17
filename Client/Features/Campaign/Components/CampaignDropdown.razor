@@ -5,7 +5,7 @@
 
 <select class="form-select" @bind="SelectedCampaignId">
     <option value="">-- Select a Campaign --</option>
-    @foreach (var campaign in Campaigns)
+    @foreach (var campaign in Campaigns.OrderBy(c => c.Title))
     {
         <option value="@campaign.Id">@campaign.Title</option>
     }
