@@ -68,7 +68,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Services
                 // Create the verification link
                 var verificationLink = $"{baseUrl}/verify-email?token={token}";
 
-                var referalURL = $"{donationUrl}/{user.Profile.ReferralCode}-{user.Profile.FirstName}-{user.Profile.LastName.Substring(0, 1).ToUpper()}"; // Updated to define referalURL
+                var referalURL = $"{donationUrl}/{user.Profile.ReferralCode}-{user.Profile.FirstName}"; // Updated to define referalURL
 
 
                 // Set up email placeholders
