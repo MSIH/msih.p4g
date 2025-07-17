@@ -9,7 +9,22 @@
                 "build",
                 "${workspaceFolder}/msih.p4g.sln",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+                "/consoleloggerparameters:NoSummary;ForceNoAlign",
+                "/verbosity:quiet",
+                "/property:WarningLevel=0"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build-errors-only",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/msih.p4g.sln",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign;ErrorsOnly",
+                "/verbosity:quiet"
             ],
             "problemMatcher": "$msCompile"
         },

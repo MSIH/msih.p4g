@@ -2,17 +2,44 @@
    This file is developed for Make Sure It Happens Inc.
    Unauthorized copying, modification, distribution, or use is prohibited. *@
 @using msih.p4g.Server.Features.CampaignService.Model
+@using msih.p4g.Server.Features.CampaignService.Interfaces
+@inject ICampaignService CampaignService
 
-<select class="form-select" @bind="SelectedCampaignId">
+<select class="form-select" @bind="SelectedCampaignId" @bind:after="OnSelectedCampaignIdChanged">
     <option value="">-- Select a Campaign --</option>
-    @foreach (var campaign in Campaigns.OrderBy(c => c.Title))
+    @foreach (var campaign in campaigns.OrderBy(c => c.Title))
     {
         <option value="@campaign.Id">@campaign.Title</option>
     }
 </select>
 
 @code {
-    [Parameter] public List<Campaign> Campaigns { get; set; } = new();
+    [Parameter] public bool IsActive { get; set; } = true;
     [Parameter] public int? SelectedCampaignId { get; set; }
     [Parameter] public EventCallback<int?> SelectedCampaignIdChanged { get; set; }
+    
+    private List<Campaign> campaigns = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCampaigns();
+    }
+
+    private async Task LoadCampaigns()
+    {
+        try
+        {
+            var allCampaigns = await CampaignService.GetAllAsync(includeInactive: !IsActive);
+            campaigns = allCampaigns.ToList();
+        }
+        catch (Exception)
+        {
+            campaigns = new List<Campaign>();
+        }
+    }
+
+    private async Task OnSelectedCampaignIdChanged()
+    {
+        await SelectedCampaignIdChanged.InvokeAsync(SelectedCampaignId);
+    }
 }

@@ -1,54 +1,68 @@
 @using Microsoft.JSInterop
 @using msih.p4g.Server.Features.Base.SettingsService.Interfaces
 @using msih.p4g.Server.Features.Base.ProfileService.Model
+@using msih.p4g.Server.Common.Utilities
+@using msih.p4g.Server.Features.CampaignService.Model
+@using msih.p4g.Client.Features.Campaign.Components
 @inject IJSRuntime JSRuntime
 @inject ISettingsService SettingsService
+@inject ReferralLinkHelper ReferralLinkHelper
 
 <div class="mb-3">
     <h5 class="mt-2 mb-3">@GeneratedReferralLink</h5>
 
-    @if (ShowAppendNameOption)
-    {
+@if (ShowAppendNameOption)
+{
         <div class="mb-3">
             <label class="form-check-label">
-                <input type="checkbox" @bind="appendName" class="form-check-input me-2" />
+                <input type="checkbox" @bind="appendName" @bind:after="UpdateReferralLinkAsync" class="form-check-input me-2" />
                 Append my name to the referral code
             </label>
         </div>
-    }
+}
 
-    <div class="mb-3">
-        <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrlToClipboard">
-            <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
-        </button>
-        @if (copyUrlSuccess)
-        {
-            <span class="text-success ms-2">Copied!</span>
-        }
-    </div>
-</div>
-
-@if (ShowSocialMediaLinks)
+@if (ShowCampaignDropdownOption)
 {
     <div class="mb-3">
-        <strong>Share your code:</strong>
-        <ul class="mt-2">
-            <li><a href="@InstagramUrl" target="_blank">Instagram</a></li>
-            <li><a href="@TikTokUrl" target="_blank">TikTok</a></li>
-            <li><a href="@FacebookUrl" target="_blank">Facebook</a></li>
-            <li><a href="@TwitterUrl" target="_blank">Twitter</a></li>
-            <li><a href="mailto:?subject=Join%20me&body=@GeneratedReferralLink" target="_blank">Email</a></li>
-            <li><a href="sms:?body=@GeneratedReferralLink" target="_blank">Text Message</a></li>
-        </ul>
+        <label class="form-label">Campaign (Optional):</label>
+        <CampaignDropdown SelectedCampaignId="SelectedCampaignId" 
+                         SelectedCampaignIdChanged="OnCampaignChangedAsync" />
     </div>
 }
+
+
+            <div class="mb-3">
+                <button class="btn btn-sm btn-secondary" @onclick="CopyReferralUrlToClipboard">
+                    <span class="oi oi-clipboard me-1"></span> Copy URL to Clipboard
+                </button>
+                @if (copyUrlSuccess)
+                {
+                    <span class="text-success ms-2">Copied!</span>
+                }
+            </div>
+    </div>
+
+    @if (ShowSocialMediaLinks)
+    {
+        <div class="mb-3">
+            <strong>Share your code:</strong>
+            <ul class="mt-2">
+                <li><a href="@InstagramUrl" target="_blank">Instagram</a></li>
+                <li><a href="@TikTokUrl" target="_blank">TikTok</a></li>
+                <li><a href="@FacebookUrl" target="_blank">Facebook</a></li>
+                <li><a href="@TwitterUrl" target="_blank">Twitter</a></li>
+                <li><a href="mailto:?subject=Join%20me&body=@GeneratedReferralLink" target="_blank">Email</a></li>
+                <li><a href="sms:?body=@GeneratedReferralLink" target="_blank">Text Message</a></li>
+            </ul>
+        </div>
+    }
 
 @code {
 
     /// <summary>
     /// The user profile containing first and last name for generating the personalized referral link.
-    /// When provided, the component will compute the username format as "{FirstName}-{LastNameInitial}"
-    /// (e.g., "John-D") to ensure consistency across the application.
+    /// When provided, the component will compute the username format as "{FirstName}"
+    /// (e.g., "John") to ensure consistency across the application.
     /// </summary>
     [Parameter] public Profile? Profile { get; set; }
 
@@ -65,6 +79,11 @@
     [Parameter] public bool ShowAppendNameOption { get; set; } = true;
 
     /// <summary>
+    /// Whether to show the campaign dropdown option
+    /// </summary>
+    [Parameter] public bool ShowCampaignDropdownOption { get; set; } = true;
+
+    /// <summary>
     /// Whether to show the social media sharing links
     /// </summary>
     [Parameter] public bool ShowSocialMediaLinks { get; set; } = false;
@@ -78,6 +97,17 @@
     /// Event callback fired when URL is successfully copied
     /// </summary>
     [Parameter] public EventCallback OnUrlCopied { get; set; }
+
+
+    /// <summary>
+    /// Currently selected campaign ID
+    /// </summary>
+    [Parameter] public int? SelectedCampaignId { get; set; }
+
+    /// <summary>
+    /// Event callback fired when campaign selection changes
+    /// </summary>
+    [Parameter] public EventCallback<int?> SelectedCampaignIdChanged { get; set; }
 
     private bool _appendName = false;
     private bool appendName
@@ -93,56 +123,52 @@
     [Parameter] public string ReferralCode { get; set; } = string.Empty;
 
     private bool copyUrlSuccess = false;
-    private string donationUrl = "https://msih.org/donate"; // Default fallback value
+    private string _generatedReferralLink = string.Empty;
 
-    /// <summary>
-    /// Computes the consistent username format from the Profile object.
-    /// Format: "{FirstName}" (e.g., "John")
-    /// </summary>
-    private string ComputedUserName
-    {
-        get
-        {
-            if (Profile?.FirstName != null)
-            {
-                var firstName = Profile.FirstName.Trim();
-                if (string.IsNullOrEmpty(firstName))
-                    return string.Empty;
-
-                return char.ToUpper(firstName[0]) + firstName.Substring(1).ToLower();
-            }
-
-            // Fallback to UserName parameter for backward compatibility
-            return UserName;
-        }
-    }
 
     protected override async Task OnInitializedAsync()
     {
-        // Load the donation URL from settings service
-        var baseUrl = await SettingsService.GetValueAsync("BaseUrl") ?? "https://msih.org";
-        donationUrl = await SettingsService.GetValueAsync("donationUrl") ?? $"{baseUrl.TrimEnd('/')}/donate";
-
         // Ensure the referral code is generated if not already set
         if (Profile != null && !string.IsNullOrEmpty(Profile.ReferralCode))
         {
             ReferralCode = Profile.ReferralCode;
         }
+
+        // Generate the referral link
+        await UpdateReferralLinkAsync();
     }
 
     /// <summary>
     /// Gets the generated referral link based on current settings
     /// </summary>
-    private string GeneratedReferralLink => appendName && !string.IsNullOrEmpty(ComputedUserName)
-        ? $"{donationUrl.TrimEnd('/')}/{ReferralCode}-{ComputedUserName.Replace(" ", "")}"
-        : $"{donationUrl.TrimEnd('/')}/{ReferralCode}";
+    private string GeneratedReferralLink => _generatedReferralLink;
+
+    /// <summary>
+    /// Updates the referral link using the new async helper method
+    /// </summary>
+    private async Task UpdateReferralLinkAsync()
+    {
+        _generatedReferralLink = await ReferralLinkHelper.GenerateReferralLinkAsync(Profile, appendName: appendName, campaignId: SelectedCampaignId);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles campaign selection change
+    /// </summary>
+    private async Task OnCampaignChangedAsync(int? campaignId)
+    {
+        SelectedCampaignId = campaignId;
+        await SelectedCampaignIdChanged.InvokeAsync(campaignId);
+        await UpdateReferralLinkAsync();
+    }
 
     /// <summary>
     /// Social media sharing URLs
     /// </summary>
     private string InstagramUrl => $"https://www.instagram.com/?url={Uri.EscapeDataString(GeneratedReferralLink)}";
     private string TikTokUrl => $"https://www.tiktok.com/share?url={Uri.EscapeDataString(GeneratedReferralLink)}";
-    private string FacebookUrl => $"https://www.facebook.com/sharer/sharer.php?u={Uri.EscapeDataString(GeneratedReferralLink)}";
+    private string FacebookUrl =>
+    $"https://www.facebook.com/sharer/sharer.php?u={Uri.EscapeDataString(GeneratedReferralLink)}";
     private string TwitterUrl => $"https://twitter.com/intent/tweet?url={Uri.EscapeDataString(GeneratedReferralLink)}";
 
     /// <summary>
