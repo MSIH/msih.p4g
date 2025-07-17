@@ -2,6 +2,8 @@
 @using msih.p4g.Server.Features.Base.SettingsService.Interfaces
 @using msih.p4g.Server.Features.Base.ProfileService.Model
 @using msih.p4g.Server.Common.Utilities
+@using msih.p4g.Server.Features.CampaignService.Model
+@using msih.p4g.Client.Features.Campaign.Components
 @inject IJSRuntime JSRuntime
 @inject ISettingsService SettingsService
 
@@ -20,8 +22,13 @@
 
 @if (ShowCampaignDropdownOption)
 {
-
-            }
+    <div class="mb-3">
+        <label class="form-label">Campaign (Optional):</label>
+        <CampaignDropdown Campaigns="Campaigns" 
+                         SelectedCampaignId="SelectedCampaignId" 
+                         SelectedCampaignIdChanged="OnCampaignChangedAsync" />
+    </div>
+}
 
 
             <div class="mb-3">
@@ -72,7 +79,7 @@
     [Parameter] public bool ShowAppendNameOption { get; set; } = true;
 
     /// <summary>
-    /// Whether to show the checkbox option to append name
+    /// Whether to show the campaign dropdown option
     /// </summary>
     [Parameter] public bool ShowCampaignDropdownOption { get; set; } = true;
 
@@ -90,6 +97,21 @@
     /// Event callback fired when URL is successfully copied
     /// </summary>
     [Parameter] public EventCallback OnUrlCopied { get; set; }
+
+    /// <summary>
+    /// List of campaigns for the dropdown
+    /// </summary>
+    [Parameter] public List<Campaign> Campaigns { get; set; } = new();
+
+    /// <summary>
+    /// Currently selected campaign ID
+    /// </summary>
+    [Parameter] public int? SelectedCampaignId { get; set; }
+
+    /// <summary>
+    /// Event callback fired when campaign selection changes
+    /// </summary>
+    [Parameter] public EventCallback<int?> SelectedCampaignIdChanged { get; set; }
 
     private bool _appendName = false;
     private bool appendName
@@ -144,8 +166,18 @@
     /// </summary>
     private async Task UpdateReferralLinkAsync()
     {
-        _generatedReferralLink = await ReferralLinkHelper.GenerateReferralLinkAsync(Profile, appendName: appendName);
+        _generatedReferralLink = await ReferralLinkHelper.GenerateReferralLinkAsync(Profile, appendName: appendName, campaignId: SelectedCampaignId);
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles campaign selection change
+    /// </summary>
+    private async Task OnCampaignChangedAsync(int? campaignId)
+    {
+        SelectedCampaignId = campaignId;
+        await SelectedCampaignIdChanged.InvokeAsync(campaignId);
+        await UpdateReferralLinkAsync();
     }
 
     /// <summary>

@@ -42,14 +42,21 @@ namespace msih.p4g.Server.Common.Utilities
         /// <param name="donationUrl">The base donation URL (if null, will get from settings)</param>
         /// <param name="referralCode">Override referral code (if null, gets from profile)</param>
         /// <param name="appendName">Whether to append the username to the link</param>
+        /// <param name="campaignId">Optional campaign ID to prepend to referral code</param>
         /// <returns>Complete referral link</returns>
-        public async Task<string> GenerateReferralLinkAsync(Profile? profile, string? donationUrl = null, string? referralCode = null, bool appendName = true)
+        public async Task<string> GenerateReferralLinkAsync(Profile? profile, string? donationUrl = null, string? referralCode = null, bool appendName = true, int? campaignId = null)
         {
             // Get referral code from profile if not provided
             referralCode ??= profile?.ReferralCode;
 
             if (string.IsNullOrEmpty(referralCode))
                 return string.Empty;
+
+            // Prepend campaign ID if provided
+            if (campaignId.HasValue)
+            {
+                referralCode = $"{campaignId.Value}{referralCode}";
+            }
 
             // Get donation URL from settings if not provided
             if (string.IsNullOrEmpty(donationUrl))
@@ -75,31 +82,5 @@ namespace msih.p4g.Server.Common.Utilities
             return $"{finalUrl}/{referralCode}";
         }
 
-        /// <summary>
-        /// Generates a complete referral link with optional username appended (synchronous version).
-        /// </summary>
-        /// <param name="donationUrl">The base donation URL (required for synchronous version)</param>
-        /// <param name="referralCode">The user's referral code</param>
-        /// <param name="profile">The user profile (optional)</param>
-        /// <param name="appendName">Whether to append the username to the link</param>
-        /// <returns>Complete referral link</returns>
-        public string GenerateReferralLink(string donationUrl, string referralCode, Profile? profile = null, bool appendName = false)
-        {
-            if (string.IsNullOrEmpty(donationUrl) || string.IsNullOrEmpty(referralCode))
-                return string.Empty;
-
-            var baseUrl = donationUrl.TrimEnd('/');
-
-            if (appendName && profile != null)
-            {
-                var username = ComputeUsername(profile);
-                if (!string.IsNullOrEmpty(username))
-                {
-                    return $"{baseUrl}/{referralCode}-{username.Replace(" ", "")}";
-                }
-            }
-
-            return $"{baseUrl}/{referralCode}";
-        }
     }
 }
