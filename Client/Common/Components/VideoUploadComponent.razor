@@ -2,7 +2,9 @@
 @using System.Net.Http.Headers
 @using System.Text.Json
 @using msih.p4g.Client.Features.Campaign.Components
+@using msih.p4g.Server.Features.Base.SettingsService.Interfaces
 @inject HttpClient Http
+@inject ISettingsService SettingsService
 
 <div class="video-upload-component">
     <div class="mb-3">
@@ -139,8 +141,13 @@
                 }
             }, null, 500, 500);
 
+            // Get base URL from settings and construct absolute URL
+            var baseUrl = await SettingsService.GetValueAsync("BaseUrl") ?? "https://localhost:63581";
+            baseUrl = baseUrl.TrimEnd('/');
+            var uploadUrl = $"{baseUrl}/api/video/upload";
+            
             // Upload file
-            var response = await Http.PostAsync("/api/video/upload", content);
+            var response = await Http.PostAsync(uploadUrl, content);
 
             progressTimer?.Dispose();
             uploadProgress = 100;

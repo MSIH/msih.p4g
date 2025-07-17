@@ -9,10 +9,12 @@
 @using msih.p4g.Client.Common.Components
 @using System.Net.Http.Json
 @using System.Text.Json
+@using msih.p4g.Server.Features.Base.SettingsService.Interfaces
 @inject ICampaignService CampaignService
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject AuthorizationService AuthorizationService
+@inject ISettingsService SettingsService
 
 
 <h3>Video Management</h3>
@@ -151,7 +153,12 @@
             isLoadingVideos = true;
             StateHasChanged();
 
-            var response = await Http.GetAsync("/api/video/list");
+            // Get base URL from settings and construct absolute URL
+            var baseUrl = await SettingsService.GetValueAsync("BaseUrl") ?? "https://localhost:63581";
+            baseUrl = baseUrl.TrimEnd('/');
+            var listUrl = $"{baseUrl}/api/video/list";
+
+            var response = await Http.GetAsync(listUrl);
 
             if (response.IsSuccessStatusCode)
             {
@@ -191,7 +198,12 @@
     {
         try
         {
-            var response = await Http.DeleteAsync($"/api/video/delete/{campaignId}");
+            // Get base URL from settings and construct absolute URL
+            var baseUrl = await SettingsService.GetValueAsync("BaseUrl") ?? "https://localhost:63581";
+            baseUrl = baseUrl.TrimEnd('/');
+            var deleteUrl = $"{baseUrl}/api/video/delete/{campaignId}";
+
+            var response = await Http.DeleteAsync(deleteUrl);
 
             if (response.IsSuccessStatusCode)
             {
