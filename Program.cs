@@ -12,6 +12,7 @@
 
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using msih.p4g.Client.Features.Authentication.Services;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
@@ -212,7 +213,24 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+
+// Create .well-known directory and extract embedded file
+var wellKnownPath = Path.Combine(app.Environment.WebRootPath, ".well-known");
+
+// Only configure .well-known if the directory exists
+if (Directory.Exists(wellKnownPath))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(wellKnownPath),
+        RequestPath = "/.well-known",
+        ServeUnknownFileTypes = true,
+        DefaultContentType = "text/plain"
+    });
+}
+
+// Regular static files
+app.UseStaticFiles(); 
 
 app.UseRouting();
 

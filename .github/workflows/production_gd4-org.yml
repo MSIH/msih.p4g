@@ -1,13 +1,12 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy to gd4-org
-
+name: Build and deploy ASP.Net Core app to Azure Web App - gd4-org
 on: 
+  push:
+    branches:
+      - production
   workflow_dispatch:
-  pull_request:
-    types: [closed]
-    branches: [production]
 
 jobs:
   build:
@@ -29,6 +28,63 @@ jobs:
       - name: dotnet publish
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
+      # Debug: List contents to see what we have
+      - name: Debug - List source wwwroot contents
+        run: |
+          Write-Host "=== Source repository wwwroot contents ==="
+          if (Test-Path "wwwroot") {
+            Get-ChildItem -Path "wwwroot" -Recurse | Select-Object FullName
+          } else {
+            Write-Host "No wwwroot directory found in source"
+          }
+          
+          Write-Host "=== Published app wwwroot contents (before copy) ==="
+          if (Test-Path "${{env.DOTNET_ROOT}}\myapp\wwwroot") {
+            Get-ChildItem -Path "${{env.DOTNET_ROOT}}\myapp\wwwroot" -Recurse | Select-Object FullName
+          } else {
+            Write-Host "No wwwroot directory found in published app"
+          }
+        shell: powershell
+      
+      # Copy .well-known files to the published output AFTER dotnet publish
+      - name: Copy .well-known files to publish directory
+        run: |
+          $sourceWellKnown = "wwwroot\.well-known"
+          $destWwwroot = "${{env.DOTNET_ROOT}}\myapp\wwwroot"
+          $destWellKnown = "$destWwwroot\.well-known"
+          
+          Write-Host "Source path: $sourceWellKnown"
+          Write-Host "Destination wwwroot: $destWwwroot" 
+          Write-Host "Destination .well-known: $destWellKnown"
+          
+          if (Test-Path $sourceWellKnown) {
+            Write-Host "Found .well-known directory in source"
+            
+            # Ensure destination wwwroot exists
+            if (-not (Test-Path $destWwwroot)) {
+              New-Item -ItemType Directory -Force -Path $destWwwroot
+              Write-Host "Created destination wwwroot directory"
+            }
+            
+            # Copy .well-known directory
+            Copy-Item -Path $sourceWellKnown -Destination $destWwwroot -Recurse -Force
+            Write-Host ".well-known files copied successfully"
+            
+            # Verify the copy worked
+            if (Test-Path $destWellKnown) {
+              Write-Host "=== Contents of copied .well-known directory ==="
+              Get-ChildItem -Path $destWellKnown -Recurse | Select-Object FullName
+            } else {
+              Write-Host "ERROR: .well-known directory not found after copy!"
+            }
+          } else {
+            Write-Host "ERROR: No .well-known directory found at $sourceWellKnown"
+            Write-Host "Current working directory: $(Get-Location)"
+            Write-Host "Directory contents:"
+            Get-ChildItem -Recurse | Where-Object { $_.Name -like "*well-known*" } | Select-Object FullName
+          }
+        shell: powershell
+      
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
@@ -44,17 +100,58 @@ jobs:
       contents: read #This is required for actions/checkout
 
     steps:
+      # Checkout the repo to access .well-known files
+      - uses: actions/checkout@v4
+      
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: ./published-app
+      
+      # Copy .well-known files to the downloaded artifact
+      - name: Add .well-known files to deployment package
+        run: |
+          $sourceWellKnown = "wwwroot\.well-known"
+          $destWwwroot = ".\published-app\wwwroot"
+          $destWellKnown = "$destWwwroot\.well-known"
+          
+          Write-Host "=== Adding .well-known files to deployment package ==="
+          Write-Host "Source: $sourceWellKnown"
+          Write-Host "Destination: $destWellKnown"
+          
+          if (Test-Path $sourceWellKnown) {
+            Write-Host "Found .well-known directory in source repo"
+            
+            # Ensure destination wwwroot exists
+            if (-not (Test-Path $destWwwroot)) {
+              New-Item -ItemType Directory -Force -Path $destWwwroot
+              Write-Host "Created destination wwwroot directory"
+            }
+            
+            # Copy .well-known directory
+            Copy-Item -Path $sourceWellKnown -Destination $destWwwroot -Recurse -Force
+            Write-Host ".well-known files copied to deployment package"
+      
+            # Verify the copy
+            if (Test-Path $destWellKnown) {
+              Write-Host "=== Contents of .well-known in deployment package ==="
+              Get-ChildItem -Path $destWellKnown -Recurse | Select-Object FullName
+            }
+          } else {
+            Write-Host "WARNING: No .well-known directory found in source repo"
+          }
+          
+          Write-Host "=== Final deployment package contents ==="
+          Get-ChildItem -Path ".\published-app" -Recurse | Where-Object { $_.FullName -like "*well-known*" } | Select-Object FullName
+        shell: powershell
       
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_590B8129F6A745F38D1932DAB1304E30 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_6F3E48C7F7644A66A532AFDD910D212F }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5FABD15976A943F6B298FC3AFA7A95FB }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_22CC1BAC1A7445479D38C2E9C1EFA9EA }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_25A85940A24F4DFFB55121E97D44C1DD }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7B92CA5A708D49288243ADE78EF79237 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -62,5 +159,4 @@ jobs:
         with:
           app-name: 'gd4-org'
           slot-name: 'Production'
-          package: .
-          
+          package: ./published-app
