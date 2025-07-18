@@ -132,3 +132,6 @@ git remote prune origin
 # remove local branches that have been deleted from remote
 
 git branch -vv | Where-Object { $_ -match '\[origin/.*: gone\]' } | ForEach-Object { git branch -D $_.trim().split(" ")[0] }
+
+# Bash
+git branch -vv | grep '\[origin/.*: gone\]' | awk '{print $1}' | xargs -r git branch -D

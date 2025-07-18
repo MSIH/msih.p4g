@@ -1,0 +1,235 @@
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+@if (CampaignId.HasValue)
+{
+    <button class="btn btn-sm btn-primary" @onclick="DownloadVideo" disabled="@isProcessingVideo">
+        @if (isProcessingVideo)
+        {
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            @if (processingProgress > 0)
+            {
+                <span>Processing (@processingProgress%)</span>
+            }
+            else
+            {
+                <span>Processing...</span>
+            }
+        }
+        else
+        {
+            <span class="oi oi-cloud-download me-1"></span>
+            <span>Download Video</span>
+        }
+    </button>
+    
+    @if (!string.IsNullOrEmpty(videoError))
+    {
+        <div class="alert alert-danger mt-2">@videoError</div>
+    }
+    
+    @if (!string.IsNullOrEmpty(videoDownloadUrl))
+    {
+        <div class="alert alert-success mt-2">
+            Video ready! <a href="@videoDownloadUrl" download>Download here</a>
+        </div>
+    }
+}
+
+@code {
+    /// <summary>
+    /// The referral code to overlay on the video
+    /// </summary>
+    [Parameter, EditorRequired] public string ReferralCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The campaign ID to use as the video ID
+    /// </summary>
+    [Parameter, EditorRequired] public int? CampaignId { get; set; }
+
+    /// <summary>
+    /// Event callback fired when video processing starts
+    /// </summary>
+    [Parameter] public EventCallback OnProcessingStarted { get; set; }
+
+    /// <summary>
+    /// Event callback fired when video processing completes successfully
+    /// </summary>
+    [Parameter] public EventCallback<string> OnProcessingCompleted { get; set; }
+
+    /// <summary>
+    /// Event callback fired when video processing fails
+    /// </summary>
+    [Parameter] public EventCallback<string> OnProcessingFailed { get; set; }
+
+    // Video processing state
+    private bool isProcessingVideo = false;
+    private int processingProgress = 0;
+    private string videoError = string.Empty;
+    private string videoDownloadUrl = string.Empty;
+    private string currentJobId = string.Empty;
+
+    /// <summary>
+    /// Initiates video processing with referral code overlay
+    /// </summary>
+    private async Task DownloadVideo()
+    {
+        if (!CampaignId.HasValue)
+        {
+            videoError = "Campaign ID is required";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(ReferralCode))
+        {
+            videoError = "Referral code is required";
+            return;
+        }
+
+        try
+        {
+            isProcessingVideo = true;
+            processingProgress = 0;
+            videoError = string.Empty;
+            videoDownloadUrl = string.Empty;
+            StateHasChanged();
+
+            // Trigger processing started callback
+            if (OnProcessingStarted.HasDelegate)
+            {
+                await OnProcessingStarted.InvokeAsync();
+            }
+
+            // Start video processing using campaign ID as video ID
+            var request = new
+            {
+                ReferralCode = ReferralCode,
+                VideoId = CampaignId.Value.ToString()
+            };
+
+            var response = await Http.PostAsJsonAsync("api/video/add-referral", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<VideoProcessResponse>();
+                currentJobId = result.JobId;
+                
+                // Poll for status updates
+                await PollVideoStatus();
+            }
+            else
+            {
+                var errorMessage = "Failed to start video processing";
+                videoError = errorMessage;
+                isProcessingVideo = false;
+                
+                if (OnProcessingFailed.HasDelegate)
+                {
+                    await OnProcessingFailed.InvokeAsync(errorMessage);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = $"Error processing video: {ex.Message}";
+            videoError = errorMessage;
+            isProcessingVideo = false;
+            
+            if (OnProcessingFailed.HasDelegate)
+            {
+                await OnProcessingFailed.InvokeAsync(errorMessage);
+            }
+        }
+        
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Polls the video processing status
+    /// </summary>
+    private async Task PollVideoStatus()
+    {
+        try
+        {
+            while (isProcessingVideo)
+            {
+                var response = await Http.GetAsync($"api/video/status/{currentJobId}");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var status = await response.Content.ReadFromJsonAsync<VideoStatusResponse>();
+                    
+                    processingProgress = status.Progress;
+                    
+                    if (status.Status == "completed")
+                    {
+                        videoDownloadUrl = status.VideoUrl;
+                        isProcessingVideo = false;
+                        
+                        if (OnProcessingCompleted.HasDelegate)
+                        {
+                            await OnProcessingCompleted.InvokeAsync(videoDownloadUrl);
+                        }
+                        break;
+                    }
+                    else if (status.Status == "failed")
+                    {
+                        var errorMessage = status.Error ?? "Video processing failed";
+                        videoError = errorMessage;
+                        isProcessingVideo = false;
+                        
+                        if (OnProcessingFailed.HasDelegate)
+                        {
+                            await OnProcessingFailed.InvokeAsync(errorMessage);
+                        }
+                        break;
+                    }
+                    
+                    StateHasChanged();
+                    await Task.Delay(2000); // Poll every 2 seconds
+                }
+                else
+                {
+                    var errorMessage = "Failed to check video status";
+                    videoError = errorMessage;
+                    isProcessingVideo = false;
+                    
+                    if (OnProcessingFailed.HasDelegate)
+                    {
+                        await OnProcessingFailed.InvokeAsync(errorMessage);
+                    }
+                    break;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = $"Error checking video status: {ex.Message}";
+            videoError = errorMessage;
+            isProcessingVideo = false;
+            
+            if (OnProcessingFailed.HasDelegate)
+            {
+                await OnProcessingFailed.InvokeAsync(errorMessage);
+            }
+        }
+        
+        StateHasChanged();
+    }
+
+    // Response models for video processing
+    private class VideoProcessResponse
+    {
+        public string JobId { get; set; }
+        public string Status { get; set; }
+    }
+
+    private class VideoStatusResponse
+    {
+        public string JobId { get; set; }
+        public string Status { get; set; }
+        public int Progress { get; set; }
+        public string VideoUrl { get; set; }
+        public string Error { get; set; }
+    }
+}

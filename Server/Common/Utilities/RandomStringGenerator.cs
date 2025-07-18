@@ -11,7 +11,7 @@
  */
 using System.Text;
 
-namespace Server.Common.Utilities
+namespace msih.p4g.Server.Common.Utilities
 {
     /// <summary>
     /// Provides methods to generate pseudo-random strings with configurable character sets and length.

@@ -6,7 +6,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Models;
-using Server.Common.Utilities;
+using msih.p4g.Server.Common.Utilities;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

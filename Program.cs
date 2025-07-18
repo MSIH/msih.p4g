@@ -162,6 +162,7 @@ builder.Services.AddScoped<IW9FormService, W9FormService>();
 
 // Add to the existing service registrations in Program.cs
 builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
+builder.Services.AddScoped<ReferralLinkHelper>();
 
 // Register the data seeder
 builder.Services.AddScoped<MessageTemplateDataSeeder>();
