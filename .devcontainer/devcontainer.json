@@ -17,6 +17,7 @@
       "settings": {
         "git.confirmSync": false,
         "git.autofetch": true,
+        "git.enableSmartCommit": true,
         "files.autoSave": "afterDelay",
         "files.autoSaveDelay": 1000,
         "editor.formatOnSave": true,
