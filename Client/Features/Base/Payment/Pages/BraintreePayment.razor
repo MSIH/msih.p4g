@@ -16,6 +16,7 @@
 @using msih.p4g.Server.Features.CampaignService.Model
 @using msih.p4g.Server.Features.Base.ProfileService.Interfaces
 @using msih.p4g.Server.Features.Base.ProfileService.Model
+@using msih.p4g.Server.Features.Base.UserService.Interfaces
 @using msih.p4g.Server.Features.DonationService.Models
 @using msih.p4g.Server.Features.DonationService.Interfaces
 @using Microsoft.AspNetCore.Components.Forms
@@ -27,6 +28,7 @@
 @inject IPaymentServiceFactory PaymentServiceFactory
 @inject ICampaignService CampaignService
 @inject IProfileService ProfileService
+@inject IUserService UserService
 @inject IDonationService DonationService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
@@ -227,9 +229,12 @@
                                         <InputText id="email" class="form-control" @bind-Value="donationRequest.Email" />
                                         <ValidationMessage For="@(() => donationRequest.Email)" />
                                     </div>
-                                    <div class="col-md-2 mb-3 d-flex align-items-end">
-                                        <button type="button" class="btn btn-secondary btn-sm" @onclick="RegisterWithoutDonating">Register without donating</button>
-                                    </div>
+                                    @if (isFundraiser)
+                                    {
+                                        <div class="col-md-2 mb-3 d-flex align-items-end">
+                                            <button type="button" class="btn btn-secondary btn-sm" @onclick="RegisterWithoutDonating">Register without donating</button>
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -400,6 +405,8 @@
     private bool isProcessing = false;
     private bool isPaymentFormReady = false;
     private IEnumerable<Campaign> campaigns = Enumerable.Empty<Campaign>();
+
+    private bool isFundraiser = false;
 
     private int? _selectedCampaignId;
     private int? selectedCampaignId
@@ -657,15 +664,21 @@
         {
             if (!string.IsNullOrEmpty(ReferralCode))
             {
-                // Try to find a profile with this referral code
-                referrer = await ProfileService.GetByReferralCodeAsync(ReferralCode);
+                // Get the user by referral code with profile included
+                var referrerUser = await UserService.GetByReferralCodeAsync(ReferralCode, includeProfile: true);
 
-                if (referrer == null)
+                if (referrerUser == null)
                 {
                     referrerError = $"Referral code '{ReferralCode}' not found.";
                 }
                 else
                 {
+                    // Set the referrer profile from the user
+                    referrer = referrerUser.Profile;
+                    
+                    // Check if the referrer is a fundraiser
+                    isFundraiser = referrerUser.Role == UserRole.Fundraiser;
+                    
                     // Store the referral code in the donation request
                     donationRequest.ReferralCode = ReferralCode;
                 }

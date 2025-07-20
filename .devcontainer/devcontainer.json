@@ -4,7 +4,8 @@
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "18"
-    }
+    },
+    "ghcr.io/devcontainers-contrib/features/claude-cli:1": {}
   },
   "customizations": {
     "vscode": {
@@ -12,7 +13,34 @@
         "ms-dotnettools.csharp",
         "ms-dotnettools.blazorwasm-companion",
         "bradlc.vscode-tailwindcss"
-      ]
+      ],
+      "settings": {
+        "git.confirmSync": false,
+        "git.autofetch": true,
+        "git.enableSmartCommit": true,
+        "files.autoSave": "afterDelay",
+        "files.autoSaveDelay": 1000,
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        },
+        "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
+        "omnisharp.enableEditorConfigSupport": true,
+        "omnisharp.enableRoslynAnalyzers": true,
+        "editor.inlayHints.enabled": "on",
+        "csharp.inlayHints.enableInlayHintsForTypes": true,
+        "csharp.inlayHints.enableInlayHintsForParameters": true,
+        "files.exclude": {
+          "**/bin": true,
+          "**/obj": true
+        },
+        "search.exclude": {
+          "**/bin": true,
+          "**/obj": true,
+          "**/node_modules": true
+        }
+      }
     }
   },
   "forwardPorts": [5000, 5001],
