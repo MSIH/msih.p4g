@@ -87,6 +87,67 @@ else
     }
 }
 
+<!-- Add/Edit Donor Modal -->
+@if (showModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(editingDonor?.Id == 0 ? "Add" : "Edit") Donor</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (editingDonor != null)
+                    {
+                        <div class="mb-3">
+                            <label for="userId" class="form-label">User ID</label>
+                            <input type="text" class="form-control" id="userId" @bind="editingDonor.UserId" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="donorId" class="form-label">Payment Processor Donor ID</label>
+                            <input type="text" class="form-control" id="donorId" @bind="editingDonor.PaymentProcessorDonorId" />
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveDonor">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+<!-- Deactivate Confirmation Modal -->
+@if (showDeactivateModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Deactivation</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDeactivateModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to deactivate this donor?</p>
+                    @if (deactivatingDonor?.User?.Profile != null)
+                    {
+                        <p><strong>Name:</strong> @deactivatingDonor.User.Profile.FullName</p>
+                        <p><strong>Email:</strong> @deactivatingDonor.User.Email</p>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseDeactivateModal">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeactivateDonor">Deactivate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
 @code {
     private PagedResult<Donor>? donorResult;
     private PaginationParameters paginationParameters = new();
