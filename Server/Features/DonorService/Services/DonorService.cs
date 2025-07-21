@@ -12,6 +12,7 @@
 
 using msih.p4g.Server.Features.DonorService.Interfaces;
 using msih.p4g.Server.Features.DonorService.Model;
+using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Features.DonorService.Services
 {
@@ -67,6 +68,18 @@ namespace msih.p4g.Server.Features.DonorService.Services
         public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "DonorService")
         {
             return await _repository.SetActiveStatusAsync(id, isActive, modifiedBy);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<Donor>> GetAllWithUserDataAsync()
+        {
+            return await _repository.GetAllWithUserDataAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<PagedResult<Donor>> GetPaginatedWithUserDataAsync(PaginationParameters paginationParameters)
+        {
+            return await _repository.GetPaginatedWithUserDataAsync(paginationParameters);
         }
     }
 }
