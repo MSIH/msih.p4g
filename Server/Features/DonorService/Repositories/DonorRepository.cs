@@ -45,8 +45,7 @@ namespace msih.p4g.Server.Features.DonorService.Repositories
             return await context.Set<Donor>()
                 .Include(d => d.User)
                     .ThenInclude(u => u.Profile)
-                .Where(d => d.IsActive)
-                .ToListAsync();
+                .ToListAsync(); // Include all donors (active and inactive)
         }
 
         /// <inheritdoc />
@@ -56,8 +55,7 @@ namespace msih.p4g.Server.Features.DonorService.Repositories
             
             var query = context.Set<Donor>()
                 .Include(d => d.User)
-                    .ThenInclude(u => u.Profile)
-                .Where(d => d.IsActive);
+                    .ThenInclude(u => u.Profile);
 
             // Apply search filter
             if (!string.IsNullOrWhiteSpace(paginationParameters.SearchTerm))

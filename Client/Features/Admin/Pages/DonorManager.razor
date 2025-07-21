@@ -53,8 +53,14 @@ else
                 {
                     @foreach (var donor in donorResult.Items)
                     {
-                        <tr>
-                            <td>@(donor.User?.Profile?.FullName ?? "N/A")</td>
+                        <tr class="@(!donor.IsActive ? "table-secondary text-muted" : "")">
+                            <td>
+                                @(donor.User?.Profile?.FullName ?? "N/A")
+                                @if (!donor.IsActive)
+                                {
+                                    <span class="badge bg-secondary ms-1">Inactive</span>
+                                }
+                            </td>
                             <td>@(donor.User?.Email ?? "N/A")</td>
                             <td>@donor.UserId</td>
                             <td>@donor.PaymentProcessorDonorId</td>
@@ -64,7 +70,14 @@ else
                             <td>
                                 <button class="btn btn-sm btn-success me-1" @onclick="() => SaveDonor(donor)">Save</button>
                                 <button class="btn btn-sm btn-primary me-1" @onclick="() => EditDonor(donor)">Edit</button>
-                                <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDeactivate(donor)">Deactivate</button>
+                                @if (donor.IsActive)
+                                {
+                                    <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDeactivate(donor)">Deactivate</button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-success" @onclick="() => ReactivateDonor(donor)">Reactivate</button>
+                                }
                             </td>
                         </tr>
                     }
@@ -270,5 +283,11 @@ else
             showDeactivateModal = false;
             await LoadDonors();
         }
+    }
+
+    private async Task ReactivateDonor(Donor donor)
+    {
+        await DonorService.SetActiveAsync(donor.Id, true);
+        await LoadDonors();
     }
 }
