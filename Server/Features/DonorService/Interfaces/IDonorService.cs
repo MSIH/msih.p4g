@@ -5,6 +5,7 @@
 //  */
 
 using msih.p4g.Server.Features.DonorService.Model;
+using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Features.DonorService.Interfaces
 {
@@ -16,5 +17,7 @@ namespace msih.p4g.Server.Features.DonorService.Interfaces
         Task<Donor> AddAsync(Donor donor);
         Task<bool> UpdateAsync(Donor donor);
         Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "DonorService");
+        Task<List<Donor>> GetAllWithUserDataAsync();
+        Task<PagedResult<Donor>> GetPaginatedWithUserDataAsync(PaginationParameters paginationParameters);
     }
 }
