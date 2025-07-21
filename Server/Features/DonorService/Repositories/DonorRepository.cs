@@ -53,7 +53,7 @@ namespace msih.p4g.Server.Features.DonorService.Repositories
         {
             using var context = await _contextFactory.CreateDbContextAsync();
             
-            var query = context.Set<Donor>()
+            IQueryable<Donor> query = context.Set<Donor>()
                 .Include(d => d.User)
                     .ThenInclude(u => u.Profile);
 
