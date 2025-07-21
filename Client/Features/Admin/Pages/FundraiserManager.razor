@@ -6,127 +6,242 @@
 
 @using msih.p4g.Server.Features.FundraiserService.Model
 @using msih.p4g.Server.Features.FundraiserService.Interfaces
+@using msih.p4g.Shared.Models
+@using msih.p4g.Client.Common.Components
+@using Microsoft.AspNetCore.Components.Web
 @inject IFundraiserService FundraiserService
 @inject NavigationManager Navigation
 @inject AuthorizationService AuthorizationService
 
 <h3>Manage Fundraisers</h3>
 
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="input-group">
+            <input class="form-control" placeholder="Search fundraisers by name, email, payout account, or suspension reason..." @bind="paginationParameters.SearchTerm" @bind:event="oninput" @onkeypress="OnSearchKeyPress" />
+            <button class="btn btn-outline-secondary" type="button" @onclick="SearchFundraisers">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
 @if (isLoading)
 {
-    <div>Loading fundraisers...</div>
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Payout Account</th>
-                <th>Account Type</th>
-                <th>Account Format</th>
-                <th>Suspended</th>
-                <th>Suspension Reason</th>
-                <th>Suspended Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var fundraiser in fundraisers)
-            {
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
                 <tr>
-                    <td>@fundraiser.Id</td>
-                    <td>
-                        @if (editingFundraiserId == fundraiser.Id)
-                        {
-                            <input class="form-control" @bind="editPayoutAccount" maxlength="200" />
-                        }
-                        else
-                        {
-                            <span>@fundraiser.PayoutAccount</span>
-                        }
-                    </td>
-                    <td>
-                        @if (editingFundraiserId == fundraiser.Id)
-                        {
-                            <select class="form-select" @bind="editAccountType">
-                                <option value="">--</option>
-                                @foreach (var type in Enum.GetValues<AccountType>())
-                                {
-                                    <option value="@type">@type</option>
-                                }
-                            </select>
-                        }
-                        else
-                        {
-                            <span>@fundraiser.PayoutAccountType</span>
-                        }
-                    </td>
-                    <td>
-                        @if (editingFundraiserId == fundraiser.Id)
-                        {
-                            <select class="form-select" @bind="editAccountFormat">
-                                <option value="">--</option>
-                                @foreach (var format in Enum.GetValues<AccountFormat>())
-                                {
-                                    <option value="@format">@format</option>
-                                }
-                            </select>
-                        }
-                        else
-                        {
-                            <span>@fundraiser.PayoutAccountFormat</span>
-                        }
-                    </td>
-                    <td>
-                        @if (editingFundraiserId == fundraiser.Id)
-                        {
-                            <input type="checkbox" @bind="editIsSuspended" />
-                        }
-                        else
-                        {
-                            <span>@(fundraiser.IsSuspended ? "Yes" : "No")</span>
-                        }
-                    </td>
-                    <td>
-                        @if (editingFundraiserId == fundraiser.Id)
-                        {
-                            <input class="form-control" @bind="editSuspensionReason" maxlength="500" />
-                        }
-                        else
-                        {
-                            <span>@fundraiser.SuspensionReason</span>
-                        }
-                    </td>
-                    <td>
-                        <span>@(fundraiser.SuspendedDate?.ToString("yyyy-MM-dd HH:mm") ?? "")</span>
-                    </td>
-                    <td>
-                        @if (editingFundraiserId == fundraiser.Id)
-                        {
-                            <button class="btn btn-success btn-sm me-1" @onclick="() => SaveEdit(fundraiser)">Save</button>
-                            <button class="btn btn-secondary btn-sm me-1" @onclick="CancelEdit">Cancel</button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-primary btn-sm me-1" @onclick="() => StartEdit(fundraiser)">Edit</button>
-                        }
-                    </td>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>User ID</th>
+                    <th>Email</th>
+                    <th>Payout Account</th>
+                    <th>Account Type</th>
+                    <th>Account Format</th>
+                    <th>Suspended</th>
+                    <th>Suspension Reason</th>
+                    <th>Suspended Date</th>
+                    <th>Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @if (fundraiserResult != null)
+                {
+                    @foreach (var fundraiser in fundraiserResult.Items)
+                    {
+                        <tr class="@(!fundraiser.IsActive ? "table-secondary text-muted" : "")">
+                            <td>
+                                @fundraiser.Id
+                                @if (!fundraiser.IsActive)
+                                {
+                                    <span class="badge bg-secondary ms-1">Inactive</span>
+                                }
+                            </td>
+                            <td>@(fundraiser.User?.Profile?.FullName ?? "N/A")</td>
+                            <td>@fundraiser.UserId</td>
+                            <td>@(fundraiser.User?.Email ?? "N/A")</td>
+                            <td>
+                                @if (editingFundraiserId == fundraiser.Id)
+                                {
+                                    <input class="form-control" @bind="editPayoutAccount" maxlength="200" />
+                                }
+                                else
+                                {
+                                    <span>@fundraiser.PayoutAccount</span>
+                                }
+                            </td>
+                            <td>
+                                @if (editingFundraiserId == fundraiser.Id)
+                                {
+                                    <select class="form-select" @bind="editAccountType">
+                                        <option value="">--</option>
+                                        @foreach (var type in Enum.GetValues<AccountType>())
+                                        {
+                                            <option value="@type">@type</option>
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
+                                    <span>@fundraiser.PayoutAccountType</span>
+                                }
+                            </td>
+                            <td>
+                                @if (editingFundraiserId == fundraiser.Id)
+                                {
+                                    <select class="form-select" @bind="editAccountFormat">
+                                        <option value="">--</option>
+                                        @foreach (var format in Enum.GetValues<AccountFormat>())
+                                        {
+                                            <option value="@format">@format</option>
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
+                                    <span>@fundraiser.PayoutAccountFormat</span>
+                                }
+                            </td>
+                            <td>
+                                @if (editingFundraiserId == fundraiser.Id)
+                                {
+                                    <input type="checkbox" @bind="editIsSuspended" />
+                                }
+                                else
+                                {
+                                    <span>@(fundraiser.IsSuspended ? "Yes" : "No")</span>
+                                }
+                            </td>
+                            <td>
+                                @if (editingFundraiserId == fundraiser.Id)
+                                {
+                                    <input class="form-control" @bind="editSuspensionReason" maxlength="500" />
+                                }
+                                else
+                                {
+                                    <span>@fundraiser.SuspensionReason</span>
+                                }
+                            </td>
+                            <td>
+                                <span>@(fundraiser.SuspendedDate?.ToString("yyyy-MM-dd HH:mm") ?? "")</span>
+                            </td>
+                            <td>
+                                @if (editingFundraiserId == fundraiser.Id)
+                                {
+                                    <button class="btn btn-success btn-sm me-1" @onclick="() => SaveEdit(fundraiser)">Save</button>
+                                    <button class="btn btn-secondary btn-sm me-1" @onclick="CancelEdit">Cancel</button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-primary btn-sm me-1" @onclick="() => StartEdit(fundraiser)">Edit</button>
+                                    @if (fundraiser.IsActive)
+                                    {
+                                        <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDeactivate(fundraiser)">Deactivate</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-success btn-sm" @onclick="() => ReactivateFundraiser(fundraiser)">Reactivate</button>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (fundraiserResult != null)
+    {
+        <PaginationComponent PagedResult="@(new PagedResult<object>
+                                           {
+                                               Items = fundraiserResult.Items.Cast<object>().ToList(),
+                                               TotalCount = fundraiserResult.TotalCount,
+                                               PageNumber = fundraiserResult.PageNumber,
+                                               PageSize = fundraiserResult.PageSize
+                                           })"
+                            OnPageChange="OnPageChanged"
+                            OnPageSizeChange="OnPageSizeChanged" />
+    }
+}
+
+<!-- Deactivate Confirmation Modal -->
+@if (showDeactivateModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Deactivation</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDeactivateModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to deactivate this fundraiser?</p>
+                    @if (deactivatingFundraiser != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Fundraiser ID:</strong> @deactivatingFundraiser.Id</p>
+                                <p><strong>Name:</strong> @(deactivatingFundraiser.User?.Profile?.FullName ?? "N/A")</p>
+                                <p><strong>User ID:</strong> @deactivatingFundraiser.UserId</p>
+                                <p><strong>Email:</strong> @(deactivatingFundraiser.User?.Email ?? "N/A")</p>
+                                <p><strong>Payout Account:</strong> @(deactivatingFundraiser.PayoutAccount ?? "N/A")</p>
+                                <p><strong>Account Type:</strong> @(deactivatingFundraiser.PayoutAccountType?.ToString() ?? "N/A")</p>
+                                <p><strong>Account Format:</strong> @(deactivatingFundraiser.PayoutAccountFormat?.ToString() ?? "N/A")</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Currently Suspended:</strong> @(deactivatingFundraiser.IsSuspended ? "Yes" : "No")</p>
+                                @if (deactivatingFundraiser.IsSuspended)
+                                {
+                                    <p><strong>Suspension Reason:</strong> @(deactivatingFundraiser.SuspensionReason ?? "N/A")</p>
+                                    <p><strong>Suspended Date:</strong> @(deactivatingFundraiser.SuspendedDate?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</p>
+                                }
+                                <p><strong>Created:</strong> @deactivatingFundraiser.CreatedOn.ToString("yyyy-MM-dd HH:mm")</p>
+                                <p><strong>Created By:</strong> @deactivatingFundraiser.CreatedBy</p>
+                                @if (deactivatingFundraiser.ModifiedOn.HasValue)
+                                {
+                                    <p><strong>Last Modified:</strong> @deactivatingFundraiser.ModifiedOn.Value.ToString("yyyy-MM-dd HH:mm")</p>
+                                    <p><strong>Modified By:</strong> @(deactivatingFundraiser.ModifiedBy ?? "N/A")</p>
+                                }
+                                @if (!string.IsNullOrEmpty(deactivatingFundraiser.W9Document))
+                                {
+                                    <p><strong>W9 Document:</strong> @deactivatingFundraiser.W9Document</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseDeactivateModal">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeactivateFundraiser">Deactivate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
 }
 
 @code {
-    private List<Fundraiser> fundraisers = new();
+    private PagedResult<Fundraiser>? fundraiserResult;
+    private PaginationParameters paginationParameters = new();
     private bool isLoading = true;
+    private bool showDeactivateModal = false;
     private int? editingFundraiserId = null;
     private string editPayoutAccount = "";
     private AccountType? editAccountType = null;
     private AccountFormat? editAccountFormat = null;
     private bool editIsSuspended = false;
     private string editSuspensionReason = "";
+    private Fundraiser? deactivatingFundraiser;
 
     protected override async Task OnInitializedAsync()
     {
@@ -136,8 +251,36 @@ else
     private async Task LoadFundraisers()
     {
         isLoading = true;
-        fundraisers = (await FundraiserService.GetAllAsync()).ToList();
+        fundraiserResult = await FundraiserService.GetPaginatedWithUserDataAsync(paginationParameters);
         isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchFundraisers()
+    {
+        paginationParameters.PageNumber = 1;
+        await LoadFundraisers();
+    }
+
+    private async Task OnSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchFundraisers();
+        }
+    }
+
+    private async Task OnPageChanged(int pageNumber)
+    {
+        paginationParameters.PageNumber = pageNumber;
+        await LoadFundraisers();
+    }
+
+    private async Task OnPageSizeChanged(int pageSize)
+    {
+        paginationParameters.PageSize = pageSize;
+        paginationParameters.PageNumber = 1;
+        await LoadFundraisers();
     }
 
     private void StartEdit(Fundraiser fundraiser)
@@ -178,5 +321,33 @@ else
         editAccountFormat = null;
         editIsSuspended = false;
         editSuspensionReason = "";
+    }
+
+    private void ConfirmDeactivate(Fundraiser fundraiser)
+    {
+        deactivatingFundraiser = fundraiser;
+        showDeactivateModal = true;
+    }
+
+    private void CloseDeactivateModal()
+    {
+        showDeactivateModal = false;
+        deactivatingFundraiser = null;
+    }
+
+    private async Task DeactivateFundraiser()
+    {
+        if (deactivatingFundraiser != null)
+        {
+            await FundraiserService.SetActiveAsync(deactivatingFundraiser.Id, false);
+            showDeactivateModal = false;
+            await LoadFundraisers();
+        }
+    }
+
+    private async Task ReactivateFundraiser(Fundraiser fundraiser)
+    {
+        await FundraiserService.SetActiveAsync(fundraiser.Id, true);
+        await LoadFundraisers();
     }
 }

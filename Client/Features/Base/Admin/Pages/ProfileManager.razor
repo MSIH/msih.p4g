@@ -34,6 +34,7 @@
 }
 else
 {
+
     <button class="btn btn-primary mb-2" @onclick="ShowAddModal">Add Profile</button>
     <div class="table-responsive">
         <table class="table table-striped table-hover">
@@ -105,17 +106,17 @@ else
             </tbody>
         </table>
     </div>
-    
+
     @if (profileResult != null)
     {
-        <PaginationComponent PagedResult="@(new PagedResult<object> 
-                                           { 
-                                               Items = profileResult.Items.Cast<object>().ToList(), 
-                                               TotalCount = profileResult.TotalCount, 
-                                               PageNumber = profileResult.PageNumber, 
-                                               PageSize = profileResult.PageSize 
-                                           })" 
-                            OnPageChange="OnPageChanged" 
+        <PaginationComponent PagedResult="@(new PagedResult<object>
+                                           {
+                                               Items = profileResult.Items.Cast<object>().ToList(),
+                                               TotalCount = profileResult.TotalCount,
+                                               PageNumber = profileResult.PageNumber,
+                                               PageSize = profileResult.PageSize
+                                           })"
+                            OnPageChange="OnPageChanged"
                             OnPageSizeChange="OnPageSizeChanged" />
     }
 }
