@@ -5,6 +5,7 @@
 //  */
 
 using msih.p4g.Server.Features.Base.ProfileService.Model;
+using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Features.Base.ProfileService.Interfaces
 {
@@ -22,5 +23,18 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Interfaces
         /// <param name="referralCode">The referral code to search for</param>
         /// <returns>The profile with the specified referral code, or null if not found</returns>
         Task<Profile> GetByReferralCodeAsync(string referralCode);
+
+        /// <summary>
+        /// Gets all profiles with User navigation properties included
+        /// </summary>
+        /// <returns>A list of profiles with related data</returns>
+        Task<List<Profile>> GetAllWithUserDataAsync();
+
+        /// <summary>
+        /// Gets paginated profiles with User navigation properties included
+        /// </summary>
+        /// <param name="paginationParameters">Pagination and search parameters</param>
+        /// <returns>A paginated result of profiles with related data</returns>
+        Task<PagedResult<Profile>> GetPaginatedWithUserDataAsync(PaginationParameters paginationParameters);
     }
 }
