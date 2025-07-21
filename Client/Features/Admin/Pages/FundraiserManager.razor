@@ -202,8 +202,13 @@ else
                                     <p><strong>Suspension Reason:</strong> @(deactivatingFundraiser.SuspensionReason ?? "N/A")</p>
                                     <p><strong>Suspended Date:</strong> @(deactivatingFundraiser.SuspendedDate?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</p>
                                 }
-                                <p><strong>Created:</strong> @(deactivatingFundraiser.CreatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</p>
-                                <p><strong>Last Modified:</strong> @(deactivatingFundraiser.ModifiedAt?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</p>
+                                <p><strong>Created:</strong> @deactivatingFundraiser.CreatedOn.ToString("yyyy-MM-dd HH:mm")</p>
+                                <p><strong>Created By:</strong> @deactivatingFundraiser.CreatedBy</p>
+                                @if (deactivatingFundraiser.ModifiedOn.HasValue)
+                                {
+                                    <p><strong>Last Modified:</strong> @deactivatingFundraiser.ModifiedOn.Value.ToString("yyyy-MM-dd HH:mm")</p>
+                                    <p><strong>Modified By:</strong> @(deactivatingFundraiser.ModifiedBy ?? "N/A")</p>
+                                }
                                 @if (!string.IsNullOrEmpty(deactivatingFundraiser.W9Document))
                                 {
                                     <p><strong>W9 Document:</strong> @deactivatingFundraiser.W9Document</p>
