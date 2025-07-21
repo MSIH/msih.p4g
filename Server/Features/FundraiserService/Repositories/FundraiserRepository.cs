@@ -47,7 +47,8 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
             using var context = await _contextFactory.CreateDbContextAsync();
             
             IQueryable<Fundraiser> query = context.Set<Fundraiser>()
-                .Include(f => f.User);
+                .Include(f => f.User)
+                .Include(f => f.User.Profile);
 
             // Apply search filter
             if (!string.IsNullOrWhiteSpace(paginationParameters.SearchTerm))
@@ -56,7 +57,9 @@ namespace msih.p4g.Server.Features.FundraiserService.Repositories
                 query = query.Where(f => 
                     (f.PayoutAccount != null && f.PayoutAccount.ToLower().Contains(searchTerm)) ||
                     (f.SuspensionReason != null && f.SuspensionReason.ToLower().Contains(searchTerm)) ||
-                    (f.User.Email != null && f.User.Email.ToLower().Contains(searchTerm))
+                    (f.User.Email != null && f.User.Email.ToLower().Contains(searchTerm)) ||
+                    (f.User.Profile != null && f.User.Profile.FirstName != null && f.User.Profile.FirstName.ToLower().Contains(searchTerm)) ||
+                    (f.User.Profile != null && f.User.Profile.LastName != null && f.User.Profile.LastName.ToLower().Contains(searchTerm))
                 );
             }
 

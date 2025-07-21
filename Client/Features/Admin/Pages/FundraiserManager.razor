@@ -18,7 +18,7 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <div class="input-group">
-            <input class="form-control" placeholder="Search fundraisers by payout account, email, or suspension reason..." @bind="paginationParameters.SearchTerm" @bind:event="oninput" @onkeypress="OnSearchKeyPress" />
+            <input class="form-control" placeholder="Search fundraisers by name, email, payout account, or suspension reason..." @bind="paginationParameters.SearchTerm" @bind:event="oninput" @onkeypress="OnSearchKeyPress" />
             <button class="btn btn-outline-secondary" type="button" @onclick="SearchFundraisers">
                 <i class="fas fa-search"></i>
             </button>
@@ -41,6 +41,7 @@ else
             <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Name</th>
                     <th>User ID</th>
                     <th>Email</th>
                     <th>Payout Account</th>
@@ -65,6 +66,7 @@ else
                                     <span class="badge bg-secondary ms-1">Inactive</span>
                                 }
                             </td>
+                            <td>@(fundraiser.User?.Profile?.FullName ?? "N/A")</td>
                             <td>@fundraiser.UserId</td>
                             <td>@(fundraiser.User?.Email ?? "N/A")</td>
                             <td>
@@ -189,6 +191,7 @@ else
                         <div class="row">
                             <div class="col-md-6">
                                 <p><strong>Fundraiser ID:</strong> @deactivatingFundraiser.Id</p>
+                                <p><strong>Name:</strong> @(deactivatingFundraiser.User?.Profile?.FullName ?? "N/A")</p>
                                 <p><strong>User ID:</strong> @deactivatingFundraiser.UserId</p>
                                 <p><strong>Email:</strong> @(deactivatingFundraiser.User?.Email ?? "N/A")</p>
                                 <p><strong>Payout Account:</strong> @(deactivatingFundraiser.PayoutAccount ?? "N/A")</p>
