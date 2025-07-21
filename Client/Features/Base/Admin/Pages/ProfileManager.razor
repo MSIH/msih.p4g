@@ -3,11 +3,26 @@
 
 
 @using msih.p4g.Server.Features.Base.ProfileService.Model
+@using msih.p4g.Shared.Models
+@using msih.p4g.Client.Common.Components
+@using Microsoft.AspNetCore.Components.Web
+@using System.Linq
 @inject msih.p4g.Server.Features.Base.ProfileService.Interfaces.IProfileService ProfileService
 @inject AuthorizationService AuthorizationService
 @layout AdminLayout
 
 <h3>Profile Management</h3>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="input-group">
+            <input class="form-control" placeholder="Search profiles by name, email, referral code, or mobile..." @bind="paginationParameters.SearchTerm" @bind:event="oninput" @onkeypress="OnSearchKeyPress" />
+            <button class="btn btn-outline-secondary" type="button" @onclick="SearchProfiles">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+</div>
 
 @if (isLoading)
 {
@@ -24,6 +39,8 @@ else
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Email</th>
+                    <th>Referral Code</th>
                     <th>Date of Birth</th>
                     <th>Mobile</th>
                     <th>IsActive</th>
@@ -33,47 +50,104 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var profile in profiles)
+                @if (profileResult != null)
                 {
-                    <tr>
-                        <td>@profile.FullName</td>
-                        <td>@(profile.DateOfBirth?.ToShortDateString() ?? "Not set")</td>
-                        <td>@profile.MobileNumber</td>
-                        <td>
-                            <input type="checkbox" checked="@profile.IsActive" disabled />
-                        </td>
-                        <td>
-                            <input type="checkbox" checked="@profile.ConsentReceiveText" disabled title="Text" />
-                            <input type="checkbox" checked="@profile.ConsentReceiveEmail" disabled title="Email" />
-                            <input type="checkbox" checked="@profile.ConsentReceiveMail" disabled title="Mail" />
-                        </td>
-                        <td>
-                            <input type="checkbox" checked="@profile.UnsubscribeMobile" disabled title="Text" />
-                            <input type="checkbox" checked="@profile.UnsubscribeEmail" disabled title="Email" />
-                            <input type="checkbox" checked="@profile.UnsubscribeMail" disabled title="Mail" />
-                        </td>
-                        <td>
-                            @if (profile.Address != null)
-                            {
-                                <span>@profile.Address.Street, @profile.Address.City, @profile.Address.State, @profile.Address.PostalCode, @profile.Address.Country</span>
-                            }
-                        </td>
-                    </tr>
+                    @foreach (var profile in profileResult.Items)
+                    {
+                        <tr class="@(!profile.IsActive ? "table-secondary text-muted" : "")">
+                            <td>
+                                @profile.FullName
+                                @if (!profile.IsActive)
+                                {
+                                    <span class="badge bg-secondary ms-1">Inactive</span>
+                                }
+                            </td>
+                            <td>@(profile.User?.Email ?? "N/A")</td>
+                            <td>@profile.ReferralCode</td>
+                            <td>@(profile.DateOfBirth?.ToShortDateString() ?? "Not set")</td>
+                            <td>@profile.MobileNumber</td>
+                            <td>
+                                <input type="checkbox" checked="@profile.IsActive" disabled />
+                            </td>
+                            <td>
+                                <input type="checkbox" checked="@profile.ConsentReceiveText" disabled title="Text" />
+                                <input type="checkbox" checked="@profile.ConsentReceiveEmail" disabled title="Email" />
+                                <input type="checkbox" checked="@profile.ConsentReceiveMail" disabled title="Mail" />
+                            </td>
+                            <td>
+                                <input type="checkbox" checked="@profile.UnsubscribeMobile" disabled title="Text" />
+                                <input type="checkbox" checked="@profile.UnsubscribeEmail" disabled title="Email" />
+                                <input type="checkbox" checked="@profile.UnsubscribeMail" disabled title="Mail" />
+                            </td>
+                            <td>
+                                @if (profile.Address != null)
+                                {
+                                    <span>@profile.Address.Street, @profile.Address.City, @profile.Address.State, @profile.Address.PostalCode, @profile.Address.Country</span>
+                                }
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
     </div>
+    
+    @if (profileResult != null)
+    {
+        <PaginationComponent PagedResult="@(new PagedResult<object> 
+                                           { 
+                                               Items = profileResult.Items.Cast<object>().ToList(), 
+                                               TotalCount = profileResult.TotalCount, 
+                                               PageNumber = profileResult.PageNumber, 
+                                               PageSize = profileResult.PageSize 
+                                           })" 
+                            OnPageChange="OnPageChanged" 
+                            OnPageSizeChange="OnPageSizeChanged" />
+    }
 }
 
 @code {
-    private List<Profile> profiles = new();
+    private PagedResult<Profile>? profileResult;
+    private PaginationParameters paginationParameters = new();
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-       
+        await LoadProfiles();
+    }
+
+    private async Task LoadProfiles()
+    {
         isLoading = true;
-        profiles = (await ProfileService.GetAllAsync(includeInactive: true)).ToList();
+        profileResult = await ProfileService.GetPaginatedWithUserDataAsync(paginationParameters);
         isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchProfiles()
+    {
+        paginationParameters.PageNumber = 1; // Reset to first page when searching
+        await LoadProfiles();
+    }
+
+    private async Task OnSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchProfiles();
+        }
+    }
+
+    private async Task OnPageChanged(int pageNumber)
+    {
+        paginationParameters.PageNumber = pageNumber;
+        await LoadProfiles();
+    }
+
+    private async Task OnPageSizeChanged(int pageSize)
+    {
+        paginationParameters.PageSize = pageSize;
+        paginationParameters.PageNumber = 1; // Reset to first page when changing page size
+        await LoadProfiles();
     }
 }
