@@ -165,19 +165,40 @@ else
                             <label for="referralCode" class="form-label">Referral Code</label>
                             <input type="text" class="form-control" id="referralCode" @bind="editingProfile.ReferralCode" />
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Consent Settings</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" @bind="editingProfile.ConsentReceiveText" id="consentText">
-                                <label class="form-check-label" for="consentText">Receive Text Messages</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Consent Settings</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.ConsentReceiveText" id="consentText">
+                                        <label class="form-check-label" for="consentText">Receive Text Messages</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.ConsentReceiveEmail" id="consentEmail">
+                                        <label class="form-check-label" for="consentEmail">Receive Emails</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.ConsentReceiveMail" id="consentMail">
+                                        <label class="form-check-label" for="consentMail">Receive Mail</label>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" @bind="editingProfile.ConsentReceiveEmail" id="consentEmail">
-                                <label class="form-check-label" for="consentEmail">Receive Emails</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" @bind="editingProfile.ConsentReceiveMail" id="consentMail">
-                                <label class="form-check-label" for="consentMail">Receive Mail</label>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Unsubscribe Settings</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.UnsubscribeMobile" id="unsubscribeMobile">
+                                        <label class="form-check-label" for="unsubscribeMobile">Unsubscribed from Text</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.UnsubscribeEmail" id="unsubscribeEmail">
+                                        <label class="form-check-label" for="unsubscribeEmail">Unsubscribed from Email</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.UnsubscribeMail" id="unsubscribeMail">
+                                        <label class="form-check-label" for="unsubscribeMail">Unsubscribed from Mail</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     }
