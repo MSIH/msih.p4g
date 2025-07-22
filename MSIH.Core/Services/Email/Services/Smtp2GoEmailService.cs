@@ -5,9 +5,9 @@
  */
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using msih.p4g.Server.Common.Utilities;
+using MSIH.Core.Common.Utilities;
 using MSIH.Core.Services.Email.Interfaces;
-using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
+using MSIH.Core.Services.Setting.Interfaces;
 using Smtp2Go.Api;
 using Smtp2Go.Api.Models.Emails;
 using System.Text.RegularExpressions;
