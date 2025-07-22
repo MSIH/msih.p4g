@@ -6,14 +6,17 @@
 using Microsoft.EntityFrameworkCore;
 using MSIH.Core.Services.Setting.Models;
 using MSIH.Core.Services.Sms.Models;
+using MSIH.Core.Services.User.Models;
+using MSIH.Core.Services.Profile.Model;
+using MSIH.Core.Services.Message.Models;
 
 namespace MSIH.Core.Common.Data
 {
     /// <summary>
-    /// Minimal ApplicationDbContext for MSIH.Core project
-    /// This is a temporary solution until the full ApplicationDbContext is moved
+    /// ApplicationDbContext for MSIH.Core project
+    /// Contains all entity configurations for Core services
     /// </summary>
-    public class ApplicationDbContext : DbContext
+    public partial class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -22,13 +25,36 @@ namespace MSIH.Core.Common.Data
         // DbSets for Core entities
         public DbSet<MSIH.Core.Services.Setting.Models.Setting> Settings { get; set; }
         public DbSet<ValidatedPhoneNumber> ValidatedPhoneNumbers { get; set; }
+        public DbSet<MSIH.Core.Services.User.Models.User> Users { get; set; }
+        public DbSet<MSIH.Core.Services.Profile.Model.Profile> Profiles { get; set; }
+        public DbSet<MSIH.Core.Services.Message.Models.Message> Messages { get; set; }
+        public DbSet<MessageTemplate> MessageTemplates { get; set; }
+        public DbSet<MessageTemplateUsage> MessageTemplateUsages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ConfigureSettingsModel(modelBuilder);
             ConfigureValidatedPhoneNumberModel(modelBuilder);
+            ConfigureUserModel(modelBuilder);
+            ConfigureProfileModel(modelBuilder);
+            ConfigureMessageModel(modelBuilder);
             base.OnModelCreating(modelBuilder);
         }
+
+        /// <summary>
+        /// Partial method for configuring User entity - implemented in UserDbContext.cs
+        /// </summary>
+        partial void ConfigureUserModel(ModelBuilder modelBuilder);
+
+        /// <summary>
+        /// Partial method for configuring Profile entity - implemented in ProfileDbContext.cs
+        /// </summary>
+        partial void ConfigureProfileModel(ModelBuilder modelBuilder);
+
+        /// <summary>
+        /// Partial method for configuring Message entities - implemented in MessageDbContext.cs
+        /// </summary>
+        partial void ConfigureMessageModel(ModelBuilder modelBuilder);
 
         /// <summary>
         /// Configure the Setting entity

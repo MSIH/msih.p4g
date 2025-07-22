@@ -7,7 +7,19 @@
       "Bash(dotnet sln add:*)",
       "Bash(dotnet build)",
       "Bash(dotnet clean:*)",
-      "Bash(dotnet build:*)"
+      "Bash(dotnet build:*)",
+      "Bash(mkdir:*)",
+      "Bash(xcopy:*)",
+      "Bash(robocopy:*)",
+      "Bash(copy \"Server\\Features\\Base\\EmailService\\*\" \"MSIH.Core\\Services\\Email\"\")",
+      "Bash(del \"MSIH.Core\\Class1.cs\")",
+      "Bash(del \"MSIH.P4G.Server\\Class1.cs\")",
+      "Bash(rm:*)",
+      "Bash(dotnet add:*)",
+      "Bash(cat:*)",
+      "Bash(dir:*)",
+      "Bash(cp:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

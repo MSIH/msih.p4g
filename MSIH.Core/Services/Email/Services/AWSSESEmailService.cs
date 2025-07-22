@@ -96,7 +96,7 @@ namespace MSIH.Core.Services.Email.Services
                 {
                     Source = $"{_fromName} <{senderEmail}>",
                     Destination = new Destination { ToAddresses = new List<string> { to } },
-                    Message = new Message
+                    Message = new Amazon.SimpleEmail.Model.Message
                     {
                         Subject = new Content(subject),
                         Body = new Body
