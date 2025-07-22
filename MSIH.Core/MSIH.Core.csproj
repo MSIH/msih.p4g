@@ -8,4 +8,13 @@
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.SimpleEmail" Version="4.0.0.14" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.7" />
+    <PackageReference Include="SendGrid" Version="9.29.3" />
+    <PackageReference Include="Smtp2Go.ApiClient" Version="0.0.5" />
+  </ItemGroup>
+
 </Project>
