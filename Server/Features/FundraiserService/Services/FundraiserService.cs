@@ -11,6 +11,7 @@
  */
 using msih.p4g.Server.Features.FundraiserService.Interfaces;
 using msih.p4g.Server.Features.FundraiserService.Model;
+using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Features.FundraiserService.Services
 {
@@ -53,5 +54,9 @@ namespace msih.p4g.Server.Features.FundraiserService.Services
         /// <inheritdoc />
         public async Task<bool> SetActiveAsync(int id, bool isActive, string modifiedBy = "FundraiserService") =>
             await _repository.SetActiveStatusAsync(id, isActive, modifiedBy);
+
+        /// <inheritdoc />
+        public async Task<PagedResult<Fundraiser>> GetPaginatedWithUserDataAsync(PaginationParameters paginationParameters) =>
+            await _repository.GetPaginatedWithUserDataAsync(paginationParameters);
     }
 }

@@ -4,14 +4,25 @@
 
 @using msih.p4g.Server.Features.DonorService.Interfaces
 @using msih.p4g.Server.Features.DonorService.Model
+@using msih.p4g.Shared.Models
+@using msih.p4g.Client.Common.Components
+@using Microsoft.AspNetCore.Components.Web
+@using System.Linq
 @inject IDonorService DonorService
 @inject IJSRuntime JSRuntime
 @inject AuthorizationService AuthorizationService
 
 <h3>Donor Management</h3>
 
-<div class="mb-3">
-    <input class="form-control" placeholder="Search donors..." @bind="searchTerm" @bind:event="oninput" />
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="input-group">
+            <input class="form-control" placeholder="Search donors by name, email, or donor ID..." @bind="paginationParameters.SearchTerm" @bind:event="oninput" @onkeypress="OnSearchKeyPress" />
+            <button class="btn btn-outline-secondary" type="button" @onclick="SearchDonors">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
 </div>
 
 @if (isLoading)
@@ -29,6 +40,8 @@ else
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
+                    <th>Name</th>
+                    <th>Email</th>
                     <th>UserId</th>
                     <th>PaymentProcessorDonorId</th>
                     <th>Active</th>
@@ -36,51 +49,165 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var donor in filteredDonors)
+                @if (donorResult != null)
                 {
-                    <tr>
-                        <td>@donor.UserId</td>
-                        <td>@donor.PaymentProcessorDonorId</td>
-                        <td>
-                            <input type="checkbox" checked="@donor.IsActive" @onchange="e => ToggleActive(donor, (bool)e.Value)" />
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-success me-1" @onclick="() => SaveDonor(donor)">Save</button>
-                            <button class="btn btn-sm btn-primary me-1" @onclick="() => EditDonor(donor)">Edit</button>
-                            <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDeactivate(donor)">Deactivate</button>
-                        </td>
-                    </tr>
+                    @foreach (var donor in donorResult.Items)
+                    {
+                        <tr class="@(!donor.IsActive ? "table-secondary text-muted" : "")">
+                            <td>
+                                @(donor.User?.Profile?.FullName ?? "N/A")
+                                @if (!donor.IsActive)
+                                {
+                                    <span class="badge bg-secondary ms-1">Inactive</span>
+                                }
+                            </td>
+                            <td>@(donor.User?.Email ?? "N/A")</td>
+                            <td>@donor.UserId</td>
+                            <td>@donor.PaymentProcessorDonorId</td>
+                            <td>
+                                <input type="checkbox" checked="@donor.IsActive" @onchange="e => ToggleActive(donor, (bool)e.Value)" />
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-success me-1" @onclick="() => SaveDonor(donor)">Save</button>
+                                <button class="btn btn-sm btn-primary me-1" @onclick="() => EditDonor(donor)">Edit</button>
+                                @if (donor.IsActive)
+                                {
+                                    <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDeactivate(donor)">Deactivate</button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-success" @onclick="() => ReactivateDonor(donor)">Reactivate</button>
+                                }
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
     </div>
+    
+    @if (donorResult != null)
+    {
+        <PaginationComponent PagedResult="@(new PagedResult<object> 
+                                           { 
+                                               Items = donorResult.Items.Cast<object>().ToList(), 
+                                               TotalCount = donorResult.TotalCount, 
+                                               PageNumber = donorResult.PageNumber, 
+                                               PageSize = donorResult.PageSize 
+                                           })" 
+                            OnPageChange="OnPageChanged" 
+                            OnPageSizeChange="OnPageSizeChanged" />
+    }
+}
+
+<!-- Add/Edit Donor Modal -->
+@if (showModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(editingDonor?.Id == 0 ? "Add" : "Edit") Donor</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (editingDonor != null)
+                    {
+                        <div class="mb-3">
+                            <label for="userId" class="form-label">User ID</label>
+                            <input type="text" class="form-control" id="userId" @bind="editingDonor.UserId" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="donorId" class="form-label">Payment Processor Donor ID</label>
+                            <input type="text" class="form-control" id="donorId" @bind="editingDonor.PaymentProcessorDonorId" />
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveDonor">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+<!-- Deactivate Confirmation Modal -->
+@if (showDeactivateModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Deactivation</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDeactivateModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to deactivate this donor?</p>
+                    @if (deactivatingDonor?.User?.Profile != null)
+                    {
+                        <p><strong>Name:</strong> @deactivatingDonor.User.Profile.FullName</p>
+                        <p><strong>Email:</strong> @deactivatingDonor.User.Email</p>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseDeactivateModal">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeactivateDonor">Deactivate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
 }
 
 @code {
-    private List<Donor> donors = new();
-    private string searchTerm = string.Empty;
+    private PagedResult<Donor>? donorResult;
+    private PaginationParameters paginationParameters = new();
     private bool isLoading = true;
     private bool showModal = false;
     private bool showDeactivateModal = false;
     private Donor? editingDonor;
     private Donor? deactivatingDonor;
 
-    private IEnumerable<Donor> filteredDonors => string.IsNullOrWhiteSpace(searchTerm)
-        ? donors
-        : donors.Where(d => d.PaymentProcessorDonorId?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false);
-
     protected override async Task OnInitializedAsync()
     {
-    
         await LoadDonors();
     }
 
     private async Task LoadDonors()
     {
         isLoading = true;
-        donors = await DonorService.GetAllAsync();
+        donorResult = await DonorService.GetPaginatedWithUserDataAsync(paginationParameters);
         isLoading = false;
         StateHasChanged();
+    }
+
+    private async Task SearchDonors()
+    {
+        paginationParameters.PageNumber = 1; // Reset to first page when searching
+        await LoadDonors();
+    }
+
+    private async Task OnSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchDonors();
+        }
+    }
+
+    private async Task OnPageChanged(int pageNumber)
+    {
+        paginationParameters.PageNumber = pageNumber;
+        await LoadDonors();
+    }
+
+    private async Task OnPageSizeChanged(int pageSize)
+    {
+        paginationParameters.PageSize = pageSize;
+        paginationParameters.PageNumber = 1; // Reset to first page when changing page size
+        await LoadDonors();
     }
 
     private void ShowAddModal()
@@ -156,5 +283,11 @@ else
             showDeactivateModal = false;
             await LoadDonors();
         }
+    }
+
+    private async Task ReactivateDonor(Donor donor)
+    {
+        await DonorService.SetActiveAsync(donor.Id, true);
+        await LoadDonors();
     }
 }

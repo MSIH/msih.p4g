@@ -6,6 +6,7 @@
 
 using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
 using msih.p4g.Server.Features.Base.ProfileService.Model;
+using msih.p4g.Shared.Models;
 
 namespace msih.p4g.Server.Features.Base.ProfileService.Services
 {
@@ -60,6 +61,18 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Services
 
             // Since referral codes are unique, we should only have one result (or none)
             return profiles.FirstOrDefault();
+        }
+
+        /// <inheritdoc />
+        public async Task<List<Profile>> GetAllWithUserDataAsync()
+        {
+            return await _profileRepository.GetAllWithUserDataAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<PagedResult<Profile>> GetPaginatedWithUserDataAsync(PaginationParameters paginationParameters)
+        {
+            return await _profileRepository.GetPaginatedWithUserDataAsync(paginationParameters);
         }
     }
 }

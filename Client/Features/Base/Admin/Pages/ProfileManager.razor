@@ -3,11 +3,26 @@
 
 
 @using msih.p4g.Server.Features.Base.ProfileService.Model
+@using msih.p4g.Shared.Models
+@using msih.p4g.Client.Common.Components
+@using Microsoft.AspNetCore.Components.Web
+@using System.Linq
 @inject msih.p4g.Server.Features.Base.ProfileService.Interfaces.IProfileService ProfileService
 @inject AuthorizationService AuthorizationService
 @layout AdminLayout
 
 <h3>Profile Management</h3>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="input-group">
+            <input class="form-control" placeholder="Search profiles by name, email, referral code, or mobile..." @bind="paginationParameters.SearchTerm" @bind:event="oninput" @onkeypress="OnSearchKeyPress" />
+            <button class="btn btn-outline-secondary" type="button" @onclick="SearchProfiles">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+</div>
 
 @if (isLoading)
 {
@@ -19,61 +34,345 @@
 }
 else
 {
+
+    <button class="btn btn-primary mb-2" @onclick="ShowAddModal">Add Profile</button>
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Email</th>
+                    <th>Referral Code</th>
                     <th>Date of Birth</th>
                     <th>Mobile</th>
                     <th>IsActive</th>
                     <th>Consent (Text/Email/Mail)</th>
                     <th>Unsubscribe (Text/Email/Mail)</th>
                     <th>Address</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var profile in profiles)
+                @if (profileResult != null)
                 {
-                    <tr>
-                        <td>@profile.FullName</td>
-                        <td>@(profile.DateOfBirth?.ToShortDateString() ?? "Not set")</td>
-                        <td>@profile.MobileNumber</td>
-                        <td>
-                            <input type="checkbox" checked="@profile.IsActive" disabled />
-                        </td>
-                        <td>
-                            <input type="checkbox" checked="@profile.ConsentReceiveText" disabled title="Text" />
-                            <input type="checkbox" checked="@profile.ConsentReceiveEmail" disabled title="Email" />
-                            <input type="checkbox" checked="@profile.ConsentReceiveMail" disabled title="Mail" />
-                        </td>
-                        <td>
-                            <input type="checkbox" checked="@profile.UnsubscribeMobile" disabled title="Text" />
-                            <input type="checkbox" checked="@profile.UnsubscribeEmail" disabled title="Email" />
-                            <input type="checkbox" checked="@profile.UnsubscribeMail" disabled title="Mail" />
-                        </td>
-                        <td>
-                            @if (profile.Address != null)
-                            {
-                                <span>@profile.Address.Street, @profile.Address.City, @profile.Address.State, @profile.Address.PostalCode, @profile.Address.Country</span>
-                            }
-                        </td>
-                    </tr>
+                    @foreach (var profile in profileResult.Items)
+                    {
+                        <tr class="@(!profile.IsActive ? "table-secondary text-muted" : "")">
+                            <td>
+                                @profile.FullName
+                                @if (!profile.IsActive)
+                                {
+                                    <span class="badge bg-secondary ms-1">Inactive</span>
+                                }
+                            </td>
+                            <td>@(profile.User?.Email ?? "N/A")</td>
+                            <td>@profile.ReferralCode</td>
+                            <td>@(profile.DateOfBirth?.ToShortDateString() ?? "Not set")</td>
+                            <td>@profile.MobileNumber</td>
+                            <td>
+                                <input type="checkbox" checked="@profile.IsActive" disabled />
+                            </td>
+                            <td>
+                                <input type="checkbox" checked="@profile.ConsentReceiveText" disabled title="Text" />
+                                <input type="checkbox" checked="@profile.ConsentReceiveEmail" disabled title="Email" />
+                                <input type="checkbox" checked="@profile.ConsentReceiveMail" disabled title="Mail" />
+                            </td>
+                            <td>
+                                <input type="checkbox" checked="@profile.UnsubscribeMobile" disabled title="Text" />
+                                <input type="checkbox" checked="@profile.UnsubscribeEmail" disabled title="Email" />
+                                <input type="checkbox" checked="@profile.UnsubscribeMail" disabled title="Mail" />
+                            </td>
+                            <td>
+                                @if (profile.Address != null)
+                                {
+                                    <span>@profile.Address.Street, @profile.Address.City, @profile.Address.State, @profile.Address.PostalCode, @profile.Address.Country</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-success me-1" @onclick="() => SaveProfile(profile)">Save</button>
+                                <button class="btn btn-sm btn-primary me-1" @onclick="() => EditProfile(profile)">Edit</button>
+                                @if (profile.IsActive)
+                                {
+                                    <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDeactivate(profile)">Deactivate</button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-success" @onclick="() => ReactivateProfile(profile)">Reactivate</button>
+                                }
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
     </div>
+
+    @if (profileResult != null)
+    {
+        <PaginationComponent PagedResult="@(new PagedResult<object>
+                                           {
+                                               Items = profileResult.Items.Cast<object>().ToList(),
+                                               TotalCount = profileResult.TotalCount,
+                                               PageNumber = profileResult.PageNumber,
+                                               PageSize = profileResult.PageSize
+                                           })"
+                            OnPageChange="OnPageChanged"
+                            OnPageSizeChange="OnPageSizeChanged" />
+    }
+}
+
+<!-- Add/Edit Profile Modal -->
+@if (showModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(editingProfile?.Id == 0 ? "Add" : "Edit") Profile</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (editingProfile != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" @bind="editingProfile.FirstName" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" @bind="editingProfile.LastName" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" id="dateOfBirth" @bind="editingProfile.DateOfBirth" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="mobile" class="form-label">Mobile Number</label>
+                                    <input type="text" class="form-control" id="mobile" @bind="editingProfile.MobileNumber" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="referralCode" class="form-label">Referral Code</label>
+                            <input type="text" class="form-control" id="referralCode" @bind="editingProfile.ReferralCode" />
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Consent Settings</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.ConsentReceiveText" id="consentText">
+                                        <label class="form-check-label" for="consentText">Receive Text Messages</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.ConsentReceiveEmail" id="consentEmail">
+                                        <label class="form-check-label" for="consentEmail">Receive Emails</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.ConsentReceiveMail" id="consentMail">
+                                        <label class="form-check-label" for="consentMail">Receive Mail</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Unsubscribe Settings</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.UnsubscribeMobile" id="unsubscribeMobile">
+                                        <label class="form-check-label" for="unsubscribeMobile">Unsubscribed from Text</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.UnsubscribeEmail" id="unsubscribeEmail">
+                                        <label class="form-check-label" for="unsubscribeEmail">Unsubscribed from Email</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.UnsubscribeMail" id="unsubscribeMail">
+                                        <label class="form-check-label" for="unsubscribeMail">Unsubscribed from Mail</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveProfile">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+<!-- Deactivate Confirmation Modal -->
+@if (showDeactivateModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Deactivation</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDeactivateModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to deactivate this profile?</p>
+                    @if (deactivatingProfile != null)
+                    {
+                        <p><strong>Name:</strong> @deactivatingProfile.FullName</p>
+                        <p><strong>Email:</strong> @deactivatingProfile.User?.Email</p>
+                        <p><strong>Referral Code:</strong> @deactivatingProfile.ReferralCode</p>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseDeactivateModal">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeactivateProfile">Deactivate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
 }
 
 @code {
-    private List<Profile> profiles = new();
+    private PagedResult<Profile>? profileResult;
+    private PaginationParameters paginationParameters = new();
     private bool isLoading = true;
+    private bool showModal = false;
+    private bool showDeactivateModal = false;
+    private Profile? editingProfile;
+    private Profile? deactivatingProfile;
 
     protected override async Task OnInitializedAsync()
     {
-       
+        await LoadProfiles();
+    }
+
+    private async Task LoadProfiles()
+    {
         isLoading = true;
-        profiles = (await ProfileService.GetAllAsync(includeInactive: true)).ToList();
+        profileResult = await ProfileService.GetPaginatedWithUserDataAsync(paginationParameters);
         isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task SearchProfiles()
+    {
+        paginationParameters.PageNumber = 1; // Reset to first page when searching
+        await LoadProfiles();
+    }
+
+    private async Task OnSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchProfiles();
+        }
+    }
+
+    private async Task OnPageChanged(int pageNumber)
+    {
+        paginationParameters.PageNumber = pageNumber;
+        await LoadProfiles();
+    }
+
+    private async Task OnPageSizeChanged(int pageSize)
+    {
+        paginationParameters.PageSize = pageSize;
+        paginationParameters.PageNumber = 1; // Reset to first page when changing page size
+        await LoadProfiles();
+    }
+
+    private void ShowAddModal()
+    {
+        editingProfile = new Profile();
+        showModal = true;
+    }
+
+    private void EditProfile(Profile profile)
+    {
+        editingProfile = new Profile
+        {
+            Id = profile.Id,
+            UserId = profile.UserId,
+            FirstName = profile.FirstName,
+            LastName = profile.LastName,
+            DateOfBirth = profile.DateOfBirth,
+            MobileNumber = profile.MobileNumber,
+            ReferralCode = profile.ReferralCode,
+            ConsentReceiveText = profile.ConsentReceiveText,
+            ConsentReceiveEmail = profile.ConsentReceiveEmail,
+            ConsentReceiveMail = profile.ConsentReceiveMail,
+            UnsubscribeMobile = profile.UnsubscribeMobile,
+            UnsubscribeEmail = profile.UnsubscribeEmail,
+            UnsubscribeMail = profile.UnsubscribeMail
+        };
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        editingProfile = null;
+    }
+
+    private async Task SaveProfile()
+    {
+        if (editingProfile != null)
+        {
+            if (editingProfile.Id == 0)
+            {
+                await ProfileService.AddAsync(editingProfile);
+            }
+            else
+            {
+                await ProfileService.UpdateAsync(editingProfile);
+            }
+            showModal = false;
+            await LoadProfiles();
+        }
+    }
+
+    private async Task SaveProfile(Profile profile)
+    {
+        await ProfileService.UpdateAsync(profile);
+        await LoadProfiles();
+    }
+
+    private void ConfirmDeactivate(Profile profile)
+    {
+        deactivatingProfile = profile;
+        showDeactivateModal = true;
+    }
+
+    private void CloseDeactivateModal()
+    {
+        showDeactivateModal = false;
+        deactivatingProfile = null;
+    }
+
+    private async Task DeactivateProfile()
+    {
+        if (deactivatingProfile != null)
+        {
+            await ProfileService.SetActiveAsync(deactivatingProfile.Id, false);
+            showDeactivateModal = false;
+            await LoadProfiles();
+        }
+    }
+
+    private async Task ReactivateProfile(Profile profile)
+    {
+        await ProfileService.SetActiveAsync(profile.Id, true);
+        await LoadProfiles();
     }
 }
