@@ -396,7 +396,7 @@ namespace msih.p4g.Server.Features.DonationService.Services
         /// </summary>
         public async Task<List<Donation>> GetAllAsync()
         {
-            var donations = await _donationRepository.GetAllAsync();
+            var donations = await _donationRepository.GetAllWithIncludesAsync();
             return donations.ToList();
         }
 

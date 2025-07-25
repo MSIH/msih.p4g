@@ -34,5 +34,10 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         /// Gets paginated donations for a specific referral code.
         /// </summary>
         Task<PagedResult<Donation>> GetPagedByReferralCodeAsync(string referralCode, PaginationParameters parameters);
+
+        /// <summary>
+        /// Gets all donations with related entities included.
+        /// </summary>
+        Task<IEnumerable<Donation>> GetAllWithIncludesAsync();
     }
 }

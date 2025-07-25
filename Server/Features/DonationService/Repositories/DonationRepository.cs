@@ -178,5 +178,20 @@ namespace msih.p4g.Server.Features.DonationService.Repositories
                 PageSize = parameters.PageSize
             };
         }
+
+        /// <summary>
+        /// Gets all donations with related entities included.
+        /// </summary>
+        public async Task<IEnumerable<Donation>> GetAllWithIncludesAsync()
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+            return await context.Donations
+                .Include(d => d.Donor)
+                    .ThenInclude(donor => donor.User)
+                        .ThenInclude(user => user.Profile)
+                .Include(d => d.Campaign)
+                .OrderByDescending(d => d.CreatedOn)
+                .ToListAsync();
+        }
     }
 }
