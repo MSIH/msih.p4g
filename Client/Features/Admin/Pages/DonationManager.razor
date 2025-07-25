@@ -1,0 +1,378 @@
+@*
+ * Copyright (c) 2025 MSIH LLC. All rights reserved.
+ * This file is developed for Make Sure It Happens Inc.
+ * Unauthorized copying, modification, distribution, or use is prohibited.
+*@
+
+@page "/admin/donations"
+@layout AdminLayout
+
+@using msih.p4g.Server.Features.DonationService.Interfaces
+@using msih.p4g.Server.Features.DonationService.Models
+@using msih.p4g.Server.Features.CampaignService.Interfaces
+@using msih.p4g.Server.Features.CampaignService.Model
+@using msih.p4g.Shared.Models
+@using msih.p4g.Client.Common.Components
+@using Microsoft.AspNetCore.Components.Web
+@using System.Linq
+@inject IDonationService DonationService
+@inject ICampaignService CampaignService
+@inject IJSRuntime JSRuntime
+@inject AuthorizationService AuthorizationService
+
+<h3>Donation Management</h3>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="input-group">
+            <input class="form-control" placeholder="Search donations by donor name, email, or campaign..." @bind="paginationParameters.SearchTerm" @bind:event="oninput" @onkeypress="OnSearchKeyPress" />
+            <button class="btn btn-outline-secondary" type="button" @onclick="SearchDonations">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Donor Name</th>
+                    <th>Email</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Recurrence</th>
+                    <th>Campaign</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (donationResult != null)
+                {
+                    @foreach (var donation in donationResult.Items)
+                    {
+                        <tr class="@(!donation.IsActive ? "table-secondary text-muted" : "")">
+                            <td>
+                                @(donation.Donor?.User?.Profile?.FullName ?? "N/A")
+                                @if (!donation.IsActive)
+                                {
+                                    <span class="badge bg-secondary ms-1">Inactive</span>
+                                }
+                            </td>
+                            <td>@(donation.Donor?.User?.Email ?? "N/A")</td>
+                            <td>$@donation.DonationAmount.ToString("F2")</td>
+                            <td>@donation.CreatedOn.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                <span class="badge @(donation.IsMonthly ? "bg-success" : donation.IsAnnual ? "bg-primary" : "bg-secondary")">
+                                    @(donation.IsMonthly ? "Monthly" : donation.IsAnnual ? "Annual" : "One-time")
+                                </span>
+                            </td>
+                            <td>@GetCampaignName(donation)</td>
+                            <td>
+                                <input type="checkbox" checked="@donation.IsActive" @onchange="e => ToggleActive(donation, (bool)e.Value)" />
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info me-1" @onclick="() => ViewDetails(donation)">Details</button>
+                                @if (donation.IsActive)
+                                {
+                                    <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDeactivate(donation)">Deactivate</button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-success" @onclick="() => ReactivateDonation(donation)">Reactivate</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    
+    @if (donationResult != null)
+    {
+        <PaginationComponent PagedResult="@(new PagedResult<object> 
+                                           { 
+                                               Items = donationResult.Items.Cast<object>().ToList(), 
+                                               TotalCount = donationResult.TotalCount, 
+                                               PageNumber = donationResult.PageNumber, 
+                                               PageSize = donationResult.PageSize 
+                                           })" 
+                            OnPageChange="OnPageChanged" 
+                            OnPageSizeChange="OnPageSizeChanged" />
+    }
+}
+
+<!-- Donation Details Modal -->
+@if (showDetailsModal && selectedDonation != null)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Donation Details</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDetailsModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Donor Information</h6>
+                            <p><strong>Name:</strong> @(selectedDonation.Donor?.User?.Profile?.FullName ?? "N/A")</p>
+                            <p><strong>Email:</strong> @(selectedDonation.Donor?.User?.Email ?? "N/A")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Donation Information</h6>
+                            <p><strong>Amount:</strong> $@selectedDonation.DonationAmount.ToString("F2")</p>
+                            <p><strong>Transaction Fee:</strong> $@selectedDonation.PayTransactionFeeAmount.ToString("F2")</p>
+                            <p><strong>Total Charged:</strong> $@(selectedDonation.PayTransactionFee ? selectedDonation.DonationAmount : selectedDonation.DonationAmount - selectedDonation.PayTransactionFeeAmount).ToString("F2")</p>
+                            <p><strong>Date:</strong> @selectedDonation.CreatedOn.ToString("yyyy-MM-dd HH:mm")</p>
+                            <p><strong>Recurrence:</strong> @(selectedDonation.IsMonthly ? "Monthly" : selectedDonation.IsAnnual ? "Annual" : "One-time")</p>
+                            <p><strong>Campaign:</strong> @GetCampaignName(selectedDonation)</p>
+                            <p><strong>Referral Code:</strong> @(selectedDonation.ReferralCode ?? "N/A")</p>
+                            <p><strong>Status:</strong> @(selectedDonation.IsActive ? "Active" : "Inactive")</p>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(selectedDonation.DonationMessage))
+                    {
+                        <div class="mt-3">
+                            <h6>Donation Message</h6>
+                            <p>@selectedDonation.DonationMessage</p>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseDetailsModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+<!-- Deactivate Confirmation Modal -->
+@if (showDeactivateModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Deactivation</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDeactivateModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to deactivate this donation?</p>
+                    @if (deactivatingDonation != null)
+                    {
+                        <p><strong>Donor:</strong> @(deactivatingDonation.Donor?.User?.Profile?.FullName ?? "N/A")</p>
+                        <p><strong>Amount:</strong> $@deactivatingDonation.DonationAmount.ToString("F2")</p>
+                        <p><strong>Date:</strong> @deactivatingDonation.CreatedOn.ToString("yyyy-MM-dd")</p>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseDeactivateModal">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeactivateDonation">Deactivate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    private PagedResult<Donation>? donationResult;
+    private PaginationParameters paginationParameters = new();
+    private bool isLoading = true;
+    private bool showDetailsModal = false;
+    private bool showDeactivateModal = false;
+    private Donation? selectedDonation;
+    private Donation? deactivatingDonation;
+    private List<Campaign> campaigns = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCampaigns();
+        await LoadDonations();
+    }
+
+    private async Task LoadDonations()
+    {
+        isLoading = true;
+        try
+        {
+            // Using GetPagedByUserEmailAsync with empty email to get all donations
+            // This is a temporary solution until GetPaginatedAsync is implemented
+            var allDonations = await DonationService.GetAllAsync();
+            
+            // Apply search filtering
+            if (!string.IsNullOrEmpty(paginationParameters.SearchTerm))
+            {
+                var searchTerm = paginationParameters.SearchTerm.ToLower();
+                allDonations = allDonations.Where(d => 
+                    (d.Donor?.User?.Profile?.FullName?.ToLower().Contains(searchTerm) ?? false) ||
+                    (d.Donor?.User?.Email?.ToLower().Contains(searchTerm) ?? false) ||
+                    GetCampaignName(d).ToLower().Contains(searchTerm) ||
+                    (d.CampaignCode?.ToLower().Contains(searchTerm) ?? false)
+                ).ToList();
+            }
+
+            // Apply pagination manually
+            var totalCount = allDonations.Count;
+            var skip = (paginationParameters.PageNumber - 1) * paginationParameters.PageSize;
+            var paginatedDonations = allDonations.Skip(skip).Take(paginationParameters.PageSize).ToList();
+
+            donationResult = new PagedResult<Donation>
+            {
+                Items = paginatedDonations,
+                TotalCount = totalCount,
+                PageNumber = paginationParameters.PageNumber,
+                PageSize = paginationParameters.PageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            // Handle error - for now just create empty result
+            donationResult = new PagedResult<Donation>
+            {
+                Items = new List<Donation>(),
+                TotalCount = 0,
+                PageNumber = 1,
+                PageSize = paginationParameters.PageSize
+            };
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SearchDonations()
+    {
+        paginationParameters.PageNumber = 1; // Reset to first page when searching
+        await LoadDonations();
+    }
+
+    private async Task OnSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchDonations();
+        }
+    }
+
+    private async Task OnPageChanged(int pageNumber)
+    {
+        paginationParameters.PageNumber = pageNumber;
+        await LoadDonations();
+    }
+
+    private async Task OnPageSizeChanged(int pageSize)
+    {
+        paginationParameters.PageSize = pageSize;
+        paginationParameters.PageNumber = 1; // Reset to first page when changing page size
+        await LoadDonations();
+    }
+
+    private void ViewDetails(Donation donation)
+    {
+        selectedDonation = donation;
+        showDetailsModal = true;
+    }
+
+    private void CloseDetailsModal()
+    {
+        showDetailsModal = false;
+        selectedDonation = null;
+    }
+
+    private async Task ToggleActive(Donation donation, bool isActive)
+    {
+        await DonationService.SetActiveAsync(donation.Id, isActive);
+        donation.IsActive = isActive;
+        StateHasChanged();
+    }
+
+    private void ConfirmDeactivate(Donation donation)
+    {
+        deactivatingDonation = donation;
+        showDeactivateModal = true;
+    }
+
+    private void CloseDeactivateModal()
+    {
+        showDeactivateModal = false;
+        deactivatingDonation = null;
+    }
+
+    private async Task DeactivateDonation()
+    {
+        if (deactivatingDonation != null)
+        {
+            await DonationService.SetActiveAsync(deactivatingDonation.Id, false);
+            showDeactivateModal = false;
+            await LoadDonations();
+        }
+    }
+
+    private async Task ReactivateDonation(Donation donation)
+    {
+        await DonationService.SetActiveAsync(donation.Id, true);
+        await LoadDonations();
+    }
+
+    private async Task LoadCampaigns()
+    {
+        try
+        {
+            var allCampaigns = await CampaignService.GetAllAsync();
+            campaigns = allCampaigns.ToList();
+        }
+        catch (Exception ex)
+        {
+            // Logger.LogError(ex, "Error loading campaigns");
+            campaigns = new List<Campaign>();
+        }
+    }
+
+    private string GetCampaignName(Donation donation)
+    {
+        // First try to get from the loaded Campaign navigation property
+        if (donation.Campaign != null)
+            return donation.Campaign.Title;
+
+        // Then try from CampaignCode
+        if (!string.IsNullOrEmpty(donation.CampaignCode))
+        {
+            // Try to convert campaignCode to int
+            if (int.TryParse(donation.CampaignCode, out int campaignId))
+            {
+                var campaignById = campaigns.FirstOrDefault(c => c.Id == campaignId);
+                if (campaignById != null)
+                    return campaignById.Title;
+            }
+        }
+
+        // Finally try from CampaignId
+        if (donation.CampaignId.HasValue)
+        {
+            var campaignById = campaigns.FirstOrDefault(c => c.Id == donation.CampaignId.Value);
+            if (campaignById != null)
+                return campaignById.Title;
+            
+            return $"Campaign ID: {donation.CampaignId.Value}";
+        }
+
+        return "N/A";
+    }
+}
