@@ -2,12 +2,12 @@
 
 
 
-@using msih.p4g.Server.Features.Base.ProfileService.Model
+@using MSIH.Core.Services.Profiles.Model
 @using msih.p4g.Shared.Models
 @using msih.p4g.Client.Common.Components
 @using Microsoft.AspNetCore.Components.Web
 @using System.Linq
-@inject msih.p4g.Server.Features.Base.ProfileService.Interfaces.IProfileService ProfileService
+@inject MSIH.Core.Services.Profiles.Interfaces.IProfileService ProfileService
 @inject AuthorizationService AuthorizationService
 @layout AdminLayout
 
@@ -16,7 +16,8 @@
 <div class="row mb-3">
     <div class="col-md-6">
         <div class="input-group">
-            <input class="form-control" placeholder="Search profiles by name, email, referral code, or mobile..." @bind="paginationParameters.SearchTerm" @bind:event="oninput" @onkeypress="OnSearchKeyPress" />
+            <input class="form-control" placeholder="Search profiles by name, email, referral code, or mobile..."
+                @bind="paginationParameters.SearchTerm" @bind:event="oninput" @onkeypress="OnSearchKeyPress" />
             <button class="btn btn-outline-secondary" type="button" @onclick="SearchProfiles">
                 <i class="fas fa-search"></i>
             </button>
@@ -84,7 +85,8 @@ else
                             <td>
                                 @if (profile.Address != null)
                                 {
-                                    <span>@profile.Address.Street, @profile.Address.City, @profile.Address.State, @profile.Address.PostalCode, @profile.Address.Country</span>
+                                    <span>@profile.Address.Street, @profile.Address.City, @profile.Address.State,
+                                        @profile.Address.PostalCode, @profile.Address.Country</span>
                                 }
                             </td>
                             <td>
@@ -92,11 +94,13 @@ else
                                 <button class="btn btn-sm btn-primary me-1" @onclick="() => EditProfile(profile)">Edit</button>
                                 @if (profile.IsActive)
                                 {
-                                    <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDeactivate(profile)">Deactivate</button>
+                                    <button class="btn btn-sm btn-danger"
+                                        @onclick="() => ConfirmDeactivate(profile)">Deactivate</button>
                                 }
                                 else
                                 {
-                                    <button class="btn btn-sm btn-success" @onclick="() => ReactivateProfile(profile)">Reactivate</button>
+                                    <button class="btn btn-sm btn-success"
+                                        @onclick="() => ReactivateProfile(profile)">Reactivate</button>
                                 }
                             </td>
                         </tr>
@@ -105,19 +109,17 @@ else
             </tbody>
         </table>
     </div>
-    
+
     @if (profileResult != null)
     {
-        <PaginationComponent PagedResult="@(new PagedResult<object> 
-                                           { 
-                                               Items = profileResult.Items.Cast<object>().ToList(), 
-                                               TotalCount = profileResult.TotalCount, 
-                                               PageNumber = profileResult.PageNumber, 
-                                               PageSize = profileResult.PageSize 
-                                           })" 
-                            OnPageChange="OnPageChanged" 
-                            OnPageSizeChange="OnPageSizeChanged" />
-    }
+        <PaginationComponent PagedResult="@(new PagedResult<object>
+                             {
+                                 Items = profileResult.Items.Cast<object>().ToList(),
+                                 TotalCount = profileResult.TotalCount,
+                                 PageNumber = profileResult.PageNumber,
+                                 PageSize = profileResult.PageSize
+                             })" OnPageChange="OnPageChanged" OnPageSizeChange="OnPageSizeChanged" />
+}
 }
 
 <!-- Add/Edit Profile Modal -->
@@ -151,7 +153,8 @@ else
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="dateOfBirth" class="form-label">Date of Birth</label>
-                                    <input type="date" class="form-control" id="dateOfBirth" @bind="editingProfile.DateOfBirth" />
+                                    <input type="date" class="form-control" id="dateOfBirth"
+                                        @bind="editingProfile.DateOfBirth" />
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -170,15 +173,18 @@ else
                                 <div class="mb-3">
                                     <label class="form-label">Consent Settings</label>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.ConsentReceiveText" id="consentText">
+                                        <input class="form-check-input" type="checkbox"
+                                            @bind="editingProfile.ConsentReceiveText" id="consentText">
                                         <label class="form-check-label" for="consentText">Receive Text Messages</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.ConsentReceiveEmail" id="consentEmail">
+                                        <input class="form-check-input" type="checkbox"
+                                            @bind="editingProfile.ConsentReceiveEmail" id="consentEmail">
                                         <label class="form-check-label" for="consentEmail">Receive Emails</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.ConsentReceiveMail" id="consentMail">
+                                        <input class="form-check-input" type="checkbox"
+                                            @bind="editingProfile.ConsentReceiveMail" id="consentMail">
                                         <label class="form-check-label" for="consentMail">Receive Mail</label>
                                     </div>
                                 </div>
@@ -187,15 +193,18 @@ else
                                 <div class="mb-3">
                                     <label class="form-label">Unsubscribe Settings</label>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.UnsubscribeMobile" id="unsubscribeMobile">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.UnsubscribeMobile"
+                                            id="unsubscribeMobile">
                                         <label class="form-check-label" for="unsubscribeMobile">Unsubscribed from Text</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.UnsubscribeEmail" id="unsubscribeEmail">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.UnsubscribeEmail"
+                                            id="unsubscribeEmail">
                                         <label class="form-check-label" for="unsubscribeEmail">Unsubscribed from Email</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.UnsubscribeMail" id="unsubscribeMail">
+                                        <input class="form-check-input" type="checkbox" @bind="editingProfile.UnsubscribeMail"
+                                            id="unsubscribeMail">
                                         <label class="form-check-label" for="unsubscribeMail">Unsubscribed from Mail</label>
                                     </div>
                                 </div>

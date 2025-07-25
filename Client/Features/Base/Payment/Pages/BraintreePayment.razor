@@ -11,12 +11,12 @@
 
 @using msih.p4g.Server.Features.Base.PaymentService.Interfaces
 @using msih.p4g.Server.Features.Base.PaymentService.Models
-@using msih.p4g.Server.Features.Base.UserService.Models
+@using MSIH.Core.Services.Users.Models
 @using msih.p4g.Server.Features.CampaignService.Interfaces
 @using msih.p4g.Server.Features.CampaignService.Model
-@using msih.p4g.Server.Features.Base.ProfileService.Interfaces
-@using msih.p4g.Server.Features.Base.ProfileService.Model
-@using msih.p4g.Server.Features.Base.UserService.Interfaces
+@using MSIH.Core.Services.Profiles.Interfaces
+@using MSIH.Core.Services.Profiles.Model
+@using MSIH.Core.Services.Users.Interfaces
 @using msih.p4g.Server.Features.DonationService.Models
 @using msih.p4g.Server.Features.DonationService.Interfaces
 @using Microsoft.AspNetCore.Components.Forms
@@ -675,10 +675,10 @@
                 {
                     // Set the referrer profile from the user
                     referrer = referrerUser.Profile;
-                    
+
                     // Check if the referrer is a fundraiser
                     isFundraiser = referrerUser.Role == UserRole.Fundraiser;
-                    
+
                     // Store the referral code in the donation request
                     donationRequest.ReferralCode = ReferralCode;
                 }

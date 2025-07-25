@@ -5,7 +5,7 @@
 //  */
 
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
-using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
+using MSIH.Core.Services.UserProfile.Interfaces;
 
 namespace msih.p4g.Server.Common.Utilities
 {
@@ -17,7 +17,7 @@ namespace msih.p4g.Server.Common.Utilities
     /// <code>
     /// // Inject the ReferalURLGenerator in your service or controller
     /// private readonly ReferalURLGenerator _referralGenerator;
-    /// 
+    ///
     /// // Generate a donation URL with referral code
     /// var donationUrl = await _referralGenerator.GenerateDonationUrlAsync("user@example.com");
     /// // Result: "https://localhost:63581/donate/ABC123" (if user has profile with referral code)
@@ -78,7 +78,7 @@ namespace msih.p4g.Server.Common.Utilities
 
         /// <summary>
         /// Gets the base donation URL from settings or configuration
-        /// Priority order: 1) donationUrl from database settings, 2) donationUrl from configuration, 
+        /// Priority order: 1) donationUrl from database settings, 2) donationUrl from configuration,
         /// 3) BaseUrl from settings + "/donate", 4) BaseUrl from configuration + "/donate", 5) Default fallback
         /// </summary>
         /// <returns>The base donation URL</returns>

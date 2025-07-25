@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using msih.p4g.Server.Features.Base.PayoutService.Models;
+using msih.p4g.Server.Features.PayoutService.Models;
 
 namespace msih.p4g.Server.Common.Data
 {

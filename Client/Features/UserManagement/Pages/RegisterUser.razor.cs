@@ -7,10 +7,10 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using msih.p4g.Client.Features.Authentication.Services;
-using msih.p4g.Server.Features.Base.ProfileService.Model;
+using MSIH.Core.Services.Profiles.Model;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
-using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
-using msih.p4g.Server.Features.Base.UserService.Models;
+using MSIH.Core.Services.UserProfile.Interfaces;
+using MSIH.Core.Services.Users.Models;
 
 
 namespace msih.p4g.Client.Features.UserManagement.Pages

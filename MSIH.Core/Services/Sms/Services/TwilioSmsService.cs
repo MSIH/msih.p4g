@@ -4,7 +4,7 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using MSIH.Core.Common.Utilities;
-using MSIH.Core.Services.Setting.Interfaces;
+using MSIH.Core.Services.Settings.Interfaces;
 using MSIH.Core.Services.Sms.Interfaces;
 using MSIH.Core.Services.Sms.Models;
 using Microsoft.Extensions.Configuration;

@@ -4,8 +4,8 @@
 //  * Unauthorized copying, modification, distribution, or use is prohibited.
 //  */
 
-using MSIH.Core.Services.Profile.Model;
-using MSIH.Core.Services.Setting.Interfaces;
+using MSIH.Core.Services.Profiles.Model;
+using MSIH.Core.Services.Settings.Interfaces;
 
 namespace MSIH.Core.Common.Utilities
 {

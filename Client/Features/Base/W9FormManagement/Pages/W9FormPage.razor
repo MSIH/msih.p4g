@@ -1,8 +1,8 @@
 @page "/w9form"
 @page "/w9form/{FundraiserId:int?}"
 
-@using msih.p4g.Server.Features.Base.W9FormService.Interfaces
-@using msih.p4g.Server.Features.Base.W9FormService.Services
+@using MSIH.Core.Services.W9Forms.Interfaces
+@using MSIH.Core.Services.W9Forms.Services
 @using msih.p4g.Shared.W9FormService.Dtos
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Security.Claims
@@ -40,7 +40,7 @@
             {
                 <EditForm Model="@FormData" OnValidSubmit="HandleValidSubmit">
                     <DataAnnotationsValidator />
-                    
+
 
                     <!-- W-9 Form Header -->
                     <div class="w9-header mb-4">
@@ -69,7 +69,8 @@
 
                             <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <label for="businessName" class="form-label">Business name/disregarded entity name (if different)</label>
+                                    <label for="businessName" class="form-label">Business name/disregarded entity name (if
+                                        different)</label>
                                     <InputText id="businessName" @bind-Value="FormData.BusinessName" class="form-control" />
                                 </div>
                             </div>
@@ -80,45 +81,44 @@
                                     <label class="form-label">Federal tax classification <span class="text-danger">*</span></label>
                                     <div class="mb-2">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" id="taxIndividual"
-                                                   name="taxClassification" value="Individual/sole proprietor"
-                                                   checked="@(FormData.FederalTaxClassification == "Individual/sole proprietor")"
-                                                   @onchange="@(e => UpdateTaxClassification("Individual/sole proprietor"))" />
+                                            <input class="form-check-input" type="radio" id="taxIndividual" name="taxClassification"
+                                                value="Individual/sole proprietor"
+                                                checked="@(FormData.FederalTaxClassification == "Individual/sole proprietor")"
+                                                @onchange="@(e => UpdateTaxClassification("Individual/sole proprietor"))" />
                                             <label class="form-check-label" for="taxIndividual">Individual/sole proprietor</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" id="taxCCorporation"
-                                                   name="taxClassification" value="C Corporation"
-                                                   checked="@(FormData.FederalTaxClassification == "C Corporation")"
-                                                   @onchange="@(e => UpdateTaxClassification("C Corporation"))" />
+                                                name="taxClassification" value="C Corporation"
+                                                checked="@(FormData.FederalTaxClassification == "C Corporation")"
+                                                @onchange="@(e => UpdateTaxClassification("C Corporation"))" />
                                             <label class="form-check-label" for="taxCCorporation">C Corporation</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" id="taxSCorporation"
-                                                   name="taxClassification" value="S Corporation"
-                                                   checked="@(FormData.FederalTaxClassification == "S Corporation")"
-                                                   @onchange="@(e => UpdateTaxClassification("S Corporation"))" />
+                                                name="taxClassification" value="S Corporation"
+                                                checked="@(FormData.FederalTaxClassification == "S Corporation")"
+                                                @onchange="@(e => UpdateTaxClassification("S Corporation"))" />
                                             <label class="form-check-label" for="taxSCorporation">S Corporation</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" id="taxPartnership"
-                                                   name="taxClassification" value="Partnership"
-                                                   checked="@(FormData.FederalTaxClassification == "Partnership")"
-                                                   @onchange="@(e => UpdateTaxClassification("Partnership"))" />
+                                                name="taxClassification" value="Partnership"
+                                                checked="@(FormData.FederalTaxClassification == "Partnership")"
+                                                @onchange="@(e => UpdateTaxClassification("Partnership"))" />
                                             <label class="form-check-label" for="taxPartnership">Partnership</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" id="taxTrustEstate"
-                                                   name="taxClassification" value="Trust/estate"
-                                                   checked="@(FormData.FederalTaxClassification == "Trust/estate")"
-                                                   @onchange="@(e => UpdateTaxClassification("Trust/estate"))" />
+                                                name="taxClassification" value="Trust/estate"
+                                                checked="@(FormData.FederalTaxClassification == "Trust/estate")"
+                                                @onchange="@(e => UpdateTaxClassification("Trust/estate"))" />
                                             <label class="form-check-label" for="taxTrustEstate">Trust/estate</label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" id="taxLLC"
-                                                   name="taxClassification" value="LLC"
-                                                   checked="@(FormData.FederalTaxClassification == "LLC")"
-                                                   @onchange="@(e => UpdateTaxClassification("LLC"))" />
+                                            <input class="form-check-input" type="radio" id="taxLLC" name="taxClassification"
+                                                value="LLC" checked="@(FormData.FederalTaxClassification == "LLC")"
+                                                @onchange="@(e => UpdateTaxClassification("LLC"))" />
                                             <label class="form-check-label" for="taxLLC">Limited Liability Company</label>
 
                                             @if (FormData.FederalTaxClassification == "LLC")
@@ -128,23 +128,23 @@
                                                     <div class="d-flex gap-3">
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="radio" id="llcC"
-                                                                   name="llcClassification" value="C"
-                                                                   checked="@(FormData.LLCTaxClassification == "C")"
-                                                                   @onchange="@(e => FormData.LLCTaxClassification = "C")" />
+                                                                name="llcClassification" value="C"
+                                                                checked="@(FormData.LLCTaxClassification == "C")"
+                                                                @onchange="@(e => FormData.LLCTaxClassification = "C")" />
                                                             <label class="form-check-label" for="llcC">C</label>
                                                         </div>
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="radio" id="llcS"
-                                                                   name="llcClassification" value="S"
-                                                                   checked="@(FormData.LLCTaxClassification == "S")"
-                                                                   @onchange="@(e => FormData.LLCTaxClassification = "S")" />
+                                                                name="llcClassification" value="S"
+                                                                checked="@(FormData.LLCTaxClassification == "S")"
+                                                                @onchange="@(e => FormData.LLCTaxClassification = "S")" />
                                                             <label class="form-check-label" for="llcS">S</label>
                                                         </div>
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="radio" id="llcP"
-                                                                   name="llcClassification" value="P"
-                                                                   checked="@(FormData.LLCTaxClassification == "P")"
-                                                                   @onchange="@(e => FormData.LLCTaxClassification = "P")" />
+                                                                name="llcClassification" value="P"
+                                                                checked="@(FormData.LLCTaxClassification == "P")"
+                                                                @onchange="@(e => FormData.LLCTaxClassification = "P")" />
                                                             <label class="form-check-label" for="llcP">P</label>
                                                         </div>
                                                     </div>
@@ -155,17 +155,17 @@
                                             }
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" id="taxOther"
-                                                   name="taxClassification" value="Other"
-                                                   checked="@(FormData.FederalTaxClassification == "Other")"
-                                                   @onchange="@(e => UpdateTaxClassification("Other"))" />
+                                            <input class="form-check-input" type="radio" id="taxOther" name="taxClassification"
+                                                value="Other" checked="@(FormData.FederalTaxClassification == "Other")"
+                                                @onchange="@(e => UpdateTaxClassification("Other"))" />
                                             <label class="form-check-label" for="taxOther">Other</label>
 
                                             @if (FormData.FederalTaxClassification == "Other")
                                             {
                                                 <div class="ms-4 mt-2">
-                                                    <InputText id="otherInstructions" @bind-Value="FormData.OtherClassificationInstructions"
-                                                               class="form-control" placeholder="Enter other classification" />
+                                                    <InputText id="otherInstructions"
+                                                        @bind-Value="FormData.OtherClassificationInstructions" class="form-control"
+                                                        placeholder="Enter other classification" />
                                                 </div>
                                             }
                                         </div>
@@ -185,15 +185,19 @@
                                 </div>
                             </div>
 
-                            @if (FormData.FederalTaxClassification == "Partnership" || FormData.FederalTaxClassification == "Trust/estate")
+                            @if (FormData.FederalTaxClassification == "Partnership" || FormData.FederalTaxClassification ==
+                                            "Trust/estate")
                             {
                                 <div class="row">
                                     <div class="col-12">
                                         <div class="form-check">
-                                            <InputCheckbox id="partnershipTrust" @bind-Value="isPartnershipTrustSelected" class="form-check-input" />
+                                            <InputCheckbox id="partnershipTrust" @bind-Value="isPartnershipTrustSelected"
+                                                class="form-check-input" />
                                             <label class="form-check-label" for="partnershipTrust">
-                                                If the entity is a Partnership or Trust/estate, and you are providing this form to a partnership, trust, or estate
-                                                in which you have an ownership interest, check this box if you have any foreign partners, owners, or beneficiaries.
+                                                If the entity is a Partnership or Trust/estate, and you are providing this form to a
+                                                partnership, trust, or estate
+                                                in which you have an ownership interest, check this box if you have any foreign
+                                                partners, owners, or beneficiaries.
                                             </label>
                                         </div>
                                     </div>
@@ -210,7 +214,8 @@
                         <div class="card-body">
                             <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <label for="address" class="form-label">Address (number, street, and apt. or suite no.) <span class="text-danger">*</span></label>
+                                    <label for="address" class="form-label">Address (number, street, and apt. or suite no.) <span
+                                            class="text-danger">*</span></label>
                                     <InputText id="address" @bind-Value="FormData.Address" class="form-control" />
                                     <ValidationMessage For="@(() => FormData.Address)" />
                                 </div>
@@ -218,7 +223,8 @@
 
                             <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <label for="cityStateZip" class="form-label">City, state, and ZIP code <span class="text-danger">*</span></label>
+                                    <label for="cityStateZip" class="form-label">City, state, and ZIP code <span
+                                            class="text-danger">*</span></label>
                                     <InputText id="cityStateZip" @bind-Value="FormData.CityStateZip" class="form-control" />
                                     <ValidationMessage For="@(() => FormData.CityStateZip)" />
                                 </div>
@@ -248,11 +254,8 @@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="ssn" class="form-label">Social Security Number (if individual)</label>
-                                    <InputText id="ssn"
-                                               @bind-Value="FormData.SocialSecurityNumber"
-                                               class="form-control"
-                                               placeholder="XXX-XX-XXXX"
-                                               @oninput="HandleSsnInput" />
+                                    <InputText id="ssn" @bind-Value="FormData.SocialSecurityNumber" class="form-control"
+                                        placeholder="XXX-XX-XXXX" @oninput="HandleSsnInput" />
                                     <button class="btn btn-outline-secondary mt-2" type="button" @onclick="ClearSsn">Clear</button>
                                     <small class="form-text text-muted">Format: XXX-XX-XXXX</small>
                                     <ValidationMessage For="@(() => FormData.SocialSecurityNumber)" />
@@ -264,11 +267,8 @@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="ein" class="form-label">Employer Identification Number (if business)</label>
-                                    <InputText id="ein"
-                                               @bind-Value="FormData.EmployerIdentificationNumber"
-                                               class="form-control"
-                                               placeholder="XX-XXXXXXX"
-                                               @oninput="HandleEinInput" />
+                                    <InputText id="ein" @bind-Value="FormData.EmployerIdentificationNumber" class="form-control"
+                                        placeholder="XX-XXXXXXX" @oninput="HandleEinInput" />
                                     <button class="btn btn-outline-secondary mt-2" type="button" @onclick="ClearEin">Clear</button>
                                     <small class="form-text text-muted">Format: XX-XXXXXXX</small>
                                     <ValidationMessage For="@(() => FormData.EmployerIdentificationNumber)" />
@@ -286,14 +286,20 @@
                             <div class="row mb-3">
                                 <div class="col-md-12">
                                     <div class="form-check">
-                                        <InputCheckbox id="certification" @bind-Value="isCertificationChecked" class="form-check-input" />
+                                        <InputCheckbox id="certification" @bind-Value="isCertificationChecked"
+                                            class="form-check-input" />
                                         <label class="form-check-label" for="certification">
                                             <strong>Under penalties of perjury, I certify that:</strong>
                                             <ol>
-                                                <li>The number shown on this form is my correct taxpayer identification number (or I am waiting for a number to be issued to me); and</li>
-                                                <li>I am not subject to backup withholding because: (a) I am exempt from backup withholding, or (b) I have not been notified by the IRS that I am subject to backup withholding, or (c) the IRS has notified me that I am no longer subject to backup withholding; and</li>
+                                                <li>The number shown on this form is my correct taxpayer identification number (or I
+                                                    am waiting for a number to be issued to me); and</li>
+                                                <li>I am not subject to backup withholding because: (a) I am exempt from backup
+                                                    withholding, or (b) I have not been notified by the IRS that I am subject to
+                                                    backup withholding, or (c) the IRS has notified me that I am no longer subject
+                                                    to backup withholding; and</li>
                                                 <li>I am a U.S. citizen or other U.S. person; and</li>
-                                                <li>The FATCA code(s) entered on this form (if any) indicating that I am exempt from FATCA reporting is correct.</li>
+                                                <li>The FATCA code(s) entered on this form (if any) indicating that I am exempt from
+                                                    FATCA reporting is correct.</li>
                                             </ol>
                                         </label>
                                     </div>
@@ -318,7 +324,7 @@
                                             @(FormData.ModifiedOn.HasValue
                                                                     ? FormData.ModifiedOn.Value.ToString("MM/dd/yyyy")
                                                                     : FormData.CreatedOn.ToString("MM/dd/yyyy"))
-                    </p>
+                                        </p>
                                     }
                                 </div>
                             }
@@ -331,7 +337,7 @@
                         }
                     </div>
                     <div class="d-flex justify-content-start mb-4">
-             
+
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary" disabled="@(!isCertificationChecked)">
                                 @if (IsSaving)
@@ -344,7 +350,8 @@
                                     <span>Save</span>
                                 }
                             </button>
-                            <button type="button" class="btn btn-secondary" @onclick='() => NavigationManager.NavigateTo("/")'>Close</button>
+                            <button type="button" class="btn btn-secondary"
+                                @onclick='() => NavigationManager.NavigateTo("/")'>Close</button>
                         </div>
                         <ValidationSummary />
                     </div>
@@ -352,14 +359,14 @@
 
             }
         }
-    }    
+    }
     else
     {
-    <div class="d-flex justify-content-center align-items-center vh-100">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Checking permissions...</span>
+        <div class="d-flex justify-content-center align-items-center vh-100">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Checking permissions...</span>
+            </div>
         </div>
-    </div>
     }
 </div>
 
@@ -573,7 +580,8 @@
             FormData.Status = status;
 
             // Update partnership/trust info
-            if ((FormData.FederalTaxClassification == "Partnership" || FormData.FederalTaxClassification == "Trust/estate") && isPartnershipTrustSelected)
+            if ((FormData.FederalTaxClassification == "Partnership" || FormData.FederalTaxClassification == "Trust/estate") &&
+            isPartnershipTrustSelected)
             {
                 FormData.PartnershipTrustInfo = "Has foreign partners, owners, or beneficiaries";
             }
@@ -607,17 +615,18 @@
 }
 <!-- Style for the W-9 form page -->
 <style>
-.w-9-form-container {
-  margin-bottom: 2rem;
-}
+    .w-9-form-container {
+        margin-bottom: 2rem;
+    }
 
-.w9-header {
-  text-align: center;
-  padding: 1rem 0;
-}
+    .w9-header {
+        text-align: center;
+        padding: 1rem 0;
+    }
 
-.validation-message {
-  color: #dc3545; /* Bootstrap's "danger" red */
-  font-size: 0.95em;
-}
+    .validation-message {
+        color: #dc3545;
+        /* Bootstrap's "danger" red */
+        font-size: 0.95em;
+    }
 </style>

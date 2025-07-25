@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MSIH.Core.Common.Utilities;
 using MSIH.Core.Services.Email.Interfaces;
-using MSIH.Core.Services.Setting.Interfaces;
+using MSIH.Core.Services.Settings.Interfaces;
 using System.Threading.Tasks;
 
 namespace MSIH.Core.Services.Email.Services
@@ -30,7 +30,7 @@ namespace MSIH.Core.Services.Email.Services
         private bool _settingsInitialized = false;
 
         public AWSSESEmailService(
-            IConfiguration configuration, 
+            IConfiguration configuration,
             ISettingsService settingsService,
             ILogger<AWSSESEmailService> logger)
         {
@@ -45,19 +45,19 @@ namespace MSIH.Core.Services.Email.Services
                 return;
 
             // Try to get settings from the settings service (DB first, then appsettings, then environment)
-            _accessKey = await _settingsService.GetValueAsync("AWS:SES:AccessKey") 
+            _accessKey = await _settingsService.GetValueAsync("AWS:SES:AccessKey")
                 ?? throw new Exception("AWS SES AccessKey not configured");
-            
-            _secretKey = await _settingsService.GetValueAsync("AWS:SES:SecretKey") 
+
+            _secretKey = await _settingsService.GetValueAsync("AWS:SES:SecretKey")
                 ?? throw new Exception("AWS SES SecretKey not configured");
-            
-            _region = await _settingsService.GetValueAsync("AWS:SES:Region") 
+
+            _region = await _settingsService.GetValueAsync("AWS:SES:Region")
                 ?? "us-east-1";
-            
-            _fromEmail = await _settingsService.GetValueAsync("AWS:SES:FromEmail") 
+
+            _fromEmail = await _settingsService.GetValueAsync("AWS:SES:FromEmail")
                 ?? throw new Exception("AWS SES FromEmail not configured");
-            
-            _fromName = await _settingsService.GetValueAsync("AWS:SES:FromName") 
+
+            _fromName = await _settingsService.GetValueAsync("AWS:SES:FromName")
                 ?? "NoReply";
 
             _settingsInitialized = true;

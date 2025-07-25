@@ -1,4 +1,4 @@
-@* 
+@*
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
@@ -7,8 +7,8 @@
 @page "/users"
 @namespace msih.p4g.Client.Features.UserManagement.Pages
 
-@using msih.p4g.Server.Features.Base.UserService.Models
-@using msih.p4g.Server.Features.Base.UserService.Interfaces
+@using MSIH.Core.Services.Users.Models
+@using MSIH.Core.Services.Users.Interfaces
 @inject IUserService UserManagementService
 @inject NavigationManager Navigation
 
@@ -32,27 +32,27 @@ else
             </tr>
         </thead>
         <tbody>
-        @foreach (var user in users)
-        {
-            <tr>
-                <td>@user.Email</td>
-                <td>
-                    <select @onchange="e => ChangeRole(user, e.Value.ToString())" value="@user.Role">
-                        @foreach (var role in Enum.GetValues<UserRole>())
-                        {
-                            <option value="@role">@role</option>
-                        }
-                    </select>
-                </td>
-                <td>
-                    <input type="checkbox" checked="@user.IsActive" @onchange="e => ToggleActive(user)" />
-                </td>
-                <td>
-                    <button class="btn btn-primary" @onclick="() => SaveUser(user)">Save</button>
-                    <button class="btn btn-danger ms-2" @onclick="() => DeactivateUser(user)">Deactivate</button>
-                </td>
-            </tr>
-        }
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>
+                        <select @onchange="e => ChangeRole(user, e.Value.ToString())" value="@user.Role">
+                            @foreach (var role in Enum.GetValues<UserRole>())
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <input type="checkbox" checked="@user.IsActive" @onchange="e => ToggleActive(user)" />
+                    </td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => SaveUser(user)">Save</button>
+                        <button class="btn btn-danger ms-2" @onclick="() => DeactivateUser(user)">Deactivate</button>
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 }

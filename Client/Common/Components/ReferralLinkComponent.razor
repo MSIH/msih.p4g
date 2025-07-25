@@ -1,6 +1,6 @@
 @using Microsoft.JSInterop
 @using msih.p4g.Server.Features.Base.SettingsService.Interfaces
-@using msih.p4g.Server.Features.Base.ProfileService.Model
+@using MSIH.Core.Services.Profiles.Model
 @using msih.p4g.Server.Common.Utilities
 @using msih.p4g.Server.Features.CampaignService.Model
 @using msih.p4g.Client.Features.Campaign.Components
@@ -39,9 +39,9 @@
                 {
                     <span class="text-success ms-2">Copied!</span>
                 }
-                
-                <VideoDownloadComponent ReferralCode="@ReferralCode" 
-                                       CampaignId="@SelectedCampaignId" 
+
+                <VideoDownloadComponent ReferralCode="@ReferralCode"
+                                       CampaignId="@SelectedCampaignId"
                                        OnProcessingStarted="OnVideoProcessingStarted"
                                        OnProcessingCompleted="OnVideoProcessingCompleted"
                                        OnProcessingFailed="OnVideoProcessingFailed" />
@@ -143,7 +143,7 @@
     {
         // Set the initial append name value from parameter
         _appendName = AppendName;
-        
+
         // Ensure the referral code is generated if not already set
         if (Profile != null && !string.IsNullOrEmpty(Profile.ReferralCode))
         {

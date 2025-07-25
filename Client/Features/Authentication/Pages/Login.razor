@@ -1,4 +1,4 @@
-@* 
+@*
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
@@ -6,8 +6,8 @@
 
 @page "/login"
 @namespace msih.p4g.Client.Features.Authentication.Pages
-@using msih.p4g.Server.Features.Base.UserService.Interfaces
-@using msih.p4g.Server.Features.Base.UserService.Models
+@using MSIH.Core.Services.Users.Interfaces
+@using MSIH.Core.Services.Users.Models
 @using msih.p4g.Client.Features.Authentication.Services
 @using System.ComponentModel.DataAnnotations
 @inject IUserService UserService
@@ -43,8 +43,10 @@
                         <DataAnnotationsValidator />
 
                         <div class="mb-3">
-                            <label for="email" class="form-label">We'll send you a login code to verify your email address</label>
-                            <InputText id="email" @bind-Value="loginModel.Email" class="form-control" placeholder="Enter your email address" />                      
+                            <label for="email" class="form-label">We'll send you a login code to verify your email
+                                address</label>
+                            <InputText id="email" @bind-Value="loginModel.Email" class="form-control"
+                                placeholder="Enter your email address" />
                             <ValidationMessage For="@(() => loginModel.Email)" />
                         </div>
 

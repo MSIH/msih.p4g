@@ -8,10 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Features.Base.AffiliateMonitoringService.Interfaces;
 using msih.p4g.Server.Features.Base.MessageService.Interfaces;
-using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
-using msih.p4g.Server.Features.Base.ProfileService.Model;
+using MSIH.Core.Services.Profiles.Interfaces;
+using MSIH.Core.Services.Profiles.Model;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
-using msih.p4g.Server.Features.Base.UserService.Interfaces;
+using MSIH.Core.Services.Users.Interfaces;
 using msih.p4g.Server.Features.FundraiserService.Interfaces;
 using msih.p4g.Server.Features.FundraiserService.Model;
 
@@ -197,19 +197,19 @@ namespace msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services
                     <body>
                         <h2>Affiliate Account Suspension Notice</h2>
                         <p>Dear {profile.FullName},</p>
-                        
+
                         <p>We are writing to inform you that your affiliate account has been suspended due to the following reason:</p>
-                        
+
                         <p><strong>Reason:</strong> {reason}</p>
-                        
+
                         <p>Your affiliate referral code: <strong>{profile.ReferralCode}</strong></p>
                         <p>Suspension date: <strong>{fundraiser.SuspendedDate:yyyy-MM-dd HH:mm:ss} UTC</strong></p>
-                        
-                        <p>If you believe this suspension was made in error or if you have any questions, 
+
+                        <p>If you believe this suspension was made in error or if you have any questions,
                         please contact our support team for assistance.</p>
-                        
+
                         <p>Thank you for your understanding.</p>
-                        
+
                         <p>Best regards,<br>
                         Make Sure It Happens Team</p>
                     </body>

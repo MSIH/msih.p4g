@@ -38,7 +38,7 @@ namespace MSIH.Core.Services.Sms.Extensions
             services.AddScoped<PhoneValidationService>();
 
             // Register generic repository using the concrete implementation
-            services.AddScoped<IGenericRepository<ValidatedPhoneNumber>>(provider => 
+            services.AddScoped<IGenericRepository<ValidatedPhoneNumber>>(provider =>
                 (IGenericRepository<ValidatedPhoneNumber>)provider.GetRequiredService<IValidatedPhoneNumberRepository>());
 
             // Register migration applier as a hosted service

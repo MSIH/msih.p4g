@@ -4,7 +4,7 @@
 //  * Unauthorized copying, modification, distribution, or use is prohibited.
 //  */
 
-using msih.p4g.Server.Features.Base.ProfileService.Model;
+using MSIH.Core.Services.Profiles.Model;
 using msih.p4g.Server.Features.Base.SettingsService.Interfaces;
 
 namespace msih.p4g.Server.Common.Utilities

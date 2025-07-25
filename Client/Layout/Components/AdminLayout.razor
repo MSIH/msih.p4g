@@ -1,5 +1,4 @@
-
-@using msih.p4g.Server.Features.Base.UserService.Models
+@using MSIH.Core.Services.Users.Models
 @inject AuthorizationService AuthorizationService
 @inherits LayoutComponentBase
 
@@ -18,19 +17,20 @@
         align-items: center;
         justify-content: flex-end;
     }
-    
+
     .admin-layout .content {
         max-width: 100%;
         overflow-x: auto;
     }
-    
+
     .admin-layout .table-responsive {
         margin: 0;
         padding: 0;
     }
 
     .admin-layout main {
-        margin-top: 3.5rem; /* Ensure main content starts below the fixed header */
+        margin-top: 3.5rem;
+        /* Ensure main content starts below the fixed header */
     }
 </style>
 
@@ -40,7 +40,7 @@
         <div class="top-row px-4">
             <UserMenu />
         </div>
-        
+
         <main>
             <article class="content px-4">
                 @Body

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MSIH.Core.Common.Utilities;
 using MSIH.Core.Services.Email.Interfaces;
-using MSIH.Core.Services.Setting.Interfaces;
+using MSIH.Core.Services.Settings.Interfaces;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
@@ -26,7 +26,7 @@ namespace MSIH.Core.Services.Email.Services
         private bool _settingsInitialized = false;
 
         public SendGridEmailService(
-            IConfiguration configuration, 
+            IConfiguration configuration,
             ISettingsService settingsService,
             ILogger<SendGridEmailService> logger)
         {
@@ -41,13 +41,13 @@ namespace MSIH.Core.Services.Email.Services
                 return;
 
             // Try to get settings from the settings service (DB first, then appsettings, then environment)
-            _apiKey = await _settingsService.GetValueAsync("SendGrid:ApiKey") 
+            _apiKey = await _settingsService.GetValueAsync("SendGrid:ApiKey")
                 ?? throw new Exception("SendGrid API key not configured");
-            
-            _fromEmail = await _settingsService.GetValueAsync("SendGrid:FromEmail") 
+
+            _fromEmail = await _settingsService.GetValueAsync("SendGrid:FromEmail")
                 ?? throw new Exception("SendGrid FromEmail not configured");
-            
-            _fromName = await _settingsService.GetValueAsync("SendGrid:FromName") 
+
+            _fromName = await _settingsService.GetValueAsync("SendGrid:FromName")
                 ?? "NoReply";
 
             _settingsInitialized = true;

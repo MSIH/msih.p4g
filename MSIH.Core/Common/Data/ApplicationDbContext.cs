@@ -4,11 +4,11 @@
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 using Microsoft.EntityFrameworkCore;
-using MSIH.Core.Services.Setting.Models;
+using MSIH.Core.Services.Settings.Models;
 using MSIH.Core.Services.Sms.Models;
-using MSIH.Core.Services.User.Models;
-using MSIH.Core.Services.Profile.Model;
-using MSIH.Core.Services.Message.Models;
+using MSIH.Core.Services.Users.Models;
+using MSIH.Core.Services.Profiles.Model;
+using MSIH.Core.Services.Messages.Models;
 
 namespace MSIH.Core.Common.Data
 {
@@ -23,11 +23,11 @@ namespace MSIH.Core.Common.Data
         }
 
         // DbSets for Core entities
-        public DbSet<MSIH.Core.Services.Setting.Models.Setting> Settings { get; set; }
+        public DbSet<MSIH.Core.Services.Settings.Models.Setting> Settings { get; set; }
         public DbSet<ValidatedPhoneNumber> ValidatedPhoneNumbers { get; set; }
-        public DbSet<MSIH.Core.Services.User.Models.User> Users { get; set; }
-        public DbSet<MSIH.Core.Services.Profile.Model.Profile> Profiles { get; set; }
-        public DbSet<MSIH.Core.Services.Message.Models.Message> Messages { get; set; }
+        public DbSet<MSIH.Core.Services.Users.Models.User> Users { get; set; }
+        public DbSet<MSIH.Core.Services.Profiles.Model.Profile> Profiles { get; set; }
+        public DbSet<MSIH.Core.Services.Messages.Models.Message> Messages { get; set; }
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
         public DbSet<MessageTemplateUsage> MessageTemplateUsages { get; set; }
 
@@ -38,6 +38,8 @@ namespace MSIH.Core.Common.Data
             ConfigureUserModel(modelBuilder);
             ConfigureProfileModel(modelBuilder);
             ConfigureMessageModel(modelBuilder);
+            ConfigurePaymentModel(modelBuilder);
+            ConfigureW9FormModel(modelBuilder);
             base.OnModelCreating(modelBuilder);
         }
 
@@ -57,11 +59,21 @@ namespace MSIH.Core.Common.Data
         partial void ConfigureMessageModel(ModelBuilder modelBuilder);
 
         /// <summary>
+        /// Partial method for configuring Payment entities - implemented in PaymentDbContext.cs
+        /// </summary>
+        partial void ConfigurePaymentModel(ModelBuilder modelBuilder);
+
+        /// <summary>
+        /// Partial method for configuring W9Form entities - implemented in W9FormDbContext.cs
+        /// </summary>
+        partial void ConfigureW9FormModel(ModelBuilder modelBuilder);
+
+        /// <summary>
         /// Configure the Setting entity
         /// </summary>
         private void ConfigureSettingsModel(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<MSIH.Core.Services.Setting.Models.Setting>(entity =>
+            modelBuilder.Entity<MSIH.Core.Services.Settings.Models.Setting>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Key).IsRequired().HasMaxLength(100);
@@ -84,7 +96,7 @@ namespace MSIH.Core.Common.Data
                 entity.Property(e => e.CountryCode).HasMaxLength(5);
                 entity.Property(e => e.CreatedBy).HasMaxLength(100).IsRequired();
                 entity.Property(e => e.ModifiedBy).HasMaxLength(100);
-                
+
                 // Add unique index on PhoneNumber
                 entity.HasIndex(e => e.PhoneNumber).IsUnique();
             });

@@ -13,9 +13,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
-using msih.p4g.Server.Features.Base.PayoutService.Models.Configuration;
-using msih.p4g.Server.Features.Base.PayoutService.Models.PayPal;
-using msih.p4g.Server.Features.Base.PayoutService.Services;
+using MSIH.Core.Services.Payout.Models.Configuration;
+using MSIH.Core.Services.Payout.Models.PayPal;
+using MSIH.Core.Services.Payout.Services;
 using Xunit;
 
 namespace msih.p4g.Tests.Server.Features.Base.PayoutService
@@ -60,8 +60,8 @@ namespace msih.p4g.Tests.Server.Features.Base.PayoutService
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>(
                     "SendAsync",
-                    ItExpr.Is<HttpRequestMessage>(req => 
-                        req.Method == HttpMethod.Post && 
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == HttpMethod.Post &&
                         req.RequestUri!.AbsolutePath == "/v1/oauth2/token"),
                     ItExpr.IsAny<CancellationToken>()
                 )

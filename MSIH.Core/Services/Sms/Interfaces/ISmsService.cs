@@ -17,14 +17,14 @@ namespace MSIH.Core.Services.Sms.Interfaces
         /// <param name="message">The message content to send.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task SendSmsAsync(string to, string message);
-        
+
         /// <summary>
         /// Validates if the provided phone number is in a valid format.
         /// </summary>
         /// <param name="phoneNumber">The phone number to validate.</param>
         /// <returns>True if the phone number is valid, false otherwise.</returns>
         bool IsValidPhoneNumber(string phoneNumber);
-        
+
         /// <summary>
         /// Validates a phone number using Twilio's Lookup service to determine if it is a valid mobile number.
         /// Results are stored in the database for future reference.

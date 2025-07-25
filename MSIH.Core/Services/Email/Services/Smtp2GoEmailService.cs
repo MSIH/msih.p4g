@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MSIH.Core.Common.Utilities;
 using MSIH.Core.Services.Email.Interfaces;
-using MSIH.Core.Services.Setting.Interfaces;
+using MSIH.Core.Services.Settings.Interfaces;
 using Smtp2Go.Api;
 using Smtp2Go.Api.Models.Emails;
 using System.Text.RegularExpressions;

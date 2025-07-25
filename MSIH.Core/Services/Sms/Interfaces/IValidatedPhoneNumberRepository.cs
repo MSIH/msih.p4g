@@ -20,7 +20,7 @@ namespace MSIH.Core.Services.Sms.Interfaces
         /// <param name="phoneNumber">The phone number to retrieve in E.164 format</param>
         /// <returns>The validated phone number if found, null otherwise</returns>
         Task<ValidatedPhoneNumber> GetByPhoneNumberAsync(string phoneNumber);
-        
+
         /// <summary>
         /// Adds or updates a validated phone number in the database
         /// </summary>

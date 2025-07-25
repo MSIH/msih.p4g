@@ -19,7 +19,9 @@
       "Bash(cat:*)",
       "Bash(dir:*)",
       "Bash(cp:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

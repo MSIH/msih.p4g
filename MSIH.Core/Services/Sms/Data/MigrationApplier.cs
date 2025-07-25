@@ -33,10 +33,10 @@ namespace MSIH.Core.Services.Sms.Data
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Applying SMS database migrations...");
-            
+
             using var scope = _serviceProvider.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            
+
             try
             {
                 await dbContext.Database.MigrateAsync(cancellationToken);

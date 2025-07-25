@@ -4,9 +4,9 @@
 @using msih.p4g.Client.Features.Donations.Components
 @using msih.p4g.Server.Features.FundraiserService.Model
 @using msih.p4g.Server.Features.FundraiserService.Interfaces
-@using msih.p4g.Server.Features.Base.UserService.Interfaces
-@using msih.p4g.Server.Features.Base.ProfileService.Interfaces
-@using msih.p4g.Server.Features.Base.ProfileService.Model
+@using MSIH.Core.Services.Users.Interfaces
+@using MSIH.Core.Services.Profiles.Interfaces
+@using MSIH.Core.Services.Profiles.Model
 @using msih.p4g.Client.Common.Components
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
@@ -60,9 +60,8 @@
                                 <div class="card-body">
                                     <div class="alert alert-info">
                                         <p class="mb-1">Share this link to track donations:</p>
-                                        <ReferralLinkComponent Profile="@profile"
-                                                               OnError="@HandleReferralLinkError"
-                                                               OnUrlCopied="@HandleUrlCopied" />
+                                        <ReferralLinkComponent Profile="@profile" OnError="@HandleReferralLinkError"
+                                            OnUrlCopied="@HandleUrlCopied" />
                                     </div>
                                 </div>
                             </div>
@@ -107,7 +106,7 @@
                             </div>
                         </div>
                     </div>
-                            </div>
+                </div>
 
                 <div class="card">
                     <div class="card-header">
@@ -154,12 +153,12 @@
                                         }
                                     </tbody>
                                 </table>
-                        </div>
+                            </div>
                         }
                     </div>
                 </div>
                 <DonationHistoryComponent ShowSummary="false" ShowActions="false" ReferralCode="@profile.ReferralCode" />
-            }          
+            }
         </div>
     </div>
 </div>

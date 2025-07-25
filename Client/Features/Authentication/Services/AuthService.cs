@@ -11,8 +11,8 @@
  */
 
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using msih.p4g.Server.Features.Base.UserService.Interfaces;
-using msih.p4g.Server.Features.Base.UserService.Models;
+using MSIH.Core.Services.Users.Interfaces;
+using MSIH.Core.Services.Users.Models;
 
 
 namespace msih.p4g.Client.Features.Authentication.Services

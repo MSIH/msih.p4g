@@ -12,7 +12,7 @@
 
 using Microsoft.AspNetCore.Components;
 using msih.p4g.Client.Features.Authentication.Services;
-using msih.p4g.Server.Features.Base.UserService.Models;
+using MSIH.Core.Services.Users.Models;
 
 namespace msih.p4g.Client.Common.Services
 {

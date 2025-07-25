@@ -10,7 +10,7 @@ namespace MSIH.Core.Services.Email.Interfaces
     public interface IEmailService
     {
         Task SendEmailAsync(string to, string from, string subject, string htmlContent);
-        
+
         /// <summary>
         /// Validates if the provided email address is in a valid format.
         /// </summary>

@@ -2,7 +2,7 @@
 @page "/student"
 @page "/influencer"
 @namespace msih.p4g.Client.Features.UserManagement.Pages
-@using msih.p4g.Server.Features.Base.UserService.Models
+@using MSIH.Core.Services.Users.Models
 
 
 <PageTitle>Register New User</PageTitle>
@@ -17,12 +17,12 @@
                         Registration successful!
                     </div>
 
-                    <ReferralLinkComponent Profile="@profile"
-                                           OnError="HandleReferralError" />
+                    <ReferralLinkComponent Profile="@profile" OnError="HandleReferralError" />
 
                     <div class="mb-4">
                         <h5>Check Your Email</h5>
-                        <p>We've sent you an email to verify your email address. Please check your email (including spam folder).</p>
+                        <p>We've sent you an email to verify your email address. Please check your email (including spam
+                            folder).</p>
                     </div>
                 </div>
             }
@@ -61,7 +61,8 @@
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <div class="form-check">
-                                    <InputCheckbox id="consentEmail" @bind-Value="profile.ConsentReceiveEmail" class="form-check-input" disabled />
+                                    <InputCheckbox id="consentEmail" @bind-Value="profile.ConsentReceiveEmail"
+                                        class="form-check-input" disabled />
                                     <label class="form-check-label" for="consentEmail">
                                         I consent to receive emails
                                     </label>

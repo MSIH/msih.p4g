@@ -5,9 +5,9 @@
 //  */
 
 using Microsoft.AspNetCore.Components;
-using msih.p4g.Server.Features.Base.PayoutService.Interfaces;
-using msih.p4g.Server.Features.Base.PayoutService.Models;
-using msih.p4g.Server.Features.Base.ProfileService.Model;
+using msih.p4g.Server.Features.PayoutService.Interfaces;
+using msih.p4g.Server.Features.PayoutService.Models;
+using MSIH.Core.Services.Profiles.Model;
 using msih.p4g.Server.Features.FundraiserService.Interfaces;
 using msih.p4g.Server.Features.FundraiserService.Model;
 

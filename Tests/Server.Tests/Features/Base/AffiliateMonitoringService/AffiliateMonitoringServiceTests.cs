@@ -10,10 +10,10 @@ using Moq;
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Features.Base.AffiliateMonitoringService.Services;
 using msih.p4g.Server.Features.Base.EmailService.Interfaces;
-using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
-using msih.p4g.Server.Features.Base.ProfileService.Model;
-using msih.p4g.Server.Features.Base.UserService.Interfaces;
-using msih.p4g.Server.Features.Base.UserService.Models;
+using MSIH.Core.Services.Profile.Interfaces;
+using MSIH.Core.Services.Profile.Model;
+using MSIH.Core.Services.User.Interfaces;
+using MSIH.Core.Services.User.Models;
 using msih.p4g.Server.Features.DonationService.Models;
 using msih.p4g.Server.Features.DonorService.Model;
 using msih.p4g.Server.Features.FundraiserService.Interfaces;
@@ -94,9 +94,9 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
         public async Task SuspendAffiliateAsync_ValidFundraiser_ReturnsTrueAndUpdateFundraiser()
         {
             // Arrange
-            var fundraiser = new Fundraiser 
-            { 
-                Id = 1, 
+            var fundraiser = new Fundraiser
+            {
+                Id = 1,
                 UserId = 1,
                 IsSuspended = false
             };
@@ -122,11 +122,11 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             // Arrange
             var referralCode = "TEST123";
             var user = new User { Id = 1, Email = "test@example.com" };
-            var profile = new Profile 
-            { 
-                Id = 1, 
-                UserId = 1, 
-                ReferralCode = referralCode, 
+            var profile = new Profile
+            {
+                Id = 1,
+                UserId = 1,
+                ReferralCode = referralCode,
                 IsActive = true,
                 FirstName = "Test",
                 LastName = "User",
@@ -150,7 +150,7 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             _context.Users.Add(user);
             _context.Donors.AddRange(donors);
             await _context.SaveChangesAsync();
-            
+
             _mockProfileService.Setup(x => x.GetByReferralCodeAsync(referralCode))
                 .ReturnsAsync(profile);
             _mockFundraiserService.Setup(x => x.GetByUserIdAsync(1))
@@ -175,11 +175,11 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             // Arrange
             var referralCode = "TEST123";
             var user = new User { Id = 1, Email = "test@example.com" };
-            var profile = new Profile 
-            { 
-                Id = 1, 
-                UserId = 1, 
-                ReferralCode = referralCode, 
+            var profile = new Profile
+            {
+                Id = 1,
+                UserId = 1,
+                ReferralCode = referralCode,
                 IsActive = true,
                 FirstName = "Test",
                 LastName = "User",
@@ -203,7 +203,7 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             _context.Users.Add(user);
             _context.Donors.AddRange(donors);
             await _context.SaveChangesAsync();
-            
+
             _mockProfileService.Setup(x => x.GetByReferralCodeAsync(referralCode))
                 .ReturnsAsync(profile);
             _mockFundraiserService.Setup(x => x.GetByUserIdAsync(1))
@@ -228,11 +228,11 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             // Arrange
             var referralCode = "TEST123";
             var user = new User { Id = 1, Email = "test@example.com" };
-            var profile = new Profile 
-            { 
-                Id = 1, 
-                UserId = 1, 
-                ReferralCode = referralCode, 
+            var profile = new Profile
+            {
+                Id = 1,
+                UserId = 1,
+                ReferralCode = referralCode,
                 IsActive = true,
                 FirstName = "Test",
                 LastName = "User",
@@ -266,7 +266,7 @@ namespace Tests.Server.Tests.Features.Base.AffiliateMonitoringService
             _context.Donors.AddRange(donors);
             _context.Donations.AddRange(donations);
             await _context.SaveChangesAsync();
-            
+
             _mockProfileService.Setup(x => x.GetByReferralCodeAsync(referralCode))
                 .ReturnsAsync(profile);
             _mockFundraiserService.Setup(x => x.GetByUserIdAsync(1))
