@@ -5,8 +5,8 @@
  */
 
 using Microsoft.EntityFrameworkCore;
+using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Repositories;
-using msih.p4g.Server.Features.RecurringDonationService.Data;
 using msih.p4g.Server.Features.RecurringDonationService.Interfaces;
 using msih.p4g.Server.Features.RecurringDonationService.Models;
 using msih.p4g.Shared.Models;
@@ -18,9 +18,9 @@ namespace msih.p4g.Server.Features.RecurringDonationService.Repositories
     /// </summary>
     public class RecurringDonationRepository : GenericRepository<RecurringDonation>, IRecurringDonationRepository
     {
-        private readonly RecurringDonationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public RecurringDonationRepository(RecurringDonationDbContext context) : base(context)
+        public RecurringDonationRepository(ApplicationDbContext context) : base(context)
         {
             _context = context;
         }

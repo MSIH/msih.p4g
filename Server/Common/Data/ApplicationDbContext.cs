@@ -80,6 +80,7 @@ namespace msih.p4g.Server.Common.Data
             ConfigureFundraiserModel(modelBuilder);
             ConfigureOrganizationModel(modelBuilder);
             ConfigureW9FormModel(modelBuilder);
+            ConfigureRecurringDonationModel(modelBuilder);
         }
 
         // These methods are implemented in each feature's partial class
@@ -95,5 +96,6 @@ namespace msih.p4g.Server.Common.Data
         partial void ConfigureFundraiserModel(ModelBuilder modelBuilder);
         partial void ConfigureOrganizationModel(ModelBuilder modelBuilder);
         partial void ConfigureW9FormModel(ModelBuilder modelBuilder);
+        partial void ConfigureRecurringDonationModel(ModelBuilder modelBuilder);
     }
 }

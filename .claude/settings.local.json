@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(rmdir:*)",
-      "Bash(dotnet build)"
+      "Bash(dotnet build)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

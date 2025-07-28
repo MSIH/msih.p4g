@@ -5,10 +5,9 @@ Complete recurring donation system that enables donors to set up automatic month
 
 ## Architecture
 - **Services**: RecurringDonationService, RecurringDonationProcessingService (background)
-- **Repository**: RecurringDonationRepository
+- **Repository**: RecurringDonationRepository (uses ApplicationDbContext)
 - **Models**: RecurringDonation, RecurringDonationDto, CreateRecurringDonationDto, UpdateRecurringDonationDto
-- **Controller**: RecurringDonationController
-- **Data**: RecurringDonationDbContext
+- **Data**: Uses partial ApplicationDbContext.RecurringDonation.cs for entity configuration
 - **Extensions**: RecurringDonationServiceExtensions for DI registration
 
 ## Key Features
@@ -40,10 +39,7 @@ Complete recurring donation system that enables donors to set up automatic month
 ### Service Registration
 ```csharp
 // In Program.cs
-builder.Services.AddRecurringDonationServices(builder.Configuration, builder.Environment);
-
-// Ensure database creation (development)
-await app.Services.EnsureRecurringDonationDatabaseAsync();
+builder.Services.AddRecurringDonationServices();
 ```
 
 ### Creating Recurring Donations
@@ -91,14 +87,8 @@ await _recurringDonationService.UpdateAmountAsync(id, 150.00m, "user@email.com")
 await _recurringDonationService.UpdatePaymentMethodAsync(id, "new_payment_token", "user@email.com");
 ```
 
-## API Endpoints
-- `POST /api/recurringdonation` - Create recurring donation
-- `GET /api/recurringdonation/{id}` - Get by ID
-- `GET /api/recurringdonation/user/{email}` - Get user's recurring donations
-- `PUT /api/recurringdonation/{id}` - Update recurring donation
-- `POST /api/recurringdonation/{id}/pause` - Pause
-- `POST /api/recurringdonation/{id}/resume` - Resume  
-- `POST /api/recurringdonation/{id}/cancel` - Cancel
+## Blazor Server Integration
+Since this is a Blazor Server application, the service is designed to be used directly in Razor components and server-side code rather than through Web API endpoints. Use dependency injection to access IRecurringDonationService in your Blazor components.
 
 ## Background Processing
 - **RecurringDonationProcessingService**: Hosted service runs every hour
@@ -121,10 +111,9 @@ await _recurringDonationService.UpdatePaymentMethodAsync(id, "new_payment_token"
 
 ## Files
 - `Models/RecurringDonation.cs` - Main entity
-- `Models/RecurringDonationDto.cs` - API DTOs
+- `Models/RecurringDonationDto.cs` - DTOs for data transfer
 - `Services/RecurringDonationService.cs` - Core service logic
 - `Services/RecurringDonationProcessingService.cs` - Background processing
 - `Repositories/RecurringDonationRepository.cs` - Data access
-- `Controllers/RecurringDonationController.cs` - REST API
-- `Data/RecurringDonationDbContext.cs` - Database context
 - `Extensions/RecurringDonationServiceExtensions.cs` - DI registration
+- `Server/Common/Data/ApplicationDbContext.RecurringDonation.cs` - Entity configuration

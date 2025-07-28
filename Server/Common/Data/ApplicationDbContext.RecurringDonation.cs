@@ -7,24 +7,23 @@
 using Microsoft.EntityFrameworkCore;
 using msih.p4g.Server.Features.RecurringDonationService.Models;
 
-namespace msih.p4g.Server.Features.RecurringDonationService.Data
+namespace msih.p4g.Server.Common.Data
 {
     /// <summary>
-    /// Database context for recurring donations.
+    /// Partial DbContext implementation for RecurringDonation entity
     /// </summary>
-    public class RecurringDonationDbContext : DbContext
+    public partial class ApplicationDbContext
     {
-        public RecurringDonationDbContext(DbContextOptions<RecurringDonationDbContext> options) : base(options)
-        {
-        }
-
+        /// <summary>
+        /// Gets or sets the RecurringDonations DbSet
+        /// </summary>
         public DbSet<RecurringDonation> RecurringDonations { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        /// <summary>
+        /// Configure the RecurringDonation entity
+        /// </summary>
+        partial void ConfigureRecurringDonationModel(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
-            // Configure RecurringDonation entity
             modelBuilder.Entity<RecurringDonation>(entity =>
             {
                 entity.HasKey(e => e.Id);
