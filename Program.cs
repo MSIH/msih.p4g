@@ -42,6 +42,7 @@ using msih.p4g.Server.Features.CampaignService.Data;
 using msih.p4g.Server.Features.CampaignService.Interfaces;
 using msih.p4g.Server.Features.CampaignService.Repositories;
 using msih.p4g.Server.Features.CampaignService.Services;
+using msih.p4g.Server.Features.DonationService.Extensions;
 using msih.p4g.Server.Features.DonationService.Interfaces;
 using msih.p4g.Server.Features.DonationService.Repositories;
 using msih.p4g.Server.Features.DonationService.Services;
@@ -137,6 +138,9 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 // Register DonationRepository and DonationService for DI
 builder.Services.AddScoped<IDonationRepository, DonationRepository>();
 builder.Services.AddScoped<IDonationService, DonationService>();
+
+// Register recurring donation background processing
+builder.Services.AddRecurringDonationProcessing();
 
 // Register UserRepository and UserService for DI
 builder.Services.AddScoped<IUserRepository, UserRepository>();
