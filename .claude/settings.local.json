@@ -6,7 +6,15 @@
       "Bash(rm:*)",
       "Bash(mv:*)",
       "Bash(find:*)",
-      "Bash(dotnet build:*)"
+      "Bash(dotnet build:*)",
+      "Bash(move claude.md temp_claude_file.md)",
+      "Bash(move temp_claude_file.md CLAUDE.md)",
+      "Bash(cat:*)",
+      "Bash(dir \"C:\\Users\\bschn\\source\\repos\\MSIH\\msih.p4g\\Client\\Features\\FundraiserManagement\\Services\")",
+      "Bash(dir \"C:\\Users\\bschn\\source\\repos\\MSIH\\msih.p4g\\Client\\Features\\Base\\Payment\\Interfaces\")",
+      "Bash(dir \"C:\\Users\\bschn\\source\\repos\\MSIH\\msih.p4g\\Client\\Features\\FundraiserManagement\\Interfaces\")",
+      "Bash(dir:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }
