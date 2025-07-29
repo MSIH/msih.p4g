@@ -53,6 +53,12 @@ namespace msih.p4g.Server.Common.Data
                       .HasForeignKey(d => d.CampaignId)
                       .OnDelete(DeleteBehavior.Restrict);  // Don't cascade delete campaigns
 
+                // Configure self-referencing relationship for recurring donations
+                entity.HasOne(d => d.ParentRecurringDonation)
+                      .WithMany(parent => parent.RecurringPayments)
+                      .HasForeignKey(d => d.ParentRecurringDonationId)
+                      .OnDelete(DeleteBehavior.Restrict);  // Don't cascade delete parent
+
             });
         }
     }

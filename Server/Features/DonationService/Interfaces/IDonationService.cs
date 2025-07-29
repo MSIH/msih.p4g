@@ -127,5 +127,36 @@ namespace msih.p4g.Server.Features.DonationService.Interfaces
         /// Gets paginated donations for a specific referral code.
         /// </summary>
         Task<PagedResult<Donation>> GetPagedByReferralCodeAsync(string referralCode, PaginationParameters parameters);
+
+        /// <summary>
+        /// Gets active recurring donations for a user by email.
+        /// </summary>
+        Task<List<Donation>> GetActiveRecurringDonationsByUserEmailAsync(string email);
+
+        /// <summary>
+        /// Updates the payment method for a recurring donation.
+        /// </summary>
+        Task<bool> UpdateRecurringPaymentMethodAsync(string userEmail, int donationId, string newPaymentToken);
+
+        /// <summary>
+        /// Gets recurring donation setup records (parent donations) for a user.
+        /// These are the donations users can manage (cancel, update payment method, etc.).
+        /// </summary>
+        Task<List<Donation>> GetRecurringDonationSetupsAsync(string email);
+
+        /// <summary>
+        /// Gets all payment records for a specific recurring donation setup.
+        /// </summary>
+        Task<List<Donation>> GetRecurringDonationPaymentsAsync(int recurringDonationSetupId);
+
+        /// <summary>
+        /// Determines if a donation is a recurring setup donation (manageable by user).
+        /// </summary>
+        bool IsRecurringSetupDonation(Donation donation);
+
+        /// <summary>
+        /// Determines if a donation is a recurring payment record.
+        /// </summary>
+        bool IsRecurringPaymentRecord(Donation donation);
     }
 }

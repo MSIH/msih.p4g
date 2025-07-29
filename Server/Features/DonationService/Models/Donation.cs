@@ -73,6 +73,34 @@ namespace msih.p4g.Server.Features.DonationService.Models
         public bool IsAnnual { get; set; }
 
         /// <summary>
+        /// For recurring donations: when the next payment should be processed.
+        /// </summary>
+        public DateTime? NextProcessDate { get; set; }
+
+        /// <summary>
+        /// For recurring donations: stored payment method token for automatic processing.
+        /// </summary>
+        [MaxLength(500)]
+        public string? RecurringPaymentToken { get; set; }
+
+        /// <summary>
+        /// For recurring donation payments: ID of the parent recurring donation setup.
+        /// Null for the original setup donation, populated for each automatic payment.
+        /// </summary>
+        public int? ParentRecurringDonationId { get; set; }
+
+        /// <summary>
+        /// Navigation property for the parent recurring donation (setup record).
+        /// </summary>
+        [ForeignKey("ParentRecurringDonationId")]
+        public virtual Donation ParentRecurringDonation { get; set; }
+
+        /// <summary>
+        /// Navigation property for child recurring donation payments.
+        /// </summary>
+        public virtual ICollection<Donation> RecurringPayments { get; set; } = new List<Donation>();
+
+        /// <summary>
         /// Optional message from the donor.
         /// </summary>
         [MaxLength(1000)]
