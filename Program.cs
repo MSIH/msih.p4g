@@ -1,23 +1,24 @@
-// /**
-//  * Copyright (c) 2025 MSIH LLC. All rights reserved.
-//  * This file is developed for Make Sure It Happens Inc.
-//  * Unauthorized copying, modification, distribution, or use is prohibited.
-//  */
-
 /**
  * Copyright (c) 2025 MSIH LLC. All rights reserved.
  * This file is developed for Make Sure It Happens Inc.
  * Unauthorized copying, modification, distribution, or use is prohibited.
  */
 
+// Microsoft and System namespaces
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+
+// Client services
 using msih.p4g.Client.Features.Authentication.Services;
+
+// Server common services
 using msih.p4g.Server.Common.Data;
 using msih.p4g.Server.Common.Data.Extensions;
 using msih.p4g.Server.Common.Interfaces;
 using msih.p4g.Server.Common.Services;
 using msih.p4g.Server.Common.Utilities;
+
+// Base service extensions
 using msih.p4g.Server.Features.Base.AffiliateMonitoringService.Extensions;
 using msih.p4g.Server.Features.Base.EmailService.Extensions;
 using msih.p4g.Server.Features.Base.MessageService.Data;
@@ -33,6 +34,8 @@ using msih.p4g.Server.Features.Base.UserProfileService.Extensions;
 using msih.p4g.Server.Features.Base.UserService.Extensions;
 using msih.p4g.Server.Features.Base.UserService.Services;
 using msih.p4g.Server.Features.Base.W9FormService.Extensions;
+
+// Domain service extensions
 using msih.p4g.Server.Features.CampaignService.Data;
 using msih.p4g.Server.Features.CampaignService.Extensions;
 using msih.p4g.Server.Features.DonationService.Extensions;
@@ -43,22 +46,20 @@ using msih.p4g.Server.Features.OrganizationService.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Add services to the container.
+// =============================================================================
+// CORE SERVICES CONFIGURATION
+// =============================================================================
+
+// Add Blazor and web services to the container
 builder.Services.AddRazorPages(options =>
 {
     options.RootDirectory = "/Server/Pages";
 });
-//builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddControllers(); // Add this line to enable API controllers
+builder.Services.AddControllers();
 
-// Register the AuthService as a scoped service so it's created per user session
-builder.Services.AddScoped<AuthService>();
-
-// Add HttpContextAccessor for accessing current user information
+// Add core infrastructure services
 builder.Services.AddHttpContextAccessor();
-
-// Add Data Protection services for sensitive data encryption
 builder.Services.AddDataProtection()
     .SetApplicationName("msih.p4g")
     .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "keys")));
@@ -76,62 +77,54 @@ builder.Services.AddScoped<ApplicationDbContext>(serviceProvider =>
     return contextFactory.CreateDbContext();
 });
 
-// Register Email Service using the extension method
+// =============================================================================
+// BASE SERVICES REGISTRATION
+// =============================================================================
+
+// Authentication and authorization services
+builder.Services.AddScoped<msih.p4g.Client.Features.Authentication.Services.AuthService>();
+builder.Services.AddScoped<msih.p4g.Client.Common.Services.AuthorizationService>();
+
+// Communication services
 builder.Services.AddEmailServices(builder.Configuration);
-
-// Register SMS Service and related dependencies
 builder.Services.AddSmsServices(builder.Configuration, builder.Environment);
-
-// Register Message Service (for both email and SMS) and related dependencies
 builder.Services.AddMessageServices(builder.Configuration, builder.Environment);
 
-// Register Payment Service and related dependencies
+// Payment and financial services
 builder.Services.AddPaymentServices(builder.Configuration, builder.Environment);
-
-// Register Payout Service and related dependencies
 builder.Services.AddPayoutServices(builder.Configuration, builder.Environment);
-
-// Register IPaymentService using a factory (resolves dependency injection error)
 builder.Services.AddScoped<IPaymentService>(provider =>
 {
     var factory = provider.GetRequiredService<IPaymentServiceFactory>();
     return factory.GetDefaultPaymentService();
 });
 
-// Register Settings Service and related dependencies
+// Core platform services
 builder.Services.AddSettingsServices();
-
-// Register Affiliate Monitoring Service
 builder.Services.AddAffiliateMonitoringServices();
-
-// Register common utilities
-builder.Services.AddScoped<ReferralURLGenerator>();
-
-// Register service features using extension methods
-builder.Services.AddDonorServices();
-builder.Services.AddCampaignServices();
-builder.Services.AddProfileServices();
-builder.Services.AddDonationServices(builder.Configuration, builder.Environment);
-
-// Register UserService and related dependencies
 builder.Services.AddUserServices();
-builder.Services.AddScoped<msih.p4g.Client.Common.Services.AuthorizationService>();
-
-// Register UserProfileService for coordinating User and Profile operations
 builder.Services.AddUserProfileServices();
-
-// Register FundraiserService and related dependencies
-builder.Services.AddFundraiserServices();
-
-// Register OrganizationService and related dependencies
-builder.Services.AddOrganizationServices();
-
-// Register W9FormService for DI
+builder.Services.AddProfileServices();
 builder.Services.AddW9FormServices();
 
-// Register the message template data seeder
-builder.Services.AddScoped<MessageTemplateDataSeeder>();
+// =============================================================================
+// DOMAIN SERVICES REGISTRATION
+// =============================================================================
 
+// Business domain services
+builder.Services.AddOrganizationServices();
+builder.Services.AddCampaignServices();
+builder.Services.AddDonationServices(builder.Configuration, builder.Environment);
+builder.Services.AddDonorServices();
+builder.Services.AddFundraiserServices();
+
+// =============================================================================
+// UTILITIES AND INFRASTRUCTURE
+// =============================================================================
+
+// Common utilities and infrastructure
+builder.Services.AddScoped<ReferralURLGenerator>();
+builder.Services.AddScoped<MessageTemplateDataSeeder>();
 builder.Services.AddSingleton<ICacheStrategy, MemoryCacheStrategy>();
 
 var app = builder.Build();
@@ -179,8 +172,7 @@ app.UseRouting();
 
 app.MapRazorPages();
 app.MapBlazorHub();
-app.MapControllers(); // Add this line to map API controllers
-// Update the fallback route to point to your new location
+app.MapControllers();
 app.MapFallbackToPage("/_Host");
 
 app.Run();
