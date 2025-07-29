@@ -24,7 +24,7 @@ namespace msih.p4g.Server.Features.FundraiserService.Extensions
         {
             // Register FundraiserRepository and FundraiserService for DI
             services.AddScoped<IFundraiserRepository, FundraiserRepository>();
-            services.AddScoped<IFundraiserService, msih.p4g.Server.Features.FundraiserService.Services.FundraiserService>();
+            services.AddScoped<IFundraiserService, Services.FundraiserService>();
 
             // Register FundraiserStatisticsRepository and FundraiserStatisticsService for DI
             services.AddScoped<IFundraiserStatisticsRepository, FundraiserStatisticsRepository>();

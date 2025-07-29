@@ -24,7 +24,7 @@ namespace msih.p4g.Server.Features.Base.ProfileService.Extensions
         {
             // Register ProfileRepository and ProfileService for DI
             services.AddScoped<IProfileRepository, ProfileRepository>();
-            services.AddScoped<IProfileService, msih.p4g.Server.Features.Base.ProfileService.Services.ProfileService>();
+            services.AddScoped<IProfileService, Services.ProfileService>();
 
             return services;
         }

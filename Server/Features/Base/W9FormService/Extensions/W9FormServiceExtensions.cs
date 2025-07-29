@@ -22,7 +22,7 @@ namespace msih.p4g.Server.Features.Base.W9FormService.Extensions
         public static IServiceCollection AddW9FormServices(this IServiceCollection services)
         {
             // Register W9FormService for DI
-            services.AddScoped<IW9FormService, msih.p4g.Server.Features.Base.W9FormService.Services.W9FormService>();
+            services.AddScoped<IW9FormService, Services.W9FormService>();
 
             return services;
         }

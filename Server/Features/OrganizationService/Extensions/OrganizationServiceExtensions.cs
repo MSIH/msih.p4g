@@ -25,7 +25,7 @@ namespace msih.p4g.Server.Features.OrganizationService.Extensions
         {
             // Register OrganizationRepository and OrganizationService for DI
             services.AddSingleton<IOrganizationRepository, OrganizationRepository>();
-            services.AddScoped<IOrganizationService, msih.p4g.Server.Features.OrganizationService.Services.OrganizationService>();
+            services.AddScoped<IOrganizationService, Services.OrganizationService>();
 
             // Register the organization data seeder
             services.AddScoped<OrganizationDataSeeder>();

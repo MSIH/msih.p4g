@@ -22,7 +22,7 @@ namespace msih.p4g.Server.Features.Base.UserProfileService.Extensions
         public static IServiceCollection AddUserProfileServices(this IServiceCollection services)
         {
             // Register UserProfileService for coordinating User and Profile operations
-            services.AddScoped<IUserProfileService, msih.p4g.Server.Features.Base.UserProfileService.Services.UserProfileService>();
+            services.AddScoped<IUserProfileService, Services.UserProfileService>();
 
             return services;
         }

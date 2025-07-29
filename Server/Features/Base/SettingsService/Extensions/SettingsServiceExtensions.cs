@@ -31,7 +31,7 @@ namespace msih.p4g.Server.Features.Base.SettingsService.Extensions
             services.AddSingleton<ISettingRepository, SettingRepository>();
 
             // Register SettingsService for DI
-            services.AddScoped<ISettingsService, msih.p4g.Server.Features.Base.SettingsService.Services.SettingsService>();
+            services.AddScoped<ISettingsService, Services.SettingsService>();
 
             // Register SettingsInitializer for DI
             services.AddScoped<SettingsInitializer>();

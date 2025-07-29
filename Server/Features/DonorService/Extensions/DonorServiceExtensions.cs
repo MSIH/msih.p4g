@@ -24,7 +24,7 @@ namespace msih.p4g.Server.Features.DonorService.Extensions
         {
             // Register DonorRepository and DonorService for DI
             services.AddScoped<IDonorRepository, DonorRepository>();
-            services.AddScoped<IDonorService, msih.p4g.Server.Features.DonorService.Services.DonorService>();
+            services.AddScoped<IDonorService, Services.DonorService>();
 
             return services;
         }

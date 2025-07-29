@@ -25,7 +25,7 @@ namespace msih.p4g.Server.Features.Base.UserService.Extensions
         {
             // Register UserRepository and UserService for DI
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IUserService, msih.p4g.Server.Features.Base.UserService.Services.UserService>();
+            services.AddScoped<IUserService, Services.UserService>();
 
             // Register email verification service
             services.AddScoped<IEmailVerificationService, EmailVerificationService>();

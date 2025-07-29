@@ -25,11 +25,11 @@ namespace msih.p4g.Server.Features.CampaignService.Extensions
         {
             // Register repository and service for DI
             services.AddSingleton<ICampaignRepository, CampaignRepository>();
-            services.AddScoped<ICampaignService, msih.p4g.Server.Features.CampaignService.Services.CampaignService>();
-            
+            services.AddScoped<ICampaignService, Services.CampaignService>();
+
             // Register data seeder
             services.AddScoped<CampaignDataSeeder>();
-            
+
             return services;
         }
     }
