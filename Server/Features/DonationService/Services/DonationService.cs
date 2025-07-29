@@ -340,6 +340,23 @@ namespace msih.p4g.Server.Features.DonationService.Services
 
             donation = await _donationRepository.AddAsync(donation, "DonationService");
 
+            // 4.5. Set up recurring donation processing if this is a recurring donation
+            if ((dto.IsMonthly || dto.IsAnnual) && !string.IsNullOrEmpty(dto.PaymentToken))
+            {
+                // Store payment token for recurring processing
+                donation.RecurringPaymentToken = dto.PaymentToken;
+                
+                // Set next process date
+                donation.NextProcessDate = dto.IsMonthly 
+                    ? DateTime.UtcNow.AddMonths(1) 
+                    : DateTime.UtcNow.AddYears(1);
+                
+                await _donationRepository.UpdateAsync(donation, "DonationService");
+                
+                _logger.LogInformation("Set up recurring donation {DonationId} for {Frequency} processing. Next process date: {NextProcessDate}",
+                    donation.Id, dto.IsMonthly ? "monthly" : "annual", donation.NextProcessDate);
+            }
+
             // 5. Send email notification to donor with error handling
             try
             {
@@ -689,6 +706,130 @@ namespace msih.p4g.Server.Features.DonationService.Services
         public async Task<PagedResult<Donation>> GetPagedByReferralCodeAsync(string referralCode, PaginationParameters parameters)
         {
             return await _donationRepository.GetPagedByReferralCodeAsync(referralCode, parameters);
+        }
+
+        /// <summary>
+        /// Gets active recurring donations for a user by email.
+        /// </summary>
+        public async Task<List<Donation>> GetActiveRecurringDonationsByUserEmailAsync(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+                return new List<Donation>();
+
+            try
+            {
+                var userDonations = await GetByUserEmailAsync(email);
+                return userDonations.Where(d => d.IsActive && (d.IsMonthly || d.IsAnnual)).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting active recurring donations for user {Email}", email);
+                return new List<Donation>();
+            }
+        }
+
+        /// <summary>
+        /// Updates the payment method for a recurring donation.
+        /// </summary>
+        public async Task<bool> UpdateRecurringPaymentMethodAsync(string userEmail, int donationId, string newPaymentToken)
+        {
+            if (string.IsNullOrEmpty(userEmail) || string.IsNullOrEmpty(newPaymentToken))
+                return false;
+
+            try
+            {
+                // Verify the donation belongs to the current user
+                var user = await _userRepository.GetByEmailAsync(userEmail, includeDonor: true);
+                if (user?.Donor == null)
+                    return false;
+
+                var donation = await GetByIdAsync(donationId);
+                if (donation == null || donation.DonorId != user.Donor.Id)
+                    return false;
+
+                // Only allow updating recurring setup donations (parent donations)
+                if (!donation.IsMonthly && !donation.IsAnnual)
+                    return false;
+
+                // Make sure this is a setup donation, not a payment record
+                if (donation.ParentRecurringDonationId.HasValue)
+                    return false;
+
+                // Update the payment method
+                donation.RecurringPaymentToken = newPaymentToken;
+                donation.ModifiedBy = userEmail;
+                donation.ModifiedOn = DateTime.UtcNow;
+
+                return await UpdateAsync(donation);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating payment method for recurring donation {DonationId} for user {UserEmail}", donationId, userEmail);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets recurring donation setup records (parent donations) for a user.
+        /// These are the donations users can manage (cancel, update payment method, etc.).
+        /// </summary>
+        public async Task<List<Donation>> GetRecurringDonationSetupsAsync(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+                return new List<Donation>();
+
+            try
+            {
+                var userDonations = await GetByUserEmailAsync(email);
+                return userDonations.Where(d => 
+                    d.IsActive && 
+                    (d.IsMonthly || d.IsAnnual) && 
+                    !d.ParentRecurringDonationId.HasValue // Only setup donations, not payments
+                ).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting recurring donation setups for user {Email}", email);
+                return new List<Donation>();
+            }
+        }
+
+        /// <summary>
+        /// Gets all payment records for a specific recurring donation setup.
+        /// </summary>
+        public async Task<List<Donation>> GetRecurringDonationPaymentsAsync(int recurringDonationSetupId)
+        {
+            try
+            {
+                var allDonations = await GetAllAsync();
+                return allDonations.Where(d => 
+                    d.ParentRecurringDonationId == recurringDonationSetupId && 
+                    d.IsActive
+                ).OrderByDescending(d => d.CreatedOn).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting payment records for recurring donation setup {SetupId}", recurringDonationSetupId);
+                return new List<Donation>();
+            }
+        }
+
+        /// <summary>
+        /// Determines if a donation is a recurring setup donation (manageable by user).
+        /// </summary>
+        public bool IsRecurringSetupDonation(Donation donation)
+        {
+            return donation != null && 
+                   (donation.IsMonthly || donation.IsAnnual) && 
+                   !donation.ParentRecurringDonationId.HasValue;
+        }
+
+        /// <summary>
+        /// Determines if a donation is a recurring payment record.
+        /// </summary>
+        public bool IsRecurringPaymentRecord(Donation donation)
+        {
+            return donation != null && donation.ParentRecurringDonationId.HasValue;
         }
     }
 }

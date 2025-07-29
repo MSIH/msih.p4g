@@ -22,10 +22,12 @@
     <Compile Remove="Client\Features\DonationService\**" />
     <Compile Remove="Server\Features\OrganizationService\Tests\**" />
     <Compile Remove="Tests\**" />
+    <Compile Remove="Server\Examples\EXAMPLE_*.razor" />
     <Content Remove="Client\Features\Base\Payment\Services\**" />
     <Content Remove="Client\Features\DonationService\**" />
     <Content Remove="Server\Features\OrganizationService\Tests\**" />
     <Content Remove="Tests\**" />
+    <Content Remove="Server\Examples\EXAMPLE_*.razor" />
     <EmbeddedResource Remove="Client\Features\Base\Payment\Services\**" />
     <EmbeddedResource Remove="Client\Features\DonationService\**" />
     <EmbeddedResource Remove="Server\Features\OrganizationService\Tests\**" />
