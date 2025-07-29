@@ -31,11 +31,14 @@ using msih.p4g.Server.Features.Base.SettingsService.Services;
 using msih.p4g.Server.Features.Base.SmsService.Extensions;
 using msih.p4g.Server.Features.Base.UserProfileService.Extensions;
 using msih.p4g.Server.Features.Base.UserService.Extensions;
+using msih.p4g.Server.Features.Base.UserService.Services;
 using msih.p4g.Server.Features.Base.W9FormService.Extensions;
+using msih.p4g.Server.Features.CampaignService.Data;
 using msih.p4g.Server.Features.CampaignService.Extensions;
 using msih.p4g.Server.Features.DonationService.Extensions;
 using msih.p4g.Server.Features.DonorService.Extensions;
 using msih.p4g.Server.Features.FundraiserService.Extensions;
+using msih.p4g.Server.Features.OrganizationService.Data;
 using msih.p4g.Server.Features.OrganizationService.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
