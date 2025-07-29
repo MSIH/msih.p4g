@@ -25,37 +25,18 @@ using msih.p4g.Server.Features.Base.MessageService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Extensions;
 using msih.p4g.Server.Features.Base.PaymentService.Interfaces;
 using msih.p4g.Server.Features.Base.PayoutService.Extensions;
-using msih.p4g.Server.Features.Base.ProfileService.Interfaces;
-using msih.p4g.Server.Features.Base.ProfileService.Repositories;
-using msih.p4g.Server.Features.Base.ProfileService.Services;
+using msih.p4g.Server.Features.Base.ProfileService.Extensions;
 using msih.p4g.Server.Features.Base.SettingsService.Extensions;
 using msih.p4g.Server.Features.Base.SettingsService.Services;
 using msih.p4g.Server.Features.Base.SmsService.Extensions;
-using msih.p4g.Server.Features.Base.UserProfileService.Interfaces;
-using msih.p4g.Server.Features.Base.UserProfileService.Services;
-using msih.p4g.Server.Features.Base.UserService.Interfaces;
-using msih.p4g.Server.Features.Base.UserService.Repositories;
-using msih.p4g.Server.Features.Base.UserService.Services;
-using msih.p4g.Server.Features.Base.W9FormService.Interfaces;
-using msih.p4g.Server.Features.Base.W9FormService.Services;
-using msih.p4g.Server.Features.CampaignService.Data;
-using msih.p4g.Server.Features.CampaignService.Interfaces;
-using msih.p4g.Server.Features.CampaignService.Repositories;
-using msih.p4g.Server.Features.CampaignService.Services;
+using msih.p4g.Server.Features.Base.UserProfileService.Extensions;
+using msih.p4g.Server.Features.Base.UserService.Extensions;
+using msih.p4g.Server.Features.Base.W9FormService.Extensions;
+using msih.p4g.Server.Features.CampaignService.Extensions;
 using msih.p4g.Server.Features.DonationService.Extensions;
-using msih.p4g.Server.Features.DonationService.Interfaces;
-using msih.p4g.Server.Features.DonationService.Repositories;
-using msih.p4g.Server.Features.DonationService.Services;
-using msih.p4g.Server.Features.DonorService.Interfaces;
-using msih.p4g.Server.Features.DonorService.Repositories;
-using msih.p4g.Server.Features.DonorService.Services;
-using msih.p4g.Server.Features.FundraiserService.Interfaces;
-using msih.p4g.Server.Features.FundraiserService.Repositories;
-using msih.p4g.Server.Features.FundraiserService.Services;
-using msih.p4g.Server.Features.OrganizationService.Data;
-using msih.p4g.Server.Features.OrganizationService.Interfaces;
-using msih.p4g.Server.Features.OrganizationService.Repositories;
-using msih.p4g.Server.Features.OrganizationService.Services;
+using msih.p4g.Server.Features.DonorService.Extensions;
+using msih.p4g.Server.Features.FundraiserService.Extensions;
+using msih.p4g.Server.Features.OrganizationService.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -123,57 +104,30 @@ builder.Services.AddAffiliateMonitoringServices();
 // Register common utilities
 builder.Services.AddScoped<ReferralURLGenerator>();
 
-// Register DonorRepository and DonorService for DI
-builder.Services.AddScoped<IDonorRepository, DonorRepository>();
-builder.Services.AddScoped<IDonorService, DonorService>();
+// Register service features using extension methods
+builder.Services.AddDonorServices();
+builder.Services.AddCampaignServices();
+builder.Services.AddProfileServices();
+builder.Services.AddDonationServices(builder.Configuration, builder.Environment);
 
-// Register CampaignRepository and CampaignService for DI
-builder.Services.AddSingleton<ICampaignRepository, CampaignRepository>();
-builder.Services.AddScoped<ICampaignService, CampaignService>();
-
-// Register ProfileRepository and ProfileService for DI
-builder.Services.AddScoped<IProfileRepository, ProfileRepository>();
-builder.Services.AddScoped<IProfileService, ProfileService>();
-
-// Register DonationRepository and DonationService for DI
-builder.Services.AddScoped<IDonationRepository, DonationRepository>();
-builder.Services.AddScoped<IDonationService, DonationService>();
-
-// Register recurring donation background processing
-builder.Services.AddRecurringDonationProcessing();
-
-// Register UserRepository and UserService for DI
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
+// Register UserService and related dependencies
+builder.Services.AddUserServices();
 builder.Services.AddScoped<msih.p4g.Client.Common.Services.AuthorizationService>();
 
 // Register UserProfileService for coordinating User and Profile operations
-builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+builder.Services.AddUserProfileServices();
 
-// Register FundraiserRepository and FundraiserService for DI
-builder.Services.AddScoped<IFundraiserRepository, FundraiserRepository>();
-builder.Services.AddScoped<IFundraiserService, FundraiserService>();
+// Register FundraiserService and related dependencies
+builder.Services.AddFundraiserServices();
 
-// Register FundraiserStatisticsRepository and FundraiserStatisticsService for DI
-builder.Services.AddScoped<IFundraiserStatisticsRepository, FundraiserStatisticsRepository>();
-builder.Services.AddScoped<IFundraiserStatisticsService, FundraiserStatisticsService>();
-
-builder.Services.AddSingleton<IOrganizationRepository, OrganizationRepository>();
-builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+// Register OrganizationService and related dependencies
+builder.Services.AddOrganizationServices();
 
 // Register W9FormService for DI
-builder.Services.AddScoped<IW9FormService, W9FormService>();
+builder.Services.AddW9FormServices();
 
-// Add to the existing service registrations in Program.cs
-builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
-builder.Services.AddScoped<ReferralLinkHelper>();
-
-// Register the data seeder
+// Register the message template data seeder
 builder.Services.AddScoped<MessageTemplateDataSeeder>();
-builder.Services.AddScoped<OrganizationDataSeeder>();
-builder.Services.AddScoped<CampaignDataSeeder>();
-
-builder.Services.AddScoped<AdminInitializationService>();
 
 builder.Services.AddSingleton<ICacheStrategy, MemoryCacheStrategy>();
 

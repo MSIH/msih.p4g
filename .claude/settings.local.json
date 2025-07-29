@@ -14,7 +14,8 @@
       "Bash(dir \"C:\\Users\\bschn\\source\\repos\\MSIH\\msih.p4g\\Client\\Features\\Base\\Payment\\Interfaces\")",
       "Bash(dir \"C:\\Users\\bschn\\source\\repos\\MSIH\\msih.p4g\\Client\\Features\\FundraiserManagement\\Interfaces\")",
       "Bash(dir:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }
